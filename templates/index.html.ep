@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rock Band Songlist</title>
+</head>
+<body>
+  <form id="import_songlist_form" action="/import_songlist" method="post" enctype="multipart/form-data">
+    <label for="import_songlist_file">Import Songlist: </label><input id="import_songlist_file" name="songlist" type="file">
+    <input type="submit">
+  </form>
+  <hr>
+  <form id="search_songlist_form" action="/find_song" method="get">
+    <label for="search_songlist_query">Search Songs: </label><input id="search_songlist_query" name="query" type="text">
+    <input type="submit">
+  </form>
+</body>
+</html>
