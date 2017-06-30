@@ -17,3 +17,5 @@ nytprof.out
 *.bs
 /_eumm/
 /rb-songlist-*
+/rb_songlist.conf
+/log/*
