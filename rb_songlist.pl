@@ -49,6 +49,12 @@ EOQ
 
 get '/' => 'index';
 
+get '/admin' => sub ($c) {
+  return $c->render(text => 'Access denied', status => 403)
+    unless defined $c->session->{user_id};
+  $c->render;
+};
+
 get '/login';
 post '/login' => sub ($c) {
   my $username = $c->param('username');

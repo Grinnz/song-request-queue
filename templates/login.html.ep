@@ -9,8 +9,12 @@
 </head>
 <body>
   <div class="container">
-  <h1>Rock Band Songlist</h1>
-  <h2>Login</h2>
+  <div class="row">
+  <div class="col-sm-10"><h1>Rock Band Songlist</h1></div>
+  <div class="col-sm-1"><a href="/">Home</a></div>
+  <div class="col-sm-1"><a href="https://github.com/Grinnz/rb-songlist">Source</a></div>
+  </div>
+  <div class="row"><h2>Login</h2></div>
   <form id="login_form" class="form-horizontal" action="/login" method="post">
     <div class="form-group">
       <label for="login_username" class="col-sm-2 control-label">Username</label>
