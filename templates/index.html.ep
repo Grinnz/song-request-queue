@@ -5,16 +5,30 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Rock Band Songlist</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 </head>
 <body>
-  <form id="import_songlist_form" action="/import_songlist" method="post" enctype="multipart/form-data">
-    <label for="import_songlist_file">Import Songlist: </label><input id="import_songlist_file" name="songlist" type="file">
-    <input type="submit">
+  <div class="container">
+  <h1>Rock Band Songlist</h1>
+  <div class="row">
+  <form id="import_songlist_form" class="form-inline" action="/import_songlist" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="import_songlist_file">Import Songlist:</label>
+      <input id="import_songlist_file" class="form-control" name="songlist" type="file">
+    </div>
+    <button type="submit" class="btn btn-default">Submit</button>
   </form>
+  </div>
   <hr>
-  <form id="search_songlist_form" action="/find_song" method="get">
-    <label for="search_songlist_query">Search Songs: </label><input id="search_songlist_query" name="query" type="text">
-    <input type="submit">
+  <div class="row">
+  <form id="search_songlist_form" class="form-inline" action="/find_song" method="get">
+    <div class="form-group">
+      <label for="search_songlist_query">Search Songs:</label>
+      <input id="search_songlist_query" name="query" type="text">
+    </div>
+    <button type="submit" class="btn btn-default">Submit</button>
   </form>
+  </div>
+  </div>
 </body>
 </html>

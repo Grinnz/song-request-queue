@@ -1,4 +1,12 @@
 -- 1 up
+create table if not exists "users" (
+  id serial primary key,
+  username text not null unique,
+  password_hash text not null default '',
+  last_login_at timestamp with time zone,
+  password_reset_code bytea
+);
+
 create table if not exists "songs" (
   id serial primary key,
   title text not null,
@@ -9,14 +17,21 @@ create table if not exists "songs" (
   duration interval minute to second not null,
   unique ("artist","album","title","track")
 );
-create index if not exists "artist_title" on "songs" ("artist","title");
-create index if not exists "title" on "songs" ("title");
-create index if not exists "source" on "songs" ("source");
-create index if not exists "songtext" on "songs" using gin (to_tsvector('english', title || ' ' || artist || ' ' || album));
+create index if not exists "songs_artist_title" on "songs" ("artist","title");
+create index if not exists "songs_title" on "songs" ("title");
+create index if not exists "songs_source" on "songs" ("source");
+create index if not exists "songs_songtext" on "songs" using gin (to_tsvector('english', title || ' ' || artist || ' ' || album));
+
+create table if not exists "queue" (
+  id serial primary key,
+  position integer not null unique,
+  song_id integer not null,
+  requested_by text not null default '',
+  requested_at timestamp with time zone default now(),
+  foreign key ("song_id") references "songs" ("id") on delete cascade on update cascade
+);
 
 --1 down
+drop table if exists "queue";
 drop table if exists "songs";
-
---2 up
-create index if not exists "songtext" on "songs" using gin (to_tsvector('english', title || ' ' || artist || ' ' || album));
-
+drop table if exists "users";
