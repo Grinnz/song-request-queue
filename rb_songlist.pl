@@ -104,14 +104,6 @@ EOQ
   $c->render(text => 'Password was not set');
 };
 
-post '/import_songlist' => sub ($c) {
-  my $upload = $c->req->upload('songlist');
-  return $c->render(text => 'No songlist provided.') unless defined $upload;
-  my $name = $upload->filename;
-  $c->import_from_csv(\($upload->asset->slurp));
-  $c->render(text => "Import of $name successful.");
-};
-
 get '/find_song' => sub ($c) {
   my $search = $c->param('query') // '';
   $c->render(json => []) unless length $search;
@@ -120,6 +112,23 @@ SELECT * FROM "songs" WHERE to_tsvector('english', title || ' ' || artist || ' '
 EOQ
   my $results = $c->pg->db->query($query, $search)->hashes;
   $c->render(json => $results);
+};
+
+# Admin functions
+group {
+  under '/' => sub ($c) {
+    $c->render(text => 'Access denied'), return 0
+      unless defined $c->session->{user_id};
+    return 1;
+  };
+  
+  post '/import_songlist' => sub ($c) {
+    my $upload = $c->req->upload('songlist');
+    return $c->render(text => 'No songlist provided.') unless defined $upload;
+    my $name = $upload->filename;
+    $c->import_from_csv(\($upload->asset->slurp));
+    $c->render(text => "Import of $name successful.");
+  };
 };
 
 app->start;
