@@ -9,7 +9,17 @@
 </head>
 <body>
   <div class="container">
-  <h1>Rock Band Songlist</h1>
+  <div class="row">
+  <div class="col-sm-8"><h1>Rock Band Songlist</h1></div>
+% if (defined session 'user_id') {
+  <div class="col-sm-2">Logged in as <%== session 'username' %></div>
+  <div class="col-sm-1"><a href="/logout">Logout</a></div>
+% } else {
+  <div class="col-sm-2"></div>
+  <div class="col-sm-1"><a href="/login">Login</a></div>
+% }
+  <div class="col-sm-1"><a href="https://github.com/Grinnz/rb-songlist">Source</a></div>
+  </div>
   <div class="row">
   <form id="import_songlist_form" class="form-inline" action="/import_songlist" method="post" enctype="multipart/form-data">
     <div class="form-group">

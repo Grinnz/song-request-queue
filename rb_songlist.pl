@@ -9,16 +9,19 @@ use Digest::MD5 'md5';
 use List::Util ();
 use Mojo::Pg;
 use Text::CSV 'csv';
+use Time::Seconds;
 use experimental 'signatures';
 
 plugin 'Config';
 
 app->secrets(app->config->{secrets}) if app->config->{secrets};
 
-my $migrations_file = app->home->child('rb_songlist.sql');
-app->pg->auto_migrate(1)->migrations->name('rb_songlist')->from_file($migrations_file);
+app->sessions->default_expiration(ONE_WEEK);
 
 helper pg => sub ($c) { state $pg = Mojo::Pg->new($c->config('pg')) };
+
+my $migrations_file = app->home->child('rb_songlist.sql');
+app->pg->auto_migrate(1)->migrations->name('rb_songlist')->from_file($migrations_file);
 
 helper hash_password => sub ($c, $password, $username) {
   my $remote_address = $c->tx->remote_address // '127.0.0.1';
@@ -45,8 +48,32 @@ EOQ
 };
 
 get '/' => 'index';
-get '/set_password';
 
+get '/login';
+post '/login' => sub ($c) {
+  my $username = $c->param('username');
+  my $password = $c->param('password');
+  return $c->render(text => 'Missing parameters')
+    unless defined $username and defined $password;
+  
+  my $query = <<'EOQ';
+SELECT "id", "username", "password_hash" FROM "users" WHERE "username"=$1
+EOQ
+  my $user = $c->pg->db->query($query, $username)->hashes->first;
+  return $c->render(text => 'Login failed') unless defined $user
+    and bcrypt($password, $user->{password_hash}) eq $user->{password_hash};
+  
+  $c->session->{user_id} = $user->{id};
+  $c->session->{username} = $user->{username};
+  $c->redirect_to('/');
+};
+any '/logout' => sub ($c) {
+  delete @{$c->session}{'user_id','username'};
+  $c->session(expires => 1);
+  $c->redirect_to('/');
+};
+
+get '/set_password';
 post '/set_password' => sub ($c) {
   my $username = $c->param('username');
   my $code = $c->param('code');
