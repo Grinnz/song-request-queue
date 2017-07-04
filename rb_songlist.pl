@@ -50,8 +50,7 @@ EOQ
 get '/' => 'index';
 
 get '/admin' => sub ($c) {
-  return $c->render(text => 'Access denied', status => 403)
-    unless defined $c->session->{user_id};
+  return $c->redirect_to('/login') unless defined $c->session->{user_id};
   $c->render;
 };
 

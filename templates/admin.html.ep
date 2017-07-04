@@ -13,7 +13,7 @@
   <div class="col-sm-6"><h1>Rock Band Songlist</h1></div>
   <div class="col-sm-2">Logged in as <%== session 'username' %></div>
   <div class="col-sm-1"><a href="/">Home</a></div>
-  <div class="col-sm-1"><a href="/admin">Admin</a></div>
+  <div class="col-sm-1"><b>Admin</b></div>
   <div class="col-sm-1"><a href="/logout">Logout</a></div>
   <div class="col-sm-1"><a href="https://github.com/Grinnz/rb-songlist">Source</a></div>
   </div>
