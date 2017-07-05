@@ -1,23 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Rock Band Songlist - Admin</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-</head>
-<body>
-  <div class="container">
-  <div class="row">
-  <div class="col-sm-6"><h1>Rock Band Songlist</h1></div>
-  <div class="col-sm-2">Logged in as <%== session 'username' %></div>
-  <div class="col-sm-1"><a href="/">Home</a></div>
-  <div class="col-sm-1"><b>Admin</b></div>
-  <div class="col-sm-1"><a href="/logout">Logout</a></div>
-  <div class="col-sm-1"><a href="https://github.com/Grinnz/rb-songlist">Source</a></div>
-  </div>
-  <div class="row"><h2>Admin</h2></div>
+% layout 'main', title => 'Admin';
+<div class="row"><h2>Admin</h2></div>
   <div class="row">
   <form id="import_songlist_form" class="form-inline" action="/import_songlist" method="post" enctype="multipart/form-data">
     <div class="form-group">
@@ -26,7 +8,4 @@
     </div>
     <button type="submit" class="btn btn-default">Submit</button>
   </form>
-  </div>
-  </div>
-</body>
-</html>
+</div>
