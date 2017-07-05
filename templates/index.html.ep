@@ -1,4 +1,4 @@
-% layout 'main', title => undef;
+% layout 'main';
 <div class="row">
   <form id="search_songlist_form" class="form-inline" action="/find_song" method="get">
     <div class="form-group">
