@@ -1,7 +1,7 @@
 % layout 'main', title => 'Admin';
 <div class="row"><h2>Admin</h2></div>
   <div class="row">
-  <form id="import_songlist_form" class="form-inline" action="/import_songlist" method="post" enctype="multipart/form-data">
+  <form id="import_songlist_form" class="form-inline" action="/songs/import" method="post" enctype="multipart/form-data">
     <div class="form-group">
       <label for="import_songlist_file">Import Songlist:</label>
       <input id="import_songlist_file" class="form-control" name="songlist" type="file">

@@ -1,6 +1,6 @@
 % layout 'main';
 <div class="row">
-  <form id="search_songlist_form" class="form-inline" action="/find_song" method="get">
+  <form id="search_songlist_form" class="form-inline" action="/songs/search" method="get">
     <div class="form-group">
       <label for="search_songlist_query">Search Songs:</label>
       <input id="search_songlist_query" name="query" type="text">

@@ -30,6 +30,19 @@ helper hash_password => sub ($c, $password, $username) {
   return $hash;
 };
 
+helper user_is_admin => sub ($c, $user_id) {
+  my $query = 'SELECT "id" FROM "users" WHERE "id"=$1';
+  my $exists = $c->pg->db->query($query, $user_id)->hashes->first;
+  return undef unless defined $exists;
+  return 1;
+};
+
+helper valid_bot_key => sub ($c, $bot_key) {
+  return 1 if defined $bot_key
+    and List::Util::any { $_ eq $bot_key } @{$c->config('bot_keys') // []};
+  return 0;
+};
+
 helper import_from_csv => sub ($c, $file) {
   my $songs = csv(in => $file, encoding => 'UTF-8', detect_bom => 1)
     or die Text::CSV->error_diag;
@@ -45,6 +58,54 @@ EOQ
   }
   $tx->commit;
   return 1;
+};
+
+helper delete_song => sub ($c, $song_id) {
+  my $query = 'DELETE FROM "songs" WHERE "id"=$1 RETURNING "title"';
+  my $deleted = $c->pg->db->query($query, $song_id)->arrays->first;
+  return defined $deleted ? $deleted->[0] : undef;
+};
+
+helper queue_details => sub ($c) {
+  my $query = <<'EOQ';
+SELECT "songs"."id" AS "song_id", "title", "artist", "album", "track",
+"source", "duration", "requested_by", "requested_at", "position"
+FROM "queue" INNER JOIN "songs" ON "songs"."id"="queue"."song_id"
+ORDER BY "queue"."position"
+EOQ
+  return $c->pg->db->query($query)->hashes;
+};
+
+helper queue_song => sub ($c, $song_id, $requested_by) {
+  my $query = <<'EOQ';
+INSERT INTO "queue" ("song_id","requested_by","position")
+VALUES ($1,$2,COALESCE((SELECT MAX("position") FROM "queue"),0)+1)
+EOQ
+  return $c->pg->db->query($query, $song_id, $requested_by)->rows;
+};
+
+helper unqueue_song => sub ($c, $position) {
+  my $query = 'DELETE FROM "queue" WHERE "position"=$1 RETURNING "song_id"';
+  my $deleted = $c->pg->db->query($query, $position)->arrays->first;
+  return defined $deleted ? $deleted->[0] : undef;
+};
+
+helper clear_queue => sub ($c) {
+  my $query = 'DELETE FROM "queue" WHERE true';
+  return $c->pg->db->query($query)->rows;
+};
+
+helper search_songs => sub ($c, $search) {
+  my $query = <<'EOQ';
+SELECT * FROM "songs"
+WHERE to_tsvector('english', title || ' ' || artist || ' ' || album) @@ to_tsquery($1)
+EOQ
+  return $c->pg->db->query($query, $search)->hashes;
+};
+
+helper song_details => sub ($c, $song_id) {
+  my $query = 'SELECT * FROM "songs" WHERE "id"=$1';
+  return $c->pg->db->query($query, $song_id)->hashes->first;
 };
 
 get '/' => 'index';
@@ -104,30 +165,91 @@ EOQ
   $c->render(text => 'Password was not set');
 };
 
-get '/find_song' => sub ($c) {
+get '/songs/search' => sub ($c) {
   my $search = $c->param('query') // '';
   $c->render(json => []) unless length $search;
-  my $query = <<'EOQ';
-SELECT * FROM "songs" WHERE to_tsvector('english', title || ' ' || artist || ' ' || album) @@ to_tsquery($1)
-EOQ
-  my $results = $c->pg->db->query($query, $search)->hashes;
+  my $results = $c->search_songs($search);
   $c->render(json => $results);
+};
+
+get '/songs/:song_id' => sub ($c) {
+  my $song_id = $c->param('song_id');
+  my $details = $c->song_details($song_id);
+  $c->render(json => $details);
+};
+
+get '/queue' => sub ($c) {
+  my $queue_details = $c->queue_details;
+  $c->render(json => $queue_details);
 };
 
 # Admin functions
 group {
   under '/' => sub ($c) {
-    $c->render(text => 'Access denied'), return 0
-      unless defined $c->session->{user_id};
-    return 1;
+    my $user_id = $c->session->{user_id};
+    if (defined $user_id and $c->user_is_admin($user_id)) {
+      $c->stash(user_id => $user_id, admin => 1);
+      return 1;
+    }
+    my $bot_key = $c->param('bot_key');
+    if (defined $bot_key and $c->valid_bot_key($bot_key)) {
+      $c->stash(bot => 1);
+      return 1;
+    }
+    $c->render(text => 'Access denied', status => 403);
+    return 0;
   };
   
-  post '/import_songlist' => sub ($c) {
+  post '/songs/import' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('admin');
     my $upload = $c->req->upload('songlist');
     return $c->render(text => 'No songlist provided.') unless defined $upload;
     my $name = $upload->filename;
     $c->import_from_csv(\($upload->asset->slurp));
     $c->render(text => "Import of $name successful.");
+  };
+  
+  del '/songs/:song_id' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('admin');
+    my $song_id = $c->param('song_id');
+    my $deleted_title = $c->delete_song($song_id);
+    return $c->render(text => "Invalid song ID $song_id") unless defined $deleted_title;
+    $c->render(text => "Deleted song $song_id '$deleted_title'");
+  };
+  
+  any '/queue/add' => sub ($c) {
+    my $song_id = $c->param('song_id');
+    my $song_details;
+    if (defined $song_id) {
+      $song_details = $c->song_details($song_id);
+      return $c->render(text => "Invalid song ID $song_id") unless defined $song_details;
+    } else {
+      my $search = $c->param('query') // '';
+      return $c->render(text => 'No song ID or search query provided.') unless length $search;
+      my $search_results = $c->search_songs($search);
+      return $c->render(text => 'No matching results.') unless @$search_results;
+      $song_details = $search_results->first;
+      $song_id = $song_details->{id};
+    }
+    
+    my $requested_by = $c->param('requested_by') // $c->session->{username} // '';
+    $c->queue_song($song_id, $requested_by);
+    $c->render(text => "Added '$song_details->{title}' to queue (requested by $requested_by)");
+  };
+  
+  del '/queue/:position' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('admin');
+    my $position = $c->param('position');
+    my $deleted_id = $c->unqueue_song($position);
+    $c->render(text => "No song in position $position") unless defined $deleted_id;
+    my $deleted_song = $c->song_details($deleted_id);
+    $c->render(text => "Removed song '$deleted_song->{title}' from queue position $position");
+  };
+  
+  del '/queue' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('admin');
+    my $deleted = $c->clear_queue;
+    $c->render(text => "Cleared queue (removed $deleted songs)");
   };
 };
 
