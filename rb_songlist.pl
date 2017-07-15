@@ -47,6 +47,11 @@ helper import_from_csv => sub ($c, $file) {
   my $db = $c->pg->db;
   my $tx = $db->begin;
   foreach my $song (@$songs) {
+    my @duration_segments = split /:/, $song->{duration};
+    my $seconds = pop @duration_segments;
+    my $minutes = pop @duration_segments;
+    my $hours = pop @duration_segments;
+    $song->{duration} = sprintf '%02d:%02d:%02d', $hours // 0, $minutes // 0, $seconds // 0;
     my $query = <<'EOQ';
 INSERT INTO "songs" ("title","artist","album","track","source","duration")
 VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING
