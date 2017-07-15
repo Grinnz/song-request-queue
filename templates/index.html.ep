@@ -13,7 +13,7 @@
   </div>
   <div class="row"><h4 class="text-center">{{ queue_first.artist }}</h4></div>
   <div class="row">
-    <div class="col-md-5 col-md-offset-1 text-center">Request: "{{ queue_first.raw_request }}" by {{ queue_first.requested_by }}</div>
+    <div class="col-md-5 col-md-offset-1 text-center">Requested: <span v-if="queue_first.raw_request">"{{ queue_first.raw_request }}" </span>by {{ queue_first.requested_by }}</div>
     <div class="col-md-5 text-center">Duration: {{ queue_first.duration }}</div>
     <% if (stash 'is_admin') { %>
       <div class="col-md-1">
