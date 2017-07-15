@@ -9,7 +9,7 @@
     <div class="col-md-5 text-center">Duration: {{ queue_first.duration }}</div>
     <% if (stash 'is_admin') { %>
       <div class="col-md-1">
-        <button class="btn btn-danger btn-xs" v-on:click.prevent="unqueue_song(queue_first.position)">Done</button>
+        <button type="button" class="btn btn-danger btn-xs" v-on:click.prevent="unqueue_song(queue_first.position)">Done</button>
       </div>
     <% } %>
   </div>
@@ -28,16 +28,18 @@
     </tr>
     <template v-for="request in queue_remaining"><tr>
       <td>{{ request.position }}</td>
-      <td>{{ request.title }}</td>
+      <td><% if (stash 'is_admin') { %>
+        <button type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(request.position)">Set</button>
+      <% } %>{{ request.title }}</td>
       <td>{{ request.artist }}</td>
       <td>{{ request.requested_by }}</td>
       <td>{{ request.duration }}</td>
       <td>{{ request.raw_request }}</td>
       <% if (stash 'is_admin') { %><td>
-        <button class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'up')">▲</button>
-        <button class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'down')">▼</button>
+        <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'up')">▲</button>
+        <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'down')">▼</button>
         &nbsp;&nbsp;
-        <button class="btn btn-danger btn-xs" v-on:click.prevent="unqueue_song(request.position)">✖</button>
+        <button type="button" class="btn btn-danger btn-xs" v-on:click.prevent="unqueue_song(request.position)">✖</button>
       </td><% } %>
     </tr></template>
   </table>
@@ -48,11 +50,14 @@
 <div class="row">
   <form id="search_songlist_form" class="form-inline" v-on:submit.prevent="search_songlist">
     <div class="form-group">
-      <label for="search_songlist_query">Search Songs:</label>
+      <label for="search_songlist_query">
+        Search Songs<span v-if="search_for_queue"> for Queue Position {{ search_for_queue }}
+        <button type="button" class="btn btn-primary btn-xs" v-on:click.prevent="clear_search_for_queue">Unset</button></span>:
+      </label>
       <input id="search_songlist_query" class="form-control" name="query" type="text">
     </div>
     <button type="submit" class="btn btn-primary">Search</button>
-    <button class="btn btn-danger" v-on:click.prevent="clear_search_songlist">Clear</button>
+    <button type="button" class="btn btn-danger" v-on:click.prevent="clear_search_songlist">Clear</button>
   </form>
 </div>
 <br>
@@ -75,7 +80,8 @@
       <td>{{ song.source }}</td>
       <td>{{ song.duration }}</td>
       <% if (stash 'is_admin') { %><td>
-        <button class="btn btn-success btn-xs" v-on:click.prevent="queue_song(song.id)">Q</button>
+        <button type="button" v-if="search_for_queue" class="btn btn-success btn-xs" v-on:click.prevent="set_queued_song(search_for_queue, song.id)">Set ({{ search_for_queue }})</button>
+        <button type="button" v-else class="btn btn-success btn-xs" v-on:click.prevent="queue_song(song.id)">Queue</button>
       </td><% } %>
     </tr></template>
   </table>

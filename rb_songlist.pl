@@ -88,30 +88,32 @@ helper unqueue_song => sub ($c, $position) {
   return defined $deleted ? $deleted->[0] : undef;
 };
 
-helper clear_queue => sub ($c) {
-  my $query = 'DELETE FROM "queue" WHERE true';
-  return $c->pg->db->query($query)->rows;
-};
-
 helper reorder_queue => sub ($c, $position, $direction) {
-  my $db = $c->pg->db;
-  my $position_exists = $db->query('SELECT "id" FROM "queue" WHERE "position"=$1', $position)->arrays->first;
-  return 0 unless $position_exists;
-  my $query;
+  my $query = 'SELECT "id" FROM "queue" WHERE "position"=$1';
+  $c->pg->db->query($query, $position)->arrays->first // return 0;
   if (defined $direction and $direction eq 'up') {
     $query = 'SELECT MAX("position") FROM "queue" WHERE "position"<$1';
   } else {
     $query = 'SELECT MIN("position") FROM "queue" WHERE "position">$1';
   }
-  my $swap_position = $db->query($query, $position)->arrays->first;
-  $swap_position = $swap_position->[0] if defined $swap_position;
-  return 0 unless defined $swap_position;
+  my $swap_position = $c->pg->db->query($query, $position)->arrays->first // return 0;
+  $swap_position = $swap_position->[0] // return 0;
   $query = <<'EOQ';
 UPDATE "queue" SET "position" = CASE WHEN "position" = $1 THEN $2 ELSE $1 END
 WHERE "position" IN ($1,$2)
 EOQ
-  $db->query($query, $position, $swap_position);
+  $c->pg->db->query($query, $position, $swap_position);
   return 1;
+};
+
+helper set_queued_song => sub ($c, $position, $song_id) {
+  my $query = 'UPDATE "queue" SET "song_id"=$1 WHERE "position"=$2';
+  return $c->pg->db->query($query, $song_id, $position)->rows;
+};
+
+helper clear_queue => sub ($c) {
+  my $query = 'DELETE FROM "queue" WHERE true';
+  return $c->pg->db->query($query)->rows;
 };
 
 helper search_songs => sub ($c, $search) {
@@ -269,12 +271,23 @@ group {
   post '/api/queue/:position' => sub ($c) {
     return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
     my $position = $c->param('position');
-    my $reorder = $c->param('reorder') || 'down';
-    return $c->render(text => "Don't know how to reorder position to $reorder")
-      unless $reorder eq 'up' or $reorder eq 'down';
-    my $reordered = $c->reorder_queue($position, $reorder);
-    return $c->render(text => "Cannot reorder position $position $reorder") unless $reordered;
-    $c->render(text => "Reordered position $position $reorder");
+    
+    my $reorder = $c->param('reorder');
+    if (defined $reorder) {
+      return $c->render(text => "Don't know how to reorder position to $reorder")
+        unless $reorder eq 'up' or $reorder eq 'down';
+      my $reordered = $c->reorder_queue($position, $reorder);
+      return $c->render(text => "Cannot reorder position $position $reorder") unless $reordered;
+      return $c->render(text => "Reordered position $position $reorder");
+    }
+    
+    my $song_id = $c->param('song_id');
+    if (defined $song_id) {
+      my $song_details = $c->song_details($song_id);
+      return $c->render(text => "Invalid song ID $song_id") unless defined $song_details;
+      $c->set_queued_song($position, $song_id);
+      return $c->render(text => "Set queued song $position to '$song_details->{title}'");
+    }
   };
   
   del '/api/queue/:position' => sub ($c) {
