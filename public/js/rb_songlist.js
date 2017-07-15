@@ -11,6 +11,12 @@ var search_vm = new Vue({
     },
     clear_search_songlist: function (event) {
       search_data.search_songlist_results = [];
+    },
+    queue_song: function (song_id) {
+      $.post('/api/queue/add', { song_id: song_id })
+        .done(function () {
+          queue_vm.refresh_queue();
+        })
     }
   }
 });
@@ -26,6 +32,14 @@ var queue_vm = new Vue({
           queue_data.queue_first = entries.shift();
           queue_data.queue_remaining = entries;
         })
+    },
+    unqueue_song: function (position) {
+      if (position) {
+        $.ajax({ url: '/api/queue/' + position, method: 'DELETE' })
+          .done(function () {
+            queue_vm.refresh_queue();
+          })
+      }
     }
   }
 });

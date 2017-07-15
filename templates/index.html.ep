@@ -1,15 +1,20 @@
 % layout 'main';
 <div id="request_queue">
 <h2>Request Queue</h2>
-<div v-if="queue_first">
+<div v-if="queue_first" style="border: 1px solid #ddd">
   <div class="row"><h3 class="text-center">{{ queue_first.title || queue_first.raw_request }}</h3></div>
   <div class="row"><h4 class="text-center">{{ queue_first.artist }}</h4></div>
   <div class="row">
-    <div class="col-md-6 text-center">Requested by: {{ queue_first.requested_by }}</div>
-    <div class="col-md-6 text-center">Duration: {{ queue_first.duration }}</div>
+    <div class="col-md-5 col-md-offset-1 text-center">Requested by: {{ queue_first.requested_by }}</div>
+    <div class="col-md-5 text-center">Duration: {{ queue_first.duration }}</div>
+    <% if (stash 'is_admin') { %>
+      <div class="col-md-1">
+        <button class="btn btn-danger btn-xs" v-on:click.prevent="unqueue_song(queue_first.position)">Done</button>
+      </div>
+    <% } %>
   </div>
+  <br>
 </div>
-<br>
 <div class="row" v-if="queue_remaining.length">
   <table class="table table-hover table-bordered table-responsive">
     <tr>
@@ -19,6 +24,7 @@
       <th>Requested By</th>
       <th>Duration</th>
       <th>Original Request</th>
+      <% if (stash 'is_admin') { %><th>Remove</th><% } %>
     </tr>
     <template v-for="request in queue_remaining"><tr>
       <td>{{ request.position }}</td>
@@ -27,6 +33,9 @@
       <td>{{ request.requested_by }}</td>
       <td>{{ request.duration }}</td>
       <td>{{ request.raw_request }}</td>
+      <% if (stash 'is_admin') { %><td>
+        <button class="btn btn-danger btn-xs" v-on:click.prevent="unqueue_song(request.position)">X</button>
+      </td><% } %>
     </tr></template>
   </table>
 </div>
@@ -53,6 +62,7 @@
       <th>Track</th>
       <th>Source</th>
       <th>Duration</th>
+      <% if (stash 'is_admin') { %><th>Queue</th><% } %>
     </tr>
     <template v-for="song in search_songlist_results"><tr>
       <td>{{ song.title }}</td>
@@ -61,6 +71,9 @@
       <td>{{ song.track }}</td>
       <td>{{ song.source }}</td>
       <td>{{ song.duration }}</td>
+      <% if (stash 'is_admin') { %><td>
+        <button class="btn btn-success btn-xs" v-on:click.prevent="queue_song(song.id)">Q</button>
+      </td><% } %>
     </tr></template>
   </table>
 </div>
