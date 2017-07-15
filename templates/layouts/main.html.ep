@@ -11,8 +11,8 @@
   <div class="container">
   <div class="row">
   <div class="col-sm-6"><h1>Rock Band Songlist</h1></div>
-% if (defined session 'user_id') {
-  <div class="col-sm-2">Logged in as <%== session 'username' %></div>
+% if (defined stash 'user_id') {
+  <div class="col-sm-2">Logged in as <%== stash 'username' %></div>
   <div class="col-sm-1"><% if (current_route 'index') { %><b>Home</b><% } else { %><a href="/">Home</a><% } %></div>
   <div class="col-sm-1"><% if (current_route 'admin') { %><b>Admin</b><% } else { %><a href="/admin">Admin</a><% } %></div>
   <div class="col-sm-1"><a href="/logout">Logout</a></div>
@@ -24,5 +24,7 @@
   </div>
 <%= content %>
   </div>
+  <script src="https://unpkg.com/vue@2.4.1"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 </body>
 </html>

@@ -37,6 +37,11 @@ helper user_is_admin => sub ($c, $user_id) {
   return 1;
 };
 
+helper user_details => sub ($c, $user_id) {
+  my $query = 'SELECT true AS "is_admin", "username" FROM "users" WHERE "id"=$1';
+  return $c->pg->db->query($query, $user_id)->hashes->first;
+};
+
 helper valid_bot_key => sub ($c, $bot_key) {
   return 1 if defined $bot_key
     and List::Util::any { $_ eq $bot_key } @{$c->config('bot_keys') // []};
@@ -69,19 +74,19 @@ helper delete_song => sub ($c, $song_id) {
 helper queue_details => sub ($c) {
   my $query = <<'EOQ';
 SELECT "songs"."id" AS "song_id", "title", "artist", "album", "track",
-"source", "duration", "requested_by", "requested_at", "position"
+"source", "duration", "requested_by", "requested_at", "raw_request", "position"
 FROM "queue" INNER JOIN "songs" ON "songs"."id"="queue"."song_id"
 ORDER BY "queue"."position"
 EOQ
   return $c->pg->db->query($query)->hashes;
 };
 
-helper queue_song => sub ($c, $song_id, $requested_by) {
+helper queue_song => sub ($c, $song_id, $requested_by, $raw_request) {
   my $query = <<'EOQ';
-INSERT INTO "queue" ("song_id","requested_by","position")
-VALUES ($1,$2,COALESCE((SELECT MAX("position") FROM "queue"),0)+1)
+INSERT INTO "queue" ("song_id","requested_by","raw_request","position")
+VALUES ($1,$2,$3,COALESCE((SELECT MAX("position") FROM "queue"),0)+1)
 EOQ
-  return $c->pg->db->query($query, $song_id, $requested_by)->rows;
+  return $c->pg->db->query($query, $song_id, $requested_by, $raw_request)->rows;
 };
 
 helper unqueue_song => sub ($c, $position) {
@@ -108,10 +113,23 @@ helper song_details => sub ($c, $song_id) {
   return $c->pg->db->query($query, $song_id)->hashes->first;
 };
 
+under '/' => sub ($c) {
+  my $user_id = $c->session->{user_id};
+  if (defined $user_id and defined(my $details = $c->user_details($user_id))) {
+    $c->stash(user_id => $user_id, username => $details->{username});
+    $c->stash(is_admin => 1) if $details->{is_admin};
+  }
+  my $bot_key = $c->param('bot_key');
+  if (defined $bot_key and $c->valid_bot_key($bot_key)) {
+    $c->stash(is_bot => 1);
+  }
+  return 1;
+};
+
 get '/' => 'index';
 
 get '/admin' => sub ($c) {
-  return $c->redirect_to('/login') unless defined $c->session->{user_id};
+  return $c->redirect_to('/login') unless $c->stash('is_admin');
   $c->render;
 };
 
@@ -165,20 +183,22 @@ EOQ
   $c->render(text => 'Password was not set');
 };
 
-get '/songs/search' => sub ($c) {
+# Public API
+
+get '/api/songs/search' => sub ($c) {
   my $search = $c->param('query') // '';
   $c->render(json => []) unless length $search;
   my $results = $c->search_songs($search);
   $c->render(json => $results);
 };
 
-get '/songs/:song_id' => sub ($c) {
+get '/api/songs/:song_id' => sub ($c) {
   my $song_id = $c->param('song_id');
   my $details = $c->song_details($song_id);
   $c->render(json => $details);
 };
 
-get '/queue' => sub ($c) {
+get '/api/queue' => sub ($c) {
   my $queue_details = $c->queue_details;
   $c->render(json => $queue_details);
 };
@@ -186,22 +206,13 @@ get '/queue' => sub ($c) {
 # Admin functions
 group {
   under '/' => sub ($c) {
-    my $user_id = $c->session->{user_id};
-    if (defined $user_id and $c->user_is_admin($user_id)) {
-      $c->stash(user_id => $user_id, admin => 1);
-      return 1;
-    }
-    my $bot_key = $c->param('bot_key');
-    if (defined $bot_key and $c->valid_bot_key($bot_key)) {
-      $c->stash(bot => 1);
-      return 1;
-    }
+    return 1 if $c->stash('is_admin') or $c->stash('is_bot');
     $c->render(text => 'Access denied', status => 403);
     return 0;
   };
   
-  post '/songs/import' => sub ($c) {
-    return $c->render(text => 'Access denied', status => 403) unless $c->stash('admin');
+  post '/api/songs/import' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
     my $upload = $c->req->upload('songlist');
     return $c->render(text => 'No songlist provided.') unless defined $upload;
     my $name = $upload->filename;
@@ -209,17 +220,18 @@ group {
     $c->render(text => "Import of $name successful.");
   };
   
-  del '/songs/:song_id' => sub ($c) {
-    return $c->render(text => 'Access denied', status => 403) unless $c->stash('admin');
+  del '/api/songs/:song_id' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
     my $song_id = $c->param('song_id');
     my $deleted_title = $c->delete_song($song_id);
     return $c->render(text => "Invalid song ID $song_id") unless defined $deleted_title;
     $c->render(text => "Deleted song $song_id '$deleted_title'");
   };
   
-  any '/queue/add' => sub ($c) {
+  any '/api/queue/add' => sub ($c) {
     my $song_id = $c->param('song_id');
     my $song_details;
+    my $raw_request;
     if (defined $song_id) {
       $song_details = $c->song_details($song_id);
       return $c->render(text => "Invalid song ID $song_id") unless defined $song_details;
@@ -227,18 +239,19 @@ group {
       my $search = $c->param('query') // '';
       return $c->render(text => 'No song ID or search query provided.') unless length $search;
       my $search_results = $c->search_songs($search);
-      return $c->render(text => 'No matching results.') unless @$search_results;
       $song_details = $search_results->first;
-      $song_id = $song_details->{id};
+      $song_id = $song_details->{id} if defined $song_details;
+      $raw_request = $search;
     }
     
-    my $requested_by = $c->param('requested_by') // $c->session->{username} // '';
-    $c->queue_song($song_id, $requested_by);
-    $c->render(text => "Added '$song_details->{title}' to queue (requested by $requested_by)");
+    my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
+    $c->queue_song($song_id, $requested_by, $raw_request);
+    my $response_title = defined $song_details ? $song_details->{title} : $raw_request;
+    $c->render(text => "Added '$response_title' to queue (requested by $requested_by)");
   };
   
-  del '/queue/:position' => sub ($c) {
-    return $c->render(text => 'Access denied', status => 403) unless $c->stash('admin');
+  del '/api/queue/:position' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
     my $position = $c->param('position');
     my $deleted_id = $c->unqueue_song($position);
     $c->render(text => "No song in position $position") unless defined $deleted_id;
@@ -246,8 +259,8 @@ group {
     $c->render(text => "Removed song '$deleted_song->{title}' from queue position $position");
   };
   
-  del '/queue' => sub ($c) {
-    return $c->render(text => 'Access denied', status => 403) unless $c->stash('admin');
+  del '/api/queue' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
     my $deleted = $c->clear_queue;
     $c->render(text => "Cleared queue (removed $deleted songs)");
   };

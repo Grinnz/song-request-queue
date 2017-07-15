@@ -25,10 +25,11 @@ create index if not exists "songs_songtext" on "songs" using gin (to_tsvector('e
 create table if not exists "queue" (
   id serial primary key,
   position integer not null unique,
-  song_id integer not null,
+  song_id integer null,
   requested_by text not null default '',
   requested_at timestamp with time zone default now(),
-  foreign key ("song_id") references "songs" ("id") on delete cascade on update cascade
+  raw_request text null,
+  foreign key ("song_id") references "songs" ("id") on delete set null on update cascade
 );
 
 --1 down
