@@ -1,4 +1,37 @@
 % layout 'main';
+<div id="request_queue">
+<h2>Request Queue</h2>
+<div v-if="queue_first">
+  <div class="row"><h3 class="text-center">{{ queue_first.title || queue_first.raw_request }}</h3></div>
+  <div class="row"><h4 class="text-center">{{ queue_first.artist }}</h4></div>
+  <div class="row">
+    <div class="col-md-6 text-center">Requested by: {{ queue_first.requested_by }}</div>
+    <div class="col-md-6 text-center">Duration: {{ queue_first.duration }}</div>
+  </div>
+</div>
+<br>
+<div class="row" v-if="queue_remaining.length">
+  <table class="table table-hover table-bordered table-responsive">
+    <tr>
+      <th>#</th>
+      <th>Title</th>
+      <th>Artist</th>
+      <th>Requested By</th>
+      <th>Duration</th>
+      <th>Original Request</th>
+    </tr>
+    <template v-for="request in queue_remaining"><tr>
+      <td>{{ request.position }}</td>
+      <td>{{ request.title }}</td>
+      <td>{{ request.artist }}</td>
+      <td>{{ request.requested_by }}</td>
+      <td>{{ request.duration }}</td>
+      <td>{{ request.raw_request }}</td>
+    </tr></template>
+  </table>
+</div>
+</div>
+
 <div id="search_songlist">
 <div class="row">
   <form id="search_songlist_form" class="form-inline" v-on:submit.prevent="search_songlist">
