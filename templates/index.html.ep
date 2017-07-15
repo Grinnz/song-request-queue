@@ -34,10 +34,10 @@
       <td>{{ request.duration }}</td>
       <td>{{ request.raw_request }}</td>
       <% if (stash 'is_admin') { %><td>
-        <button class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'up')">↑</button>
-        <button class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'down')">↓</button>
+        <button class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'up')">▲</button>
+        <button class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'down')">▼</button>
         &nbsp;&nbsp;
-        <button class="btn btn-danger btn-xs" v-on:click.prevent="unqueue_song(request.position)">X</button>
+        <button class="btn btn-danger btn-xs" v-on:click.prevent="unqueue_song(request.position)">✖</button>
       </td><% } %>
     </tr></template>
   </table>

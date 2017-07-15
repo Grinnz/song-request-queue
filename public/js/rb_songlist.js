@@ -53,3 +53,7 @@ var queue_vm = new Vue({
 });
 
 queue_vm.refresh_queue();
+
+var periodic_refresh = window.setInterval(function () {
+  queue_vm.refresh_queue();
+}, 5000);
