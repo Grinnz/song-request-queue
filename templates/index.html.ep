@@ -23,7 +23,7 @@
   </div>
   <br>
 </div>
-<div class="row" v-if="queue_remaining.length">
+<div class="row">
   <table class="table table-hover table-bordered table-responsive">
     <tr>
       <th>#</th>
