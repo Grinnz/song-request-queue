@@ -29,9 +29,8 @@
       <th>#</th>
       <th>Title</th>
       <th>Artist</th>
-      <th>Requested By</th>
       <th>Duration</th>
-      <th>Original Request</th>
+      <th>Request</th>
       <% if (stash 'is_admin') { %><th>Move</th><% } %>
     </tr>
     <template v-for="request in queue_remaining"><tr>
@@ -40,9 +39,8 @@
         <button type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(request.position)">Set</button>
       <% } %>{{ request.title }}</td>
       <td>{{ request.artist }}</td>
-      <td>{{ request.requested_by }}</td>
       <td>{{ request.duration }}</td>
-      <td>{{ request.raw_request }}</td>
+      <td><span v-if="request.raw_request">"{{ request.raw_request }}" </span>by {{ request.requested_by }}</td>
       <% if (stash 'is_admin') { %><td>
         <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'up')">▲</button>
         <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'down')">▼</button>
