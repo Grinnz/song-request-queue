@@ -5,7 +5,7 @@
   <div class="row"><h3 class="text-center">{{ queue_first.title || queue_first.raw_request }}</h3></div>
   <div class="row"><h4 class="text-center">{{ queue_first.artist }}</h4></div>
   <div class="row">
-    <div class="col-md-5 col-md-offset-1 text-center">Requested by: {{ queue_first.requested_by }}</div>
+    <div class="col-md-5 col-md-offset-1 text-center">Request: "{{ queue_first.raw_request }}" by {{ queue_first.requested_by }}</div>
     <div class="col-md-5 text-center">Duration: {{ queue_first.duration }}</div>
     <% if (stash 'is_admin') { %>
       <div class="col-md-1">
@@ -24,7 +24,7 @@
       <th>Requested By</th>
       <th>Duration</th>
       <th>Original Request</th>
-      <% if (stash 'is_admin') { %><th>Remove</th><% } %>
+      <% if (stash 'is_admin') { %><th>Move</th><% } %>
     </tr>
     <template v-for="request in queue_remaining"><tr>
       <td>{{ request.position }}</td>
@@ -34,13 +34,16 @@
       <td>{{ request.duration }}</td>
       <td>{{ request.raw_request }}</td>
       <% if (stash 'is_admin') { %><td>
+        <button class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'up')">↑</button>
+        <button class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'down')">↓</button>
+        &nbsp;&nbsp;
         <button class="btn btn-danger btn-xs" v-on:click.prevent="unqueue_song(request.position)">X</button>
       </td><% } %>
     </tr></template>
   </table>
 </div>
 </div>
-
+<br>
 <div id="search_songlist">
 <div class="row">
   <form id="search_songlist_form" class="form-inline" v-on:submit.prevent="search_songlist">

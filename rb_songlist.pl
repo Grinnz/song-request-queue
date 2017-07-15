@@ -93,6 +93,27 @@ helper clear_queue => sub ($c) {
   return $c->pg->db->query($query)->rows;
 };
 
+helper reorder_queue => sub ($c, $position, $direction) {
+  my $db = $c->pg->db;
+  my $position_exists = $db->query('SELECT "id" FROM "queue" WHERE "position"=$1', $position)->arrays->first;
+  return 0 unless $position_exists;
+  my $query;
+  if (defined $direction and $direction eq 'up') {
+    $query = 'SELECT MAX("position") FROM "queue" WHERE "position"<$1';
+  } else {
+    $query = 'SELECT MIN("position") FROM "queue" WHERE "position">$1';
+  }
+  my $swap_position = $db->query($query, $position)->arrays->first;
+  $swap_position = $swap_position->[0] if defined $swap_position;
+  return 0 unless defined $swap_position;
+  $query = <<'EOQ';
+UPDATE "queue" SET "position" = CASE WHEN "position" = $1 THEN $2 ELSE $1 END
+WHERE "position" IN ($1,$2)
+EOQ
+  $db->query($query, $position, $swap_position);
+  return 1;
+};
+
 helper search_songs => sub ($c, $search) {
   my $query = <<'EOQ';
 SELECT * FROM "songs"
@@ -182,7 +203,7 @@ EOQ
 
 get '/api/songs/search' => sub ($c) {
   my $search = $c->param('query') // '';
-  $c->render(json => []) unless length $search;
+  return $c->render(json => []) unless length $search;
   my $results = $c->search_songs($search);
   $c->render(json => $results);
 };
@@ -245,11 +266,22 @@ group {
     $c->render(text => "Added '$response_title' to queue (requested by $requested_by)");
   };
   
+  post '/api/queue/:position' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
+    my $position = $c->param('position');
+    my $reorder = $c->param('reorder') || 'down';
+    return $c->render(text => "Don't know how to reorder position to $reorder")
+      unless $reorder eq 'up' or $reorder eq 'down';
+    my $reordered = $c->reorder_queue($position, $reorder);
+    return $c->render(text => "Cannot reorder position $position $reorder") unless $reordered;
+    $c->render(text => "Reordered position $position $reorder");
+  };
+  
   del '/api/queue/:position' => sub ($c) {
     return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
     my $position = $c->param('position');
     my $deleted_id = $c->unqueue_song($position);
-    $c->render(text => "No song in position $position") unless defined $deleted_id;
+    return $c->render(text => "No song in position $position") unless defined $deleted_id;
     my $deleted_song = $c->song_details($deleted_id);
     $c->render(text => "Removed song '$deleted_song->{title}' from queue position $position");
   };

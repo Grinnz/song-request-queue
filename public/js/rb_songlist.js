@@ -40,7 +40,15 @@ var queue_vm = new Vue({
             queue_vm.refresh_queue();
           })
       }
-    }
+    },
+    reorder_queue: function (position, direction) {
+      if (position) {
+        $.post('/api/queue/' + position, { reorder: direction })
+          .done(function () {
+            queue_vm.refresh_queue();
+          })
+      }
+    },
   }
 });
 
