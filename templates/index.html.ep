@@ -1,10 +1,34 @@
 % layout 'main';
+<div id="search_songlist">
 <div class="row">
-  <form id="search_songlist_form" class="form-inline" action="/api/songs/search" method="get">
+  <form id="search_songlist_form" class="form-inline" v-on:submit.prevent="search_songlist">
     <div class="form-group">
       <label for="search_songlist_query">Search Songs:</label>
-      <input id="search_songlist_query" name="query" type="text">
+      <input id="search_songlist_query" class="form-control" name="query" type="text">
     </div>
-    <button type="submit" class="btn btn-default">Submit</button>
+    <button type="submit" class="btn btn-primary">Search</button>
+    <button class="btn btn-danger" v-on:click.prevent="clear_search_songlist">Clear</button>
   </form>
+</div>
+<br>
+<div class="row">
+  <table class="table table-hover table-bordered table-responsive">
+    <tr>
+      <th>Title</th>
+      <th>Artist</th>
+      <th>Album</th>
+      <th>Track</th>
+      <th>Source</th>
+      <th>Duration</th>
+    </tr>
+    <template v-for="song in search_songlist_results"><tr>
+      <td>{{ song.title }}</td>
+      <td>{{ song.artist }}</td>
+      <td>{{ song.album }}</td>
+      <td>{{ song.track }}</td>
+      <td>{{ song.source }}</td>
+      <td>{{ song.duration }}</td>
+    </tr></template>
+  </table>
+</div>
 </div>

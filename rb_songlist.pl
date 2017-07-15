@@ -106,6 +106,8 @@ helper song_details => sub ($c, $song_id) {
   return $c->pg->db->query($query, $song_id)->hashes->first;
 };
 
+# Pages
+
 under '/' => sub ($c) {
   my $user_id = $c->session->{user_id};
   if (defined $user_id and defined(my $details = $c->user_details($user_id))) {
