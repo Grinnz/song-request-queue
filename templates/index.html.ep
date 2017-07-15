@@ -2,7 +2,15 @@
 <div id="request_queue">
 <h2>Request Queue</h2>
 <div v-if="queue_first" style="border: 1px solid #ddd">
-  <div class="row"><h3 class="text-center">{{ queue_first.title || queue_first.raw_request }}</h3></div>
+  <div class="row">
+    <br>
+    <div class="col-md-10 col-md-offset-1 text-center">
+      <h3>{{ queue_first.title || queue_first.raw_request }}</h3>
+    </div>
+    <% if (stash 'is_admin') { %><div class="col-md-1">
+      <button type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(queue_first.position)">Set</button>
+    </div><% } %>
+  </div>
   <div class="row"><h4 class="text-center">{{ queue_first.artist }}</h4></div>
   <div class="row">
     <div class="col-md-5 col-md-offset-1 text-center">Request: "{{ queue_first.raw_request }}" by {{ queue_first.requested_by }}</div>

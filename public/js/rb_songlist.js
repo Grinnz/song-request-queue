@@ -47,6 +47,7 @@ var queue_vm = new Vue({
     },
     unqueue_song: function (position) {
       if (position) {
+        search_vm.clear_search_for_queue();
         $.ajax({ url: '/api/queue/' + position, method: 'DELETE' })
           .done(function () {
             queue_vm.refresh_queue();
@@ -55,6 +56,7 @@ var queue_vm = new Vue({
     },
     reorder_queue: function (position, direction) {
       if (position) {
+        search_vm.clear_search_for_queue();
         $.post('/api/queue/' + position, { reorder: direction })
           .done(function () {
             queue_vm.refresh_queue();
