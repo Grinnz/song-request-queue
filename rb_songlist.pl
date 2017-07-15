@@ -30,13 +30,6 @@ helper hash_password => sub ($c, $password, $username) {
   return $hash;
 };
 
-helper user_is_admin => sub ($c, $user_id) {
-  my $query = 'SELECT "id" FROM "users" WHERE "id"=$1';
-  my $exists = $c->pg->db->query($query, $user_id)->hashes->first;
-  return undef unless defined $exists;
-  return 1;
-};
-
 helper user_details => sub ($c, $user_id) {
   my $query = 'SELECT true AS "is_admin", "username" FROM "users" WHERE "id"=$1';
   return $c->pg->db->query($query, $user_id)->hashes->first;
@@ -75,7 +68,7 @@ helper queue_details => sub ($c) {
   my $query = <<'EOQ';
 SELECT "songs"."id" AS "song_id", "title", "artist", "album", "track",
 "source", "duration", "requested_by", "requested_at", "raw_request", "position"
-FROM "queue" INNER JOIN "songs" ON "songs"."id"="queue"."song_id"
+FROM "queue" LEFT JOIN "songs" ON "songs"."id"="queue"."song_id"
 ORDER BY "queue"."position"
 EOQ
   return $c->pg->db->query($query)->hashes;
