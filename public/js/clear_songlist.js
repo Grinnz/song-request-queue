@@ -15,6 +15,9 @@ var clear_songlist_vm = new Vue({
         .done(function () {
           clear_songlist_vm.set_result_text('Songlist cleared');
         })
+        .fail(function () {
+          clear_songlist_vm.set_result_text('Failed to clear songlist');
+        })
     },
     set_result_text: function (text) {
       clear_songlist_data.result_text = text;

@@ -13,6 +13,9 @@ var import_vm = new Vue({
       }).done(function () {
           import_vm.set_result_text('Import successful');
         })
+        .fail(function () {
+          import_vm.set_result_text('Failed to import songlist');
+        })
     },
     set_result_text: function (text) {
       import_data.result_text = text;

@@ -23,6 +23,14 @@ helper pg => sub ($c) { state $pg = Mojo::Pg->new($c->config('pg')) };
 my $migrations_file = app->home->child('rb_songlist.sql');
 app->pg->auto_migrate(1)->migrations->name('rb_songlist')->from_file($migrations_file);
 
+helper normalize_duration => sub ($c, $duration) {
+  my @duration_segments = split /:/, ($duration // '');
+  my $seconds = pop @duration_segments;
+  my $minutes = pop @duration_segments;
+  my $hours = pop @duration_segments;
+  return sprintf '%02d:%02d:%02d', $hours // 0, $minutes // 0, $seconds // 0;
+};
+
 helper hash_password => sub ($c, $password, $username) {
   my $remote_address = $c->tx->remote_address // '127.0.0.1';
   my $salt = en_base64 md5 join '$', $username, \my $dummy, time, $remote_address;
@@ -47,11 +55,7 @@ helper import_from_csv => sub ($c, $file) {
   my $db = $c->pg->db;
   my $tx = $db->begin;
   foreach my $song (@$songs) {
-    my @duration_segments = split /:/, $song->{duration};
-    my $seconds = pop @duration_segments;
-    my $minutes = pop @duration_segments;
-    my $hours = pop @duration_segments;
-    $song->{duration} = sprintf '%02d:%02d:%02d', $hours // 0, $minutes // 0, $seconds // 0;
+    $song->{duration} = $c->normalize_duration($song->{duration});
     my $query = <<'EOQ';
 INSERT INTO "songs" ("title","artist","album","track","source","duration")
 VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING
@@ -63,10 +67,18 @@ EOQ
   return 1;
 };
 
+helper add_song => sub ($c, $details) {
+  my %properties;
+  $properties{$_} = $details->{$_} for qw(title artist album track source duration);
+  my $inserted = $c->pg->db->insert('songs', \%properties, {returning => 'id'})->arrays->first;
+  return $inserted->[0];
+};
+
 helper update_song => sub ($c, $song_id, $details) {
   my %updates;
   $updates{$_} = $details->{$_} for grep { exists $details->{$_} }
     qw(title artist album track source duration);
+  $updates{duration} = $c->normalize_duration($updates{duration});
   return $c->pg->db->update('songs', \%updates, {id => $song_id})->rows;
 };
 
@@ -258,6 +270,14 @@ group {
     my $name = $upload->filename;
     $c->import_from_csv(\($upload->asset->slurp));
     $c->render(text => "Import of $name successful.");
+  };
+  
+  post '/api/songs' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
+    my $song_id = $c->add_song($c->req->body_params->to_hash);
+    my $details = $c->song_details($song_id);
+    $c->render(text => "Failed to add song") unless defined $details;
+    $c->render(text => "Added song '$details->{title}'");
   };
   
   del '/api/songs' => sub ($c) {
