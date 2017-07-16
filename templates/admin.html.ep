@@ -1,6 +1,6 @@
-% layout 'main', title => 'Admin', load_js => ['import_songlist.js','search_songlist.js'];
+% layout 'main', title => 'Admin', load_js => ['import_songlist.js','search_songlist.js','clear_songlist.js'];
+<div class="row"><h2>Admin</h2></div>
 <div id="import_songlist">
-  <div class="row"><h2>Admin</h2></div>
   <div class="row">
     <form id="import_songlist_form" class="form-inline" enctype="multipart/form-data" v-on:submit.prevent="import_songlist">
       <div class="form-group">
@@ -12,13 +12,26 @@
     </form>
   </div>
 </div>
-
 <br>
+
+<div id="clear_songlist">
+  <div class="row">
+    <label>Clear Songlist and Queue:</label>
+    <template v-if="confirming_clear_songlist">Are You Sure?
+      <button type="button" class="btn btn-danger" v-on:click.prevent="clear_songlist">Yes, Delete All Songs</button>
+      <button type="button" class="btn btn-success" v-on:click.prevent="unconfirm_clear_songlist">Cancel</button>
+    </template>
+    <button v-else type="button" class="btn btn-danger" v-on:click.prevent="confirm_clear_songlist">Delete All Songs</button>
+    &nbsp;<span><i>{{ result_text }}</i></span>
+  </div>
+</div>
+<br>
+
 <div id="search_songlist">
 <div class="row">
   <form id="search_songlist_form" class="form-inline" v-on:submit.prevent="search_songlist">
     <div class="form-group">
-      <label for="search_songlist_query">Search Songs</label>
+      <label for="search_songlist_query">Search Songs:</label>
       <input id="search_songlist_query" class="form-control" name="query" type="text">
     </div>
     <button type="submit" class="btn btn-primary">Search</button>
@@ -69,7 +82,7 @@
           <button type="submit" class="btn btn-info btn-xs">Save</button>
           <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_song(song.id)">Cancel</button>
         </template>
-        <button v-else type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_song(song.id)">Edit</button>
+        <button v-else type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_song(song.id)">✎</button>
         &nbsp;&nbsp;
         <template v-if="confirming_delete_song == song.id">Sure?
           <button type="button" class="btn btn-danger btn-xs" v-on:click.prevent="delete_song(song.id)">Y</button>

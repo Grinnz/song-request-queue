@@ -76,6 +76,11 @@ helper delete_song => sub ($c, $song_id) {
   return defined $deleted ? $deleted->[0] : undef;
 };
 
+helper clear_songs => sub ($c) {
+  my $query = 'TRUNCATE TABLE "songs" CASCADE';
+  return $c->pg->db->query($query)->rows;
+};
+
 helper queue_details => sub ($c) {
   my $query = <<'EOQ';
 SELECT "songs"."id" AS "song_id", "title", "artist", "album", "track",
@@ -248,6 +253,12 @@ group {
     my $name = $upload->filename;
     $c->import_from_csv(\($upload->asset->slurp));
     $c->render(text => "Import of $name successful.");
+  };
+  
+  del '/api/songs' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
+    my $deleted = $c->clear_songs;
+    $c->render(text => "Cleared songlist");
   };
   
   post '/api/songs/:song_id' => sub ($c) {
