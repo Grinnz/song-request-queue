@@ -1,4 +1,4 @@
-% layout 'main', title => 'Admin', load_js => 'rb_songlist_admin.js';
+% layout 'main', title => 'Admin', load_js => ['import_songlist.js','search_songlist.js'];
 <div id="import_songlist">
   <div class="row"><h2>Admin</h2></div>
   <div class="row">
@@ -11,4 +11,44 @@
       &nbsp;<span><i>{{ result_text }}</i></span>
     </form>
   </div>
+</div>
+
+<br>
+<div id="search_songlist">
+<div class="row">
+  <form id="search_songlist_form" class="form-inline" v-on:submit.prevent="search_songlist">
+    <div class="form-group">
+      <label for="search_songlist_query">Search Songs</label>
+      <input id="search_songlist_query" class="form-control" name="query" type="text">
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+    <button type="button" class="btn btn-danger" v-on:click.prevent="clear_search_songlist">Clear</button>
+  </form>
+</div>
+<br>
+<div class="row">
+  <table class="table table-hover table-bordered table-responsive">
+    <tr>
+      <th>Title</th>
+      <th>Artist</th>
+      <th>Album</th>
+      <th>Track</th>
+      <th>Source</th>
+      <th>Duration</th>
+      <% if (stash 'is_admin') { %><th>Queue</th><% } %>
+    </tr>
+    <template v-for="song in search_songlist_results"><tr>
+      <td>{{ song.title }}</td>
+      <td>{{ song.artist }}</td>
+      <td>{{ song.album }}</td>
+      <td>{{ song.track }}</td>
+      <td>{{ song.source }}</td>
+      <td>{{ song.duration }}</td>
+      <% if (stash 'is_admin') { %><td>
+        <button type="button" v-if="search_for_queue" class="btn btn-success btn-xs" v-on:click.prevent="set_queued_song(search_for_queue, song.id)">Set ({{ search_for_queue }})</button>
+        <button type="button" v-else class="btn btn-success btn-xs" v-on:click.prevent="queue_song(song.id)">Queue</button>
+      </td><% } %>
+    </tr></template>
+  </table>
+</div>
 </div>
