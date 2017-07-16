@@ -78,7 +78,7 @@
       <th>Duration</th>
       <% if (stash 'is_admin') { %><th>Queue</th><% } %>
     </tr>
-    <template v-for="song in search_songlist_results"><tr>
+    <template v-for="song in search_songlist_results"><tr v-bind:id="'song_result_' + song.id">
       <td>{{ song.title }}</td>
       <td>{{ song.artist }}</td>
       <td>{{ song.album }}</td>

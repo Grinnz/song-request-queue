@@ -35,19 +35,26 @@
       <th>Track</th>
       <th>Source</th>
       <th>Duration</th>
-      <% if (stash 'is_admin') { %><th>Queue</th><% } %>
+      <th>Admin</th>
     </tr>
-    <template v-for="song in search_songlist_results"><tr>
+    <template v-for="song in search_songlist_results"><tr v-bind:id="'song_result_' + song.id">
       <td>{{ song.title }}</td>
       <td>{{ song.artist }}</td>
       <td>{{ song.album }}</td>
       <td>{{ song.track }}</td>
       <td>{{ song.source }}</td>
       <td>{{ song.duration }}</td>
-      <% if (stash 'is_admin') { %><td>
-        <button type="button" v-if="search_for_queue" class="btn btn-success btn-xs" v-on:click.prevent="set_queued_song(search_for_queue, song.id)">Set ({{ search_for_queue }})</button>
-        <button type="button" v-else class="btn btn-success btn-xs" v-on:click.prevent="queue_song(song.id)">Queue</button>
-      </td><% } %>
+      <td>
+        <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="edit_song(song.id)">Edit</button>
+        &nbsp;&nbsp;
+        <template v-if="confirming_delete_song == song.id">Sure?
+          <button type="button" class="btn btn-danger btn-xs" v-on:click.prevent="delete_song(song.id)">Y</button>
+          <button type="button" class="btn btn-success btn-xs" v-on:click.prevent="unconfirm_delete_song(song.id)">N</button>
+        </template>
+        <template v-else>
+          <button type="button" class="btn btn-danger btn-xs" v-on:click.prevent="confirm_delete_song(song.id)">✖</button>
+        </template>
+      </td>
     </tr></template>
   </table>
 </div>
