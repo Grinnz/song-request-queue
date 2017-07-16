@@ -128,6 +128,11 @@ helper set_queued_song => sub ($c, $position, $song_id) {
   return $c->pg->db->query($query, $song_id, $position)->rows;
 };
 
+helper set_requested_by => sub ($c, $position, $requested_by) {
+  my $query = 'UPDATE "queue" SET "requested_by"=$1 WHERE "position"=$2';
+  return $c->pg->db->query($query, $requested_by, $position)->rows;
+};
+
 helper clear_queue => sub ($c) {
   my $query = 'DELETE FROM "queue" WHERE true';
   return $c->pg->db->query($query)->rows;
@@ -320,6 +325,15 @@ group {
       $c->set_queued_song($position, $song_id);
       return $c->render(text => "Set queued song $position to '$song_details->{title}'");
     }
+    
+    my $requested_by = $c->param('requested_by');
+    if (defined $requested_by) {
+      my $updated = $c->set_requested_by($position, $requested_by);
+      return $c->render(text => "Unknown queue position $position") unless $updated;
+      return $c->render(text => "Set queue position $position requested by $requested_by");
+    }
+    
+    return $c->render(text => "No changes");
   };
   
   del '/api/queue/:position' => sub ($c) {

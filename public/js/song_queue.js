@@ -1,4 +1,4 @@
-var queue_data = { queue_first: null, queue_remaining: [] };
+var queue_data = { queue_first: null, queue_remaining: [], editing_requestor: null };
 var queue_vm = new Vue({
   el: '#request_queue',
   data: queue_data,
@@ -30,6 +30,23 @@ var queue_vm = new Vue({
     },
     set_search_for_queue: function (position) {
       search_data.search_for_queue = position;
+    },
+    toggle_edit_requestor: function (position) {
+      if (queue_data.editing_requestor == position) {
+        queue_data.editing_requestor = null;
+      } else {
+        queue_data.editing_requestor = position;
+      }
+    },
+    edit_requestor: function (position) {
+      if (position) {
+        var form_data = $('#edit_requestor_form').serialize();
+        queue_vm.toggle_edit_requestor(position);
+        $.post('/api/queue/' + position, form_data)
+          .done(function () {
+            queue_vm.refresh_queue();
+          })
+      }
     }
   }
 });
@@ -37,5 +54,7 @@ var queue_vm = new Vue({
 queue_vm.refresh_queue();
 
 var periodic_refresh = window.setInterval(function () {
-  queue_vm.refresh_queue();
+  if (queue_data.editing_requestor == null) {
+    queue_vm.refresh_queue();
+  }
 }, 5000);

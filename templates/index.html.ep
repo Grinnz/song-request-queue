@@ -13,7 +13,20 @@
   </div>
   <div class="row"><h4 class="text-center">{{ queue_first.artist }}</h4></div>
   <div class="row">
-    <div class="col-md-5 col-md-offset-1 text-center">Requested: <span v-if="queue_first.raw_request">"{{ queue_first.raw_request }}" </span>by {{ queue_first.requested_by }}</div>
+    <div class="col-md-5 col-md-offset-1 text-center">Request: <span v-if="queue_first.raw_request">"{{ queue_first.raw_request }}" </span>
+      <% if (stash 'is_admin') { %>
+        <template v-if="editing_requestor == queue_first.position">
+        <form id="edit_requestor_form" class="form-inline" v-on:submit.prevent="edit_requestor(queue_first.position)">(
+          <input id="edit_requestor_requested_by" class="form-control" name="requested_by" type="text" v-bind:value="queue_first.requested_by">
+          <button type="submit" class="btn btn-info btn-xs">✓</button>
+          <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_requestor(queue_first.position)">✖</button>
+        )</form></template>
+        <template v-else>
+          ({{ queue_first.requested_by }})
+          <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_requestor(queue_first.position)">✎</button>
+        </template>
+      <% } else { %>({{ queue_first.requested_by }})<% } %>
+    </div>
     <div class="col-md-5 text-center">Duration: {{ queue_first.duration }}</div>
     <% if (stash 'is_admin') { %>
       <div class="col-md-1">
@@ -24,6 +37,8 @@
   <br>
 </div>
 <div class="row">
+  <% if (stash 'is_admin') { %>
+  <% } %>
   <table class="table table-hover table-bordered table-responsive">
     <tr>
       <th>#</th>
@@ -34,13 +49,26 @@
       <% if (stash 'is_admin') { %><th>Move</th><% } %>
     </tr>
     <template v-for="request in queue_remaining"><tr>
-      <td>{{ request.position }}</td>
-      <td><% if (stash 'is_admin') { %>
+      <td>{{ request.position }}<% if (stash 'is_admin') { %>&nbsp;&nbsp;
         <button type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(request.position)">Set</button>
-      <% } %>{{ request.title }}</td>
+      <% } %></td>
+      <td>{{ request.title }}</td>
       <td>{{ request.artist }}</td>
       <td>{{ request.duration }}</td>
-      <td><span v-if="request.raw_request">"{{ request.raw_request }}" </span>by {{ request.requested_by }}</td>
+      <td><span v-if="request.raw_request">"{{ request.raw_request }}" </span>
+        <% if (stash 'is_admin') { %>
+          <template v-if="editing_requestor == request.position">
+          <form id="edit_requestor_form" class="form-inline" v-on:submit.prevent="edit_requestor(request.position)">(
+            <input id="edit_requestor_requested_by" class="form-control" name="requested_by" type="text" v-bind:value="request.requested_by">
+            <button type="submit" class="btn btn-info btn-xs">✓</button>
+            <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_requestor(request.position)">✖</button>
+          )</form></template>
+          <template v-else>
+            ({{ request.requested_by }})
+            <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_requestor(request.position)">✎</button>
+          </template>
+        <% } else { %>({{ request.requested_by }})<% } %>
+      </td>
       <% if (stash 'is_admin') { %><td>
         <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'up')">▲</button>
         <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'down')">▼</button>
