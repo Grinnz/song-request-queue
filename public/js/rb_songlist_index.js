@@ -40,7 +40,7 @@ var search_vm = new Vue({
   data: search_data,
   methods: {
     search_songlist: function (event) {
-      $.getJSON('/api/songs/search', { query: $('#search_songlist_query').val() })
+      $.getJSON('/api/songs/search', $('#search_songlist_form').serialize())
         .done(function (results) {
           search_data.search_songlist_results = results;
         })

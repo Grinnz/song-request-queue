@@ -14,7 +14,7 @@ create table if not exists "songs" (
   album text not null default '',
   track smallint,
   source text not null,
-  duration interval minute to second not null,
+  duration interval hour to second not null,
   unique ("artist","album","title","track")
 );
 create index if not exists "songs_artist_title" on "songs" ("artist","title");

@@ -1,4 +1,4 @@
-% layout 'main';
+% layout 'main', load_js => 'rb_songlist_index.js';
 <div id="request_queue">
 <h2>Request Queue</h2>
 <div v-if="queue_first" style="border: 1px solid #ddd">

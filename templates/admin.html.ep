@@ -1,11 +1,14 @@
-% layout 'main', title => 'Admin';
-<div class="row"><h2>Admin</h2></div>
+% layout 'main', title => 'Admin', load_js => 'rb_songlist_admin.js';
+<div id="import_songlist">
+  <div class="row"><h2>Admin</h2></div>
   <div class="row">
-  <form id="import_songlist_form" class="form-inline" action="/api/songs/import" method="post" enctype="multipart/form-data">
-    <div class="form-group">
-      <label for="import_songlist_file">Import Songlist:</label>
-      <input id="import_songlist_file" class="form-control" name="songlist" type="file">
-    </div>
-    <button type="submit" class="btn btn-default">Submit</button>
-  </form>
+    <form id="import_songlist_form" class="form-inline" enctype="multipart/form-data" v-on:submit.prevent="import_songlist">
+      <div class="form-group">
+        <label for="import_songlist_file">Import Songlist:</label>
+        <input id="import_songlist_file" class="form-control" name="songlist" type="file">
+      </div>
+      <button type="submit" class="btn btn-default">Submit</button>
+      &nbsp;<span><i>{{ result_text }}</i></span>
+    </form>
+  </div>
 </div>
