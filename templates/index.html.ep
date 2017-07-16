@@ -19,11 +19,11 @@
         <form id="edit_requestor_form" class="form-inline" v-on:submit.prevent="edit_requestor(queue_first.position)">(
           <input id="edit_requestor_requested_by" class="form-control" name="requested_by" type="text" v-bind:value="queue_first.requested_by">
           <button type="submit" class="btn btn-info btn-xs">✓</button>
-          <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_requestor(queue_first.position)">✖</button>
+          <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="set_editing_requestor(null)">✖</button>
         )</form></template>
         <template v-else>
           ({{ queue_first.requested_by }})
-          <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_requestor(queue_first.position)">✎</button>
+          <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="set_editing_requestor(queue_first.position)">✎</button>
         </template>
       <% } else { %>({{ queue_first.requested_by }})<% } %>
     </div>
@@ -61,11 +61,11 @@
           <form id="edit_requestor_form" class="form-inline" v-on:submit.prevent="edit_requestor(request.position)">(
             <input id="edit_requestor_requested_by" class="form-control" name="requested_by" type="text" v-bind:value="request.requested_by">
             <button type="submit" class="btn btn-info btn-xs">✓</button>
-            <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_requestor(request.position)">✖</button>
+            <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="set_editing_requestor(null)">✖</button>
           )</form></template>
           <template v-else>
             ({{ request.requested_by }})
-            <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_requestor(request.position)">✎</button>
+            <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="set_editing_requestor(request.position)">✎</button>
           </template>
         <% } else { %>({{ request.requested_by }})<% } %>
       </td>
@@ -86,7 +86,7 @@
     <div class="form-group">
       <label for="search_songlist_query">
         Search Songs<span v-if="search_for_queue"> for Queue Position {{ search_for_queue }}
-        <button type="button" class="btn btn-primary btn-xs" v-on:click.prevent="clear_search_for_queue">Unset</button></span>:
+        <button type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(null)">Unset</button></span>:
       </label>
       <input id="search_songlist_query" class="form-control" name="query" type="text">
     </div>

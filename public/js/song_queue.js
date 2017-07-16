@@ -6,13 +6,15 @@ var queue_vm = new Vue({
     refresh_queue: function (event) {
       $.getJSON('/api/queue')
         .done(function (entries) {
+          queue_vm.set_editing_requestor(null);
           queue_data.queue_first = entries.shift();
           queue_data.queue_remaining = entries;
         })
     },
     unqueue_song: function (position) {
       if (position) {
-        search_vm.clear_search_for_queue();
+        queue_vm.set_editing_requestor(null);
+        search_vm.set_search_for_queue(null);
         $.ajax({ url: '/api/queue/' + position, method: 'DELETE' })
           .done(function () {
             queue_vm.refresh_queue();
@@ -21,7 +23,8 @@ var queue_vm = new Vue({
     },
     reorder_queue: function (position, direction) {
       if (position) {
-        search_vm.clear_search_for_queue();
+        queue_vm.set_editing_requestor(null);
+        search_vm.set_search_for_queue(null);
         $.post('/api/queue/' + position, { reorder: direction })
           .done(function () {
             queue_vm.refresh_queue();
@@ -29,19 +32,15 @@ var queue_vm = new Vue({
       }
     },
     set_search_for_queue: function (position) {
-      search_data.search_for_queue = position;
+      search_vm.set_search_for_queue(position);
     },
-    toggle_edit_requestor: function (position) {
-      if (queue_data.editing_requestor == position) {
-        queue_data.editing_requestor = null;
-      } else {
-        queue_data.editing_requestor = position;
-      }
+    set_editing_requestor: function (position) {
+      queue_data.editing_requestor = position;
     },
     edit_requestor: function (position) {
       if (position) {
         var form_data = $('#edit_requestor_form').serialize();
-        queue_vm.toggle_edit_requestor(position);
+        queue_vm.set_editing_requestor(null);
         $.post('/api/queue/' + position, form_data)
           .done(function () {
             queue_vm.refresh_queue();

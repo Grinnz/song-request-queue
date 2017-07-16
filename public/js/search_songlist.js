@@ -23,12 +23,12 @@ var search_vm = new Vue({
           queue_vm.refresh_queue();
         })
     },
-    clear_search_for_queue: function () {
-      search_data.search_for_queue = null;
+    set_search_for_queue: function (position) {
+      search_data.search_for_queue = position;
     },
     set_queued_song: function (position, song_id) {
       if (position) {
-        search_vm.clear_search_for_queue();
+        search_vm.set_search_for_queue(null);
         $.post('/api/queue/' + position, { song_id: song_id })
           .done(function () {
             queue_vm.refresh_queue();
@@ -50,12 +50,8 @@ var search_vm = new Vue({
           })
       }
     },
-    toggle_edit_song: function (song_id) {
-      if (search_data.editing_song == song_id) {
-        search_data.editing_song = null;
-      } else {
-        search_data.editing_song = song_id;
-      }
+    set_editing_song: function (song_id) {
+      search_data.editing_song = song_id;
     },
     edit_song: function (event) {
       if (search_data.editing_song) {
