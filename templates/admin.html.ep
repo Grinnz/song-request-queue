@@ -79,11 +79,11 @@
       </td>
       <td>
         <template v-if="editing_song == song.id">
-          <button type="submit" class="btn btn-info btn-xs">Save</button>
-          <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_song(song.id)">Cancel</button>
+          <button type="submit" class="btn btn-info btn-xs">✓</button>
+          <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_song(song.id)">✖</button>
         </template>
         <button v-else type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_song(song.id)">✎</button>
-        &nbsp;&nbsp;
+        &nbsp;
         <template v-if="confirming_delete_song == song.id">Sure?
           <button type="button" class="btn btn-danger btn-xs" v-on:click.prevent="delete_song(song.id)">Y</button>
           <button type="button" class="btn btn-success btn-xs" v-on:click.prevent="unconfirm_delete_song(song.id)">N</button>

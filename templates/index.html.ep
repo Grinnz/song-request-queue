@@ -72,7 +72,7 @@
       <% if (stash 'is_admin') { %><td>
         <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'up')">▲</button>
         <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'down')">▼</button>
-        &nbsp;&nbsp;
+        &nbsp;
         <button type="button" class="btn btn-danger btn-xs" v-on:click.prevent="unqueue_song(request.position)">✖</button>
       </td><% } %>
     </tr></template>
