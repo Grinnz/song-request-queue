@@ -27,6 +27,7 @@
 </div>
 <br>
 <div class="row">
+  <form id="edit_song_form" v-on:submit.prevent="edit_song">
   <table class="table table-hover table-bordered table-responsive">
     <tr>
       <th>Title</th>
@@ -37,25 +38,47 @@
       <th>Duration</th>
       <th>Admin</th>
     </tr>
-    <template v-for="song in search_songlist_results"><tr v-bind:id="'song_result_' + song.id">
-      <td>{{ song.title }}</td>
-      <td>{{ song.artist }}</td>
-      <td>{{ song.album }}</td>
-      <td>{{ song.track }}</td>
-      <td>{{ song.source }}</td>
-      <td>{{ song.duration }}</td>
+    <template v-for="song in search_songlist_results">
+    <tr v-bind:id="'song_result_' + song.id">
       <td>
-        <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="edit_song(song.id)">Edit</button>
+        <input v-if="editing_song == song.id" id="edit_song_title" class="form-control" name="title" v-bind:value="song.title">
+        <span v-else>{{ song.title }}</span>
+      </td>
+      <td>
+        <input v-if="editing_song == song.id" id="edit_song_artist" class="form-control" name="artist" v-bind:value="song.artist">
+        <span v-else>{{ song.artist }}</span>
+      </td>
+      <td>
+        <input v-if="editing_song == song.id" id="edit_song_album" class="form-control" name="album" v-bind:value="song.album">
+        <span v-else>{{ song.album }}</span>
+      </td>
+      <td>
+        <input v-if="editing_song == song.id" id="edit_song_track" class="form-control" name="track" v-bind:value="song.track">
+        <span v-else>{{ song.track }}</span>
+      </td>
+      <td>
+        <input v-if="editing_song == song.id" id="edit_song_source" class="form-control" name="source" v-bind:value="song.source">
+        <span v-else>{{ song.source }}</span>
+      </td>
+      <td>
+        <input v-if="editing_song == song.id" id="edit_song_duration" class="form-control" name="duration" v-bind:value="song.duration">
+        <span v-else>{{ song.duration }}</span>
+      </td>
+      <td>
+        <template v-if="editing_song == song.id">
+          <button type="submit" class="btn btn-info btn-xs">Save</button>
+          <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_song(song.id)">Cancel</button>
+        </template>
+        <button v-else type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_song(song.id)">Edit</button>
         &nbsp;&nbsp;
         <template v-if="confirming_delete_song == song.id">Sure?
           <button type="button" class="btn btn-danger btn-xs" v-on:click.prevent="delete_song(song.id)">Y</button>
           <button type="button" class="btn btn-success btn-xs" v-on:click.prevent="unconfirm_delete_song(song.id)">N</button>
         </template>
-        <template v-else>
-          <button type="button" class="btn btn-danger btn-xs" v-on:click.prevent="confirm_delete_song(song.id)">✖</button>
-        </template>
+        <button v-else type="button" class="btn btn-danger btn-xs" v-on:click.prevent="confirm_delete_song(song.id)">✖</button>
       </td>
     </tr></template>
   </table>
+  </form>
 </div>
 </div>

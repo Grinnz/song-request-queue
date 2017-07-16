@@ -1,4 +1,9 @@
-var search_data = { search_songlist_results: [], search_for_queue: null, confirming_delete_song: null };
+var search_data = {
+  search_songlist_results: [],
+  search_for_queue: null,
+  confirming_delete_song: null,
+  editing_song: null
+};
 var search_vm = new Vue({
   el: '#search_songlist',
   data: search_data,
@@ -40,6 +45,24 @@ var search_vm = new Vue({
       if (song_id) {
         search_vm.unconfirm_delete_song(song_id);
         $.ajax({ url: '/api/songs/' + song_id, method: 'DELETE' })
+          .done(function () {
+            search_vm.search_songlist();
+          })
+      }
+    },
+    toggle_edit_song: function (song_id) {
+      if (search_data.editing_song == song_id) {
+        search_data.editing_song = null;
+      } else {
+        search_data.editing_song = song_id;
+      }
+    },
+    edit_song: function (event) {
+      if (search_data.editing_song) {
+        var song_id = search_data.editing_song;
+        var form_data = $('#edit_song_form').serialize();
+        search_data.editing_song = null;
+        $.post('/api/songs/' + song_id, form_data)
           .done(function () {
             search_vm.search_songlist();
           })

@@ -63,6 +63,13 @@ EOQ
   return 1;
 };
 
+helper update_song => sub ($c, $song_id, $details) {
+  my %updates;
+  $updates{$_} = $details->{$_} for grep { exists $details->{$_} }
+    qw(title artist album track source duration);
+  return $c->pg->db->update('songs', \%updates, {id => $song_id})->rows;
+};
+
 helper delete_song => sub ($c, $song_id) {
   my $query = 'DELETE FROM "songs" WHERE "id"=$1 RETURNING "title"';
   my $deleted = $c->pg->db->query($query, $song_id)->arrays->first;
@@ -241,6 +248,15 @@ group {
     my $name = $upload->filename;
     $c->import_from_csv(\($upload->asset->slurp));
     $c->render(text => "Import of $name successful.");
+  };
+  
+  post '/api/songs/:song_id' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
+    my $song_id = $c->param('song_id');
+    my $updated = $c->update_song($song_id, $c->req->body_params->to_hash);
+    my $details = $c->song_details($song_id);
+    $c->render(text => "Invalid song ID $song_id") unless defined $details;
+    $c->render(text => "Updated song $song_id '$details->{title}'");
   };
   
   del '/api/songs/:song_id' => sub ($c) {
