@@ -83,7 +83,7 @@
           <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="toggle_edit_song(song.id)">✖</button>
         </template>
         <template v-else>
-          <template v-if="confirming_delete_song == song.id">Sure?
+          <template v-if="confirming_delete_song == song.id">Delete?
             <button type="button" class="btn btn-danger btn-xs" v-on:click.prevent="delete_song(song.id)">Y</button>
             <button type="button" class="btn btn-success btn-xs" v-on:click.prevent="unconfirm_delete_song(song.id)">N</button>
           </template>
