@@ -1,4 +1,14 @@
 -- 1 up
+create text search dictionary "english_stem_nostop" (
+  template = snowball,
+  language = english,
+  stopwords = empty
+);
+
+create text search configuration "english_nostop" (copy = english);
+alter text search configuration "english_nostop"
+  alter mapping replace "english_stem" with "english_stem_nostop";
+
 create table if not exists "users" (
   id serial primary key,
   username text not null unique,
@@ -20,7 +30,7 @@ create table if not exists "songs" (
 create index if not exists "songs_artist_title" on "songs" ("artist","title");
 create index if not exists "songs_title" on "songs" ("title");
 create index if not exists "songs_source" on "songs" ("source");
-create index if not exists "songs_songtext" on "songs" using gin (to_tsvector('english', title || ' ' || artist || ' ' || album));
+create index if not exists "songs_songtext" on "songs" using gin (to_tsvector('english_nostop', title || ' ' || artist || ' ' || album));
 
 create table if not exists "queue" (
   id serial primary key,
@@ -36,3 +46,5 @@ create table if not exists "queue" (
 drop table if exists "queue";
 drop table if exists "songs";
 drop table if exists "users";
+drop text search configuration if exists "english_nostop";
+drop text search dictionary if exists "english_stem_nostop";
