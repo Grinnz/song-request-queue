@@ -12,9 +12,9 @@ alter text search configuration "english_nostop"
 create or replace function "songs_update_songtext"() returns trigger as $$
 begin
   "new"."songtext" :=
-    setweight(to_tsvector('english_nostop', "title"), 'A') ||
-    setweight(to_tsvector('english_nostop', "artist"), 'B') ||
-    setweight(to_tsvector('english_nostop', "album"), 'C');
+    setweight(to_tsvector('english_nostop', "new"."title"), 'A') ||
+    setweight(to_tsvector('english_nostop', "new"."artist"), 'B') ||
+    setweight(to_tsvector('english_nostop', "new"."album"), 'C');
   return new;
 end
 $$ language plpgsql;
