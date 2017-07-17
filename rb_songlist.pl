@@ -49,6 +49,26 @@ helper valid_bot_key => sub ($c, $bot_key) {
   return 0;
 };
 
+helper search_songs => sub ($c, $search) {
+  my $and_search = join ' & ', map { "'$_':*" } split ' ', $search;
+  my $or_search = join ' | ', map { "'$_':*" } split ' ', $search;
+  my $query = <<'EOQ';
+SELECT *,
+ts_rank_cd(songtext, to_tsquery('english_nostop', $1)) AS "rank"
+FROM "songs"
+WHERE songtext @@ to_tsquery('english_nostop', $1)
+ORDER BY "rank" DESC, "artist", "album", "track"
+EOQ
+  my $results = $c->pg->db->query($query, $and_search)->hashes;
+  return $results if @$results;
+  return $c->pg->db->query($query, $or_search)->hashes;
+};
+
+helper song_details => sub ($c, $song_id) {
+  my $query = 'SELECT * FROM "songs" WHERE "id"=$1';
+  return $c->pg->db->query($query, $song_id)->hashes->first;
+};
+
 helper import_from_csv => sub ($c, $file) {
   my $songs = csv(in => $file, encoding => 'UTF-8', detect_bom => 1)
     or die Text::CSV->error_diag;
@@ -148,26 +168,6 @@ helper set_requested_by => sub ($c, $position, $requested_by) {
 helper clear_queue => sub ($c) {
   my $query = 'DELETE FROM "queue" WHERE true';
   return $c->pg->db->query($query)->rows;
-};
-
-helper search_songs => sub ($c, $search) {
-  my $and_search = join ' & ', map { "'$_':*" } split ' ', $search;
-  my $or_search = join ' | ', map { "'$_':*" } split ' ', $search;
-  my $query = <<'EOQ';
-SELECT *,
-ts_rank_cd(songtext, to_tsquery('english_nostop', $1)) AS "rank"
-FROM "songs"
-WHERE songtext @@ to_tsquery('english_nostop', $1)
-ORDER BY "rank" DESC, "artist", "album", "track"
-EOQ
-  my $results = $c->pg->db->query($query, $and_search)->hashes;
-  return $results if @$results;
-  return $c->pg->db->query($query, $or_search)->hashes;
-};
-
-helper song_details => sub ($c, $song_id) {
-  my $query = 'SELECT * FROM "songs" WHERE "id"=$1';
-  return $c->pg->db->query($query, $song_id)->hashes->first;
 };
 
 # Pages
