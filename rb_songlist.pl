@@ -153,8 +153,11 @@ helper clear_queue => sub ($c) {
 helper search_songs => sub ($c, $search) {
   $search = join ' & ', map { "'$_':*" } split ' ', $search;
   my $query = <<'EOQ';
-SELECT * FROM "songs"
+SELECT *,
+ts_rank_cd(to_tsvector('english_nostop', title || ' ' || artist || ' ' || album), to_tsquery('english_nostop', $1)) AS "rank"
+FROM "songs"
 WHERE to_tsvector('english_nostop', title || ' ' || artist || ' ' || album) @@ to_tsquery('english_nostop', $1)
+ORDER BY "rank" DESC
 EOQ
   return $c->pg->db->query($query, $search)->hashes;
 };
