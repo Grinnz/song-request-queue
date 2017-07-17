@@ -9,6 +9,16 @@ create text search configuration "english_nostop" (copy = english);
 alter text search configuration "english_nostop"
   alter mapping replace "english_stem" with "english_stem_nostop";
 
+create or replace function "songs_update_songtext"() returns trigger as $$
+begin
+  "new"."songtext" :=
+    setweight(to_tsvector('english_nostop', "title"), 'A') ||
+    setweight(to_tsvector('english_nostop', "artist"), 'B') ||
+    setweight(to_tsvector('english_nostop', "album"), 'C');
+  return new;
+end
+$$ language plpgsql;
+
 create table if not exists "users" (
   id serial primary key,
   username text not null unique,
@@ -25,12 +35,16 @@ create table if not exists "songs" (
   track smallint,
   source text not null,
   duration interval hour to second not null,
+  songtext tsvector not null,
   unique ("artist","album","title","track")
 );
 create index if not exists "songs_artist_title" on "songs" ("artist","title");
 create index if not exists "songs_title" on "songs" ("title");
 create index if not exists "songs_source" on "songs" ("source");
-create index if not exists "songs_songtext" on "songs" using gin (to_tsvector('english_nostop', title || ' ' || artist || ' ' || album));
+create index if not exists "songs_songtext" on "songs" using gin ("songtext");
+
+create trigger "songs_songtext_trigger" before insert or update on "songs"
+  for each row execute procedure songs_update_songtext();
 
 create table if not exists "queue" (
   id serial primary key,
@@ -46,5 +60,6 @@ create table if not exists "queue" (
 drop table if exists "queue";
 drop table if exists "songs";
 drop table if exists "users";
+drop function if exists "songs_update_songtext";
 drop text search configuration if exists "english_nostop";
 drop text search dictionary if exists "english_stem_nostop";
