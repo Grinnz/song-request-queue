@@ -151,7 +151,8 @@ helper clear_queue => sub ($c) {
 };
 
 helper search_songs => sub ($c, $search) {
-  $search = join ' & ', map { "'$_':*" } split ' ', $search;
+  my $and_search = join ' & ', map { "'$_':*" } split ' ', $search;
+  my $or_search = join ' | ', map { "'$_':*" } split ' ', $search;
   my $query = <<'EOQ';
 SELECT *,
 ts_rank_cd(songtext, to_tsquery('english_nostop', $1)) AS "rank"
@@ -159,7 +160,9 @@ FROM "songs"
 WHERE songtext @@ to_tsquery('english_nostop', $1)
 ORDER BY "rank" DESC, "artist", "album", "track"
 EOQ
-  return $c->pg->db->query($query, $search)->hashes;
+  my $results = $c->pg->db->query($query, $and_search)->hashes;
+  return $results if @$results;
+  return $c->pg->db->query($query, $or_search)->hashes;
 };
 
 helper song_details => sub ($c, $song_id) {
