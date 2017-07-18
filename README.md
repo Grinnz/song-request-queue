@@ -2,8 +2,8 @@
 
 ## Requirements
 
-*PostgreSQL 9.6+
-*Perl 5.20+
+* PostgreSQL 9.6+
+* Perl 5.20+
 
 ## Setup
 
@@ -67,10 +67,12 @@ The binary field `password_reset_code` can be set to a one-time-use code to allo
 
 Songs can be manually added on the Admin page, but can also be imported in CSV format.
 The CSV format is expected to be that exported by the C3 Tools Setlist Manager, or in general to have headers and the following columns (order not important):
-
-```
-Song Title, Artist, Album Name, Track #, Source, Duration
-```
+* Song Title
+* Artist
+* Album Name
+* Track #
+* Source
+* Duration
 
 ## Copyright and License
 
