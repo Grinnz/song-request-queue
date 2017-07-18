@@ -9,6 +9,7 @@ use Digest::MD5 'md5';
 use List::Util ();
 use Mojo::Pg;
 use Text::CSV 'csv';
+use Text::Unidecode;
 use Time::Seconds;
 use experimental 'signatures';
 
@@ -77,10 +78,12 @@ helper import_from_csv => sub ($c, $file) {
   foreach my $song (@$songs) {
     $song->{duration} = $c->normalize_duration($song->{duration});
     my $query = <<'EOQ';
-INSERT INTO "songs" ("title","artist","album","track","source","duration")
-VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING
+INSERT INTO "songs" ("title","artist","album","track","source","duration",
+"title_ascii","artist_ascii","album_ascii")
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO NOTHING
 EOQ
-    my @params = @$song{'song title','artist','album name','track #','source','duration'};
+    my @params = (@$song{'song title','artist','album name','track #','source','duration'},
+      map { scalar unidecode $_ } @$song{'song title','artist','album name'});
     $db->query($query, @params);
   }
   $tx->commit;
@@ -90,6 +93,7 @@ EOQ
 helper add_song => sub ($c, $details) {
   my %properties;
   $properties{$_} = $details->{$_} for qw(title artist album track source duration);
+  $properties{"${_}_ascii"} = unidecode $details->{$_} for qw(title artist album);
   my $inserted = $c->pg->db->insert('songs', \%properties, {returning => 'id'})->arrays->first;
   return $inserted->[0];
 };
@@ -98,6 +102,8 @@ helper update_song => sub ($c, $song_id, $details) {
   my %updates;
   $updates{$_} = $details->{$_} for grep { exists $details->{$_} }
     qw(title artist album track source duration);
+  $updates{"${_}_ascii"} = unidecode $details->{$_} for grep { exists $details->{$_} }
+    qw(title artist album);
   $updates{duration} = $c->normalize_duration($updates{duration});
   return $c->pg->db->update('songs', \%updates, {id => $song_id})->rows;
 };

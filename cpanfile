@@ -8,4 +8,5 @@ requires 'Mojo::JSON::MaybeXS';
 requires 'Mojo::Pg';
 requires 'Text::CSV';
 requires 'Text::CSV_XS';
+requires 'Text::Unidecode';
 requires 'Time::Seconds';
