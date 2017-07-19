@@ -409,6 +409,8 @@ group {
   
   post '/api/users' => sub ($c) {
     my $username = $c->param('username');
+    return $c->render(json => {success => false, error => 'No username specified'})
+      unless defined $username and length $username;
     my $is_mod = $c->param('is_mod') ? 1 : 0;
     my $created_user = $c->add_user($username, $is_mod);
     return $c->render(json => {success => false}) unless defined $created_user;
