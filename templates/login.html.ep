@@ -1,6 +1,7 @@
-% layout 'main', title => 'Login';
+% layout 'main', title => 'Login', load_js => ['login.js'];
+<div id="login">
 <div class="row"><h2>Login</h2></div>
-<form id="login_form" class="form-horizontal" action="/login" method="post">
+<form id="login_form" class="form-horizontal" v-on:submit.prevent="do_login">
   <div class="form-group">
     <label for="login_username" class="col-sm-2 control-label">Username</label>
     <div class="col-sm-4">
@@ -17,5 +18,7 @@
     <div class="col-sm-offset-2 col-sm-4">
       <button type="submit" class="btn btn-default">Submit</button>
     </div>
+    &nbsp;<span><i>{{ result_text }}</i></span>
   </div>
 </form>
+</div>

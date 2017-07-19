@@ -209,24 +209,7 @@ get '/admin' => sub ($c) {
 };
 
 get '/login';
-post '/login' => sub ($c) {
-  my $username = $c->param('username');
-  my $password = $c->param('password');
-  return $c->render(text => 'Missing parameters')
-    unless defined $username and defined $password;
-  
-  my $query = <<'EOQ';
-SELECT "id", "username", "password_hash" FROM "users" WHERE "username"=$1
-EOQ
-  my $user = $c->pg->db->query($query, $username)->hashes->first;
-  return $c->render(text => 'Login failed') unless defined $user
-    and bcrypt($password, $user->{password_hash}) eq $user->{password_hash};
-  
-  $c->pg->db->query('UPDATE "users" SET "last_login_at"=now() WHERE "id"=$1', $user->{id});
-  
-  $c->session->{user_id} = $user->{id};
-  $c->redirect_to('/');
-};
+
 any '/logout' => sub ($c) {
   delete $c->session->{user_id};
   $c->session(expires => 1);
@@ -260,6 +243,25 @@ EOQ
 };
 
 # Public API
+
+post '/api/login' => sub ($c) {
+  my $username = $c->param('username');
+  my $password = $c->param('password');
+  return $c->render(json => {logged_in => Mojo::JSON::false, error => 'Missing parameters'})
+    unless defined $username and defined $password;
+  
+  my $query = <<'EOQ';
+SELECT "id", "username", "password_hash" FROM "users" WHERE "username"=$1
+EOQ
+  my $user = $c->pg->db->query($query, $username)->hashes->first;
+  return $c->render(json => {logged_in => Mojo::JSON::false, error => 'Login failed'})
+    unless defined $user and bcrypt($password, $user->{password_hash}) eq $user->{password_hash};
+  
+  $c->pg->db->query('UPDATE "users" SET "last_login_at"=now() WHERE "id"=$1', $user->{id});
+  
+  $c->session->{user_id} = $user->{id};
+  $c->render(json => {logged_in => Mojo::JSON::true});
+};
 
 get '/api/songs/search' => sub ($c) {
   my $search = $c->param('query') // '';
