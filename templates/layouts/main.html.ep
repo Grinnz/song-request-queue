@@ -10,15 +10,23 @@
 <body>
   <div class="container">
   <div class="row">
-  <div class="col-sm-6"><h1>Rock Band Songlist</h1></div>
+  <div class="col-sm-5"><h1>Rock Band Songlist</h1></div>
 % if (defined stash 'user_id') {
   <div class="col-sm-2">Logged in as <%== stash 'username' %></div>
+% } else {
+  <div class="col-sm-2"></div>
+% }
   <div class="col-sm-1"><% if (current_route 'index') { %><b>Home</b><% } else { %><a href="/">Home</a><% } %></div>
+  <div class="col-sm-1"><% if (current_route 'browse') { %><b>Browse</b><% } else { %><a href="/browse">Browse</a><% } %></div>
+% if (stash 'is_admin') {
   <div class="col-sm-1"><% if (current_route 'admin') { %><b>Admin</b><% } else { %><a href="/admin">Admin</a><% } %></div>
+% } else {
+  <div class="col-sm-1"></div>
+% }
+% if (defined stash 'user_id') {
   <div class="col-sm-1"><a href="/logout">Logout</a></div>
 % } else {
-  <div class="col-sm-4"></div>
-  <div class="col-sm-1"><% if (current_route 'index') { %><a href="/login">Login</a><% } else { %><a href="/">Home</a><% } %></div>
+  <div class="col-sm-1"><% if (current_route 'login') { %><b>Login</b><% } else { %><a href="/login">Login</a><% } %></div>
 % }
   <div class="col-sm-1"><a href="https://github.com/Grinnz/rb-songlist">Source</a></div>
   </div>
