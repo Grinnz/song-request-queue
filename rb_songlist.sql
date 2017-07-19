@@ -24,7 +24,9 @@ create table if not exists "users" (
   username text not null unique,
   password_hash text not null default '',
   last_login_at timestamp with time zone,
-  password_reset_code bytea
+  password_reset_code bytea,
+  is_admin bool not null default false,
+  is_mod bool not null default false
 );
 
 create table if not exists "songs" (

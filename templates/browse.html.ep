@@ -1,6 +1,5 @@
 % layout 'main', title => 'Browse Song List';
 <div id="browse_songlist">
-<div class="row"><h2>Browse Song List</h2></div>
 <div class="row">
   <table class="table table-hover table-bordered table-responsive">
     <tr>

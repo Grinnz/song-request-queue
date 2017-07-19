@@ -7,14 +7,14 @@
     <div class="col-md-10 col-md-offset-1 text-center">
       <h3>{{ queue_first.title || queue_first.raw_request }}</h3>
     </div>
-    <% if (stash 'is_admin') { %><div class="col-md-1">
+    <% if (stash 'is_mod') { %><div class="col-md-1">
       <button type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(queue_first.position)">Set</button>
     </div><% } %>
   </div>
   <div class="row"><h4 class="text-center">{{ queue_first.artist }}</h4></div>
   <div class="row">
     <div class="col-md-5 col-md-offset-1 text-center">Request: <span v-if="queue_first.raw_request">"{{ queue_first.raw_request }}" </span>
-      <% if (stash 'is_admin') { %>
+      <% if (stash 'is_mod') { %>
         <template v-if="editing_requestor == queue_first.position">
         <form id="edit_requestor_form" class="form-inline" v-on:submit.prevent="edit_requestor(queue_first.position)">(
           <input id="edit_requestor_requested_by" class="form-control" name="requested_by" type="text" v-bind:value="queue_first.requested_by">
@@ -28,7 +28,7 @@
       <% } else { %>({{ queue_first.requested_by }})<% } %>
     </div>
     <div class="col-md-5 text-center">Duration: {{ queue_first.duration }}</div>
-    <% if (stash 'is_admin') { %>
+    <% if (stash 'is_mod') { %>
       <div class="col-md-1">
         <button type="button" class="btn btn-danger btn-xs" v-on:click.prevent="unqueue_song(queue_first.position)">Done</button>
       </div>
@@ -37,8 +37,6 @@
   <br>
 </div>
 <div class="row">
-  <% if (stash 'is_admin') { %>
-  <% } %>
   <table class="table table-hover table-bordered table-responsive">
     <tr>
       <th>#</th>
@@ -46,17 +44,17 @@
       <th>Artist</th>
       <th>Duration</th>
       <th>Request</th>
-      <% if (stash 'is_admin') { %><th>Move</th><% } %>
+      <% if (stash 'is_mod') { %><th>Move</th><% } %>
     </tr>
     <template v-for="request in queue_remaining"><tr>
-      <td>{{ request.position }}<% if (stash 'is_admin') { %>&nbsp;&nbsp;
+      <td>{{ request.position }}<% if (stash 'is_mod') { %>&nbsp;&nbsp;
         <button type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(request.position)">Set</button>
       <% } %></td>
       <td>{{ request.title }}</td>
       <td>{{ request.artist }}</td>
       <td>{{ request.duration }}</td>
       <td><span v-if="request.raw_request">"{{ request.raw_request }}" </span>
-        <% if (stash 'is_admin') { %>
+        <% if (stash 'is_mod') { %>
           <template v-if="editing_requestor == request.position">
           <form id="edit_requestor_form" class="form-inline" v-on:submit.prevent="edit_requestor(request.position)">(
             <input id="edit_requestor_requested_by" class="form-control" name="requested_by" type="text" v-bind:value="request.requested_by">
@@ -69,7 +67,7 @@
           </template>
         <% } else { %>({{ request.requested_by }})<% } %>
       </td>
-      <% if (stash 'is_admin') { %><td>
+      <% if (stash 'is_mod') { %><td>
         <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'up')">▲</button>
         <button type="button" class="btn btn-info btn-xs" v-on:click.prevent="reorder_queue(request.position,'down')">▼</button>
         &nbsp;
@@ -104,7 +102,7 @@
       <th>Track</th>
       <th>Source</th>
       <th>Duration</th>
-      <% if (stash 'is_admin') { %><th>Queue</th><% } %>
+      <% if (stash 'is_mod') { %><th>Queue</th><% } %>
     </tr>
     <template v-for="song in search_songlist_results"><tr v-bind:id="'song_result_' + song.id">
       <td>{{ song.title }}</td>
@@ -113,7 +111,7 @@
       <td>{{ song.track }}</td>
       <td>{{ song.source }}</td>
       <td>{{ song.duration }}</td>
-      <% if (stash 'is_admin') { %><td>
+      <% if (stash 'is_mod') { %><td>
         <button type="button" v-if="search_for_queue" class="btn btn-success btn-xs" v-on:click.prevent="set_queued_song(search_for_queue, song.id)">Set ({{ search_for_queue }})</button>
         <button type="button" v-else class="btn btn-success btn-xs" v-on:click.prevent="queue_song(song.id)">Queue</button>
       </td><% } %>

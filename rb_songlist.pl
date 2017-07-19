@@ -40,7 +40,7 @@ helper hash_password => sub ($c, $password, $username) {
 };
 
 helper user_details => sub ($c, $user_id) {
-  my $query = 'SELECT true AS "is_admin", "username" FROM "users" WHERE "id"=$1';
+  my $query = 'SELECT "username", "is_admin", "is_mod" FROM "users" WHERE "id"=$1';
   return $c->pg->db->query($query, $user_id)->hashes->first;
 };
 
@@ -188,6 +188,7 @@ under '/' => sub ($c) {
   if (defined $user_id and defined(my $details = $c->user_details($user_id))) {
     $c->stash(user_id => $user_id, username => $details->{username});
     $c->stash(is_admin => 1) if $details->{is_admin};
+    $c->stash(is_mod => 1) if $details->{is_admin} or $details->{is_mod};
   }
   my $bot_key = $c->param('bot_key');
   if (defined $bot_key and $c->valid_bot_key($bot_key)) {
@@ -224,11 +225,10 @@ EOQ
   $c->pg->db->query('UPDATE "users" SET "last_login_at"=now() WHERE "id"=$1', $user->{id});
   
   $c->session->{user_id} = $user->{id};
-  $c->session->{username} = $user->{username};
   $c->redirect_to('/');
 };
 any '/logout' => sub ($c) {
-  delete @{$c->session}{'user_id','username'};
+  delete $c->session->{user_id};
   $c->session(expires => 1);
   $c->redirect_to('/');
 };
@@ -279,52 +279,12 @@ get '/api/queue' => sub ($c) {
   $c->render(json => $queue_details);
 };
 
-# Admin functions
+# Mod functions
 group {
   under '/' => sub ($c) {
-    return 1 if $c->stash('is_admin') or $c->stash('is_bot');
+    return 1 if $c->stash('is_mod') or $c->stash('is_bot');
     $c->render(text => 'Access denied', status => 403);
     return 0;
-  };
-  
-  post '/api/songs/import' => sub ($c) {
-    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
-    my $upload = $c->req->upload('songlist');
-    return $c->render(text => 'No songlist provided.') unless defined $upload;
-    my $name = $upload->filename;
-    $c->import_from_csv(\($upload->asset->slurp));
-    $c->render(text => "Import of $name successful.");
-  };
-  
-  post '/api/songs' => sub ($c) {
-    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
-    my $song_id = $c->add_song($c->req->body_params->to_hash);
-    my $details = $c->song_details($song_id);
-    $c->render(text => "Failed to add song") unless defined $details;
-    $c->render(text => "Added song '$details->{title}'");
-  };
-  
-  del '/api/songs' => sub ($c) {
-    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
-    my $deleted = $c->clear_songs;
-    $c->render(text => "Cleared songlist");
-  };
-  
-  post '/api/songs/:song_id' => sub ($c) {
-    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
-    my $song_id = $c->param('song_id');
-    my $updated = $c->update_song($song_id, $c->req->body_params->to_hash);
-    my $details = $c->song_details($song_id);
-    $c->render(text => "Invalid song ID $song_id") unless defined $details;
-    $c->render(text => "Updated song $song_id '$details->{title}'");
-  };
-  
-  del '/api/songs/:song_id' => sub ($c) {
-    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
-    my $song_id = $c->param('song_id');
-    my $deleted_title = $c->delete_song($song_id);
-    return $c->render(text => "Invalid song ID $song_id") unless defined $deleted_title;
-    $c->render(text => "Deleted song $song_id '$deleted_title'");
   };
   
   any '/api/queue/add' => sub ($c) {
@@ -350,7 +310,7 @@ group {
   };
   
   post '/api/queue/:position' => sub ($c) {
-    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_mod');
     my $position = $c->param('position');
     
     my $reorder = $c->param('reorder');
@@ -381,7 +341,7 @@ group {
   };
   
   del '/api/queue/:position' => sub ($c) {
-    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_mod');
     my $position = $c->param('position');
     my $deleted_id = $c->unqueue_song($position);
     return $c->render(text => "No song in position $position") unless defined $deleted_id;
@@ -390,9 +350,53 @@ group {
   };
   
   del '/api/queue' => sub ($c) {
-    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_admin');
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_mod');
     my $deleted = $c->clear_queue;
     $c->render(text => "Cleared queue (removed $deleted songs)");
+  };
+};
+
+# Admin functions
+group {
+  under '/' => sub ($c) {
+    return 1 if $c->stash('is_admin');
+    $c->render(text => 'Access denied', status => 403);
+    return 0;
+  };
+  
+  post '/api/songs/import' => sub ($c) {
+    my $upload = $c->req->upload('songlist');
+    return $c->render(text => 'No songlist provided.') unless defined $upload;
+    my $name = $upload->filename;
+    $c->import_from_csv(\($upload->asset->slurp));
+    $c->render(text => "Import of $name successful.");
+  };
+  
+  post '/api/songs' => sub ($c) {
+    my $song_id = $c->add_song($c->req->body_params->to_hash);
+    my $details = $c->song_details($song_id);
+    $c->render(text => "Failed to add song") unless defined $details;
+    $c->render(text => "Added song '$details->{title}'");
+  };
+  
+  del '/api/songs' => sub ($c) {
+    my $deleted = $c->clear_songs;
+    $c->render(text => "Cleared songlist");
+  };
+  
+  post '/api/songs/:song_id' => sub ($c) {
+    my $song_id = $c->param('song_id');
+    my $updated = $c->update_song($song_id, $c->req->body_params->to_hash);
+    my $details = $c->song_details($song_id);
+    $c->render(text => "Invalid song ID $song_id") unless defined $details;
+    $c->render(text => "Updated song $song_id '$details->{title}'");
+  };
+  
+  del '/api/songs/:song_id' => sub ($c) {
+    my $song_id = $c->param('song_id');
+    my $deleted_title = $c->delete_song($song_id);
+    return $c->render(text => "Invalid song ID $song_id") unless defined $deleted_title;
+    $c->render(text => "Deleted song $song_id '$deleted_title'");
   };
 };
 
