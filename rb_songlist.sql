@@ -14,7 +14,7 @@ begin
   "new"."songtext" :=
     setweight(to_tsvector('english_nostop', "new"."title" || ' ' || "new"."title_ascii"), 'A') ||
     setweight(to_tsvector('english_nostop', "new"."artist" || ' ' || "new"."artist_ascii"), 'B') ||
-    setweight(to_tsvector('english_nostop', "new"."album" || ' ' || "new"."album_ascii"), 'C');
+    setweight(to_tsvector('english_nostop', "new"."album" || ' ' || "new"."album_ascii"), 'D');
   return new;
 end
 $$ language plpgsql;
