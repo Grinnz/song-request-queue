@@ -1,0 +1,24 @@
+% layout 'main', title => 'Browse Song List';
+<div id="browse_songlist">
+<div class="row"><h2>Browse Song List</h2></div>
+<div class="row">
+  <table class="table table-hover table-bordered table-responsive">
+    <tr>
+      <th>Title</th>
+      <th>Artist</th>
+      <th>Album</th>
+      <th>Track</th>
+      <th>Source</th>
+      <th>Duration</th>
+    </tr>
+    <% for my $song (@$songlist) { %><tr id="<%= "song_result_$song->{id}" %>">
+      <td><%= $song->{title} %></td>
+      <td><%= $song->{artist} %></td>
+      <td><%= $song->{album} %></td>
+      <td><%= $song->{track} %></td>
+      <td><%= $song->{source} %></td>
+      <td><%= $song->{duration} %></td>
+    </tr><% } %>
+  </table>
+</div>
+</div>

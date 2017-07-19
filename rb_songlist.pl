@@ -70,6 +70,11 @@ helper song_details => sub ($c, $song_id) {
   return $c->pg->db->query($query, $song_id)->hashes->first;
 };
 
+helper all_song_details => sub ($c) {
+  my $query = 'SELECT * FROM "songs" ORDER BY "artist", "album", "track", "title"';
+  return $c->pg->db->query($query)->hashes;
+};
+
 helper import_from_csv => sub ($c, $file) {
   my $songs = csv(in => $file, encoding => 'UTF-8', detect_bom => 1)
     or die Text::CSV->error_diag;
@@ -193,6 +198,10 @@ under '/' => sub ($c) {
 
 get '/' => 'index';
 
+get '/browse' => sub ($c) {
+  $c->render(songlist => $c->all_song_details);
+};
+
 get '/admin' => sub ($c) {
   return $c->redirect_to('/login') unless $c->stash('is_admin');
   $c->render;
@@ -211,6 +220,8 @@ EOQ
   my $user = $c->pg->db->query($query, $username)->hashes->first;
   return $c->render(text => 'Login failed') unless defined $user
     and bcrypt($password, $user->{password_hash}) eq $user->{password_hash};
+  
+  $c->pg->db->query('UPDATE "users" SET "last_login_at"=now() WHERE "id"=$1', $user->{id});
   
   $c->session->{user_id} = $user->{id};
   $c->session->{username} = $user->{username};
