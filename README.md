@@ -2,7 +2,7 @@
 
 ## Requirements
 
-* PostgreSQL 9.6+
+* PostgreSQL 9.5+
 * Perl 5.20+
 
 ## Setup
@@ -56,12 +56,14 @@ See the [Mojolicious deployment cookbook](https://metacpan.org/pod/Mojolicious::
 
 ## Users
 
-Users currently must be manually added to the `users` table (created once the webapp has been run and successfully connected to the database).
+Admin users must be manually added to the `users` table (created once the webapp has been run and successfully connected to the database).
 The binary field `password_reset_code` can be set to a one-time-use code to allow the user to set a password on the `/set_password` page.
 
 ```
 > INSERT INTO "users" ("username","password_reset_code") VALUES ('someuser',E'\\xDEADBEEF');
 ```
+
+Admin users can add queue moderators on the `/admin` page. The reset code will be returned and can be used similarly on the `/set_password` page.
 
 ## Song format
 

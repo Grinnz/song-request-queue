@@ -71,7 +71,7 @@ SELECT *,
 ts_rank_cd(songtext, to_tsquery('english_nostop', $1)) AS "rank"
 FROM "songs"
 WHERE songtext @@ to_tsquery('english_nostop', $1)
-ORDER BY "rank" DESC, "artist", "album", "track"
+ORDER BY "rank" DESC, "artist", "album", "track", "title"
 EOQ
   my $results = $c->pg->db->query($query, $and_search)->hashes;
   return $results if @$results;
@@ -98,7 +98,8 @@ helper import_from_csv => sub ($c, $file) {
     my $query = <<'EOQ';
 INSERT INTO "songs" ("title","artist","album","track","source","duration",
 "title_ascii","artist_ascii","album_ascii")
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO NOTHING
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO UPDATE SET
+"source"="excluded"."source", "duration"="excluded"."duration"
 EOQ
     my @params = (@$song{'song title','artist','album name','track #','source','duration'},
       map { scalar unidecode $_ } @$song{'song title','artist','album name'});
