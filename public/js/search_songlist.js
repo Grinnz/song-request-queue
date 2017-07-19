@@ -16,6 +16,7 @@ var search_vm = new Vue({
     },
     clear_search_songlist: function (event) {
       search_data.search_songlist_results = [];
+      $('#search_songlist_query').val('');
     },
     queue_song: function (song_id) {
       $.post('/api/queue/add', { song_id: song_id })
