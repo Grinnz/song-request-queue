@@ -1,19 +1,5 @@
-% layout 'main', title => 'Admin', load_js => ['import_songlist.js','search_songlist.js','clear_songlist.js','add_song.js'];
+% layout 'main', title => 'Admin', load_js => ['import_songlist.js','search_songlist.js','clear_songlist.js','add_song.js','add_mod.js'];
 <div class="row"><h2>Admin</h2></div>
-<div id="import_songlist">
-  <div class="row">
-    <form id="import_songlist_form" class="form-inline" enctype="multipart/form-data" v-on:submit.prevent="import_songlist">
-      <div class="form-group">
-        <label for="import_songlist_file">Import Songlist:</label>
-        <input id="import_songlist_file" class="form-control" name="songlist" type="file">
-      </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
-      &nbsp;<span><i>{{ result_text }}</i></span>
-    </form>
-  </div>
-</div>
-<br>
-
 <div id="add_song">
   <div class="row"><h3>Add Song</h3></div>
   <div class="row">
@@ -51,6 +37,20 @@
 </div>
 <br>
 
+<div id="import_songlist">
+  <div class="row">
+    <form id="import_songlist_form" class="form-inline" enctype="multipart/form-data" v-on:submit.prevent="import_songlist">
+      <div class="form-group">
+        <label for="import_songlist_file">Import Songlist:</label>
+        <input id="import_songlist_file" class="form-control" name="songlist" type="file">
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+      &nbsp;<span><i>{{ result_text }}</i></span>
+    </form>
+  </div>
+</div>
+<br>
+
 <div id="clear_songlist">
   <div class="row">
     <label>Clear Songlist and Queue:</label>
@@ -60,6 +60,21 @@
     </template>
     <button v-else type="button" class="btn btn-danger" v-on:click.prevent="confirm_clear_songlist">Delete All Songs</button>
     &nbsp;<span><i>{{ result_text }}</i></span>
+  </div>
+</div>
+<br>
+
+<div id="add_mod">
+  <div class="row">
+    <form id="add_mod_form" class="form-inline" v-on:submit.prevent="add_mod">
+      <div class="form-group">
+        <label for="add_mod_username">Add Queue Moderator:</label>
+        <input id="add_mod_username" class="form-control" name="username" type="text">
+      </div>
+      <input id="add_mod_is_mod" name="is_mod" type="hidden" value="1">
+      <button type="submit" class="btn btn-primary">Submit</button>
+      &nbsp;<span><i>{{ result_text }}</i></span>
+    </form>
   </div>
 </div>
 <br>

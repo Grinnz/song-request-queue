@@ -5,12 +5,13 @@ use warnings;
 use Mojo::JSON::MaybeXS;
 use Mojolicious::Lite;
 use Crypt::Eksblowfish::Bcrypt qw(en_base64 bcrypt);
-use Digest::MD5 'md5';
+use Digest::MD5 qw(md5 md5_hex);
 use List::Util ();
 use Mojo::JSON qw(true false);
 use Mojo::Pg;
 use Text::CSV 'csv';
 use Text::Unidecode;
+use Time::HiRes;
 use Time::Seconds;
 use experimental 'signatures';
 
@@ -35,7 +36,7 @@ helper normalize_duration => sub ($c, $duration) {
 
 helper hash_password => sub ($c, $password, $username) {
   my $remote_address = $c->tx->remote_address // '127.0.0.1';
-  my $salt = en_base64 md5 join '$', $username, \my $dummy, time, $remote_address;
+  my $salt = en_base64 md5 join '$', $username, \my $dummy, Time::HiRes::time, $remote_address;
   my $hash = bcrypt $password, sprintf '$2a$08$%s', $salt;
   return $hash;
 };
@@ -43,6 +44,17 @@ helper hash_password => sub ($c, $password, $username) {
 helper user_details => sub ($c, $user_id) {
   my $query = 'SELECT "username", "is_admin", "is_mod" FROM "users" WHERE "id"=$1';
   return $c->pg->db->query($query, $user_id)->hashes->first;
+};
+
+helper add_user => sub ($c, $username, $is_mod) {
+  my $remote_address = $c->tx->remote_address // '127.0.0.1';
+  my $code = uc md5_hex join '$', $username, \my $dummy, Time::HiRes::time, $remote_address;
+  my $query = <<'EOQ';
+INSERT INTO "users" ("username","is_mod","password_reset_code") VALUES ($1, $2, decode($3, 'hex')) RETURNING "id"
+EOQ
+  my $created = $c->pg->db->query($query, $username, $is_mod, $code)->arrays->first;
+  return undef unless defined $created;
+  return {user_id => $created->[0], reset_code => $code};
 };
 
 helper valid_bot_key => sub ($c, $bot_key) {
@@ -217,6 +229,11 @@ any '/logout' => sub ($c) {
   $c->redirect_to('/');
 };
 
+get '/account' => sub ($c) {
+  return $c->redirect_to('/login') unless $c->stash('user_id');
+  $c->render;
+};
+
 get '/set_password';
 
 # Public API
@@ -388,6 +405,14 @@ group {
     return 1 if $c->stash('is_admin');
     $c->render(text => 'Access denied', status => 403);
     return 0;
+  };
+  
+  post '/api/users' => sub ($c) {
+    my $username = $c->param('username');
+    my $is_mod = $c->param('is_mod') ? 1 : 0;
+    my $created_user = $c->add_user($username, $is_mod);
+    return $c->render(json => {success => false}) unless defined $created_user;
+    $c->render(json => {success => true, username => $username, reset_code => $created_user->{reset_code}});
   };
   
   post '/api/songs/import' => sub ($c) {

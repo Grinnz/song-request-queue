@@ -1,17 +1,18 @@
-% layout 'main', title => 'Set Password', load_js => ['set_password.js'];
+% layout 'main', title => 'Account', load_js => ['set_password.js'];
+<h2>Account</h2>
 <h3>Set Password</h3>
 <div id="set_password">
 <form id="set_password_form" class="form-horizontal" v-on:submit.prevent="set_password">
   <div class="form-group">
     <label for="set_password_username" class="col-sm-2 control-label">Username</label>
     <div class="col-sm-4">
-      <input id="set_password_username" class="form-control" name="username" type="text"<% if (defined stash 'username') { %> value="<%= stash 'username' %>"<% } %>>
+      <input id="set_password_username" class="form-control" name="username" type="text" value="<%= stash 'username' %>">
     </div>
   </div>
   <div class="form-group">
-    <label for="set_password_code" class="col-sm-2 control-label">Reset Code</label>
+    <label for="set_password_current" class="col-sm-2 control-label">Current Password</label>
     <div class="col-sm-4">
-      <input id="set_password_code" class="form-control" name="code" type="text">
+      <input id="set_password_current" class="form-control" name="current" type="password">
     </div>
   </div>
   <div class="form-group">
