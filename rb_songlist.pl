@@ -349,7 +349,7 @@ group {
     
     my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
     $c->queue_song($song_id, $requested_by, $raw_request);
-    my $response_title = defined $song_details ? $song_details->{title} : $raw_request;
+    my $response_title = defined $song_details ? "$song_details->{artist} - $song_details->{title}" : $raw_request;
     $c->render(text => "Added '$response_title' to queue (requested by $requested_by)");
   };
   
