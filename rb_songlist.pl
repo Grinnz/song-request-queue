@@ -217,30 +217,6 @@ any '/logout' => sub ($c) {
 };
 
 get '/set_password';
-post '/set_password' => sub ($c) {
-  my $username = $c->param('username');
-  my $code = $c->param('code');
-  my $password = $c->param('password');
-  my $verify = $c->param('verify');
-  
-  return $c->render(text => 'Missing parameters')
-    unless defined $username and defined $code and defined $password and defined $verify;
-  return $c->render(text => 'Passwords do not match') unless $password eq $verify;
-  my $query = <<'EOQ';
-SELECT "id" FROM "users" WHERE "username"=$1 AND "password_reset_code"=decode($2, 'hex')
-EOQ
-  my $user_exists = $c->pg->db->query($query, $username, $code)->arrays->first;
-  return $c->render(text => 'Unknown user or invalid code') unless defined $user_exists;
-  
-  my $hash = $c->hash_password($password, $username);
-  $query = <<'EOQ';
-UPDATE "users" SET "password_hash"=$1, "password_reset_code"=NULL
-WHERE "username"=$2 AND "password_reset_code"=decode($3, 'hex')
-EOQ
-  my $updated = $c->pg->db->query($query, $hash, $username, $code)->rows;
-  return $c->render(text => 'Password set successfully') if $updated > 0;
-  $c->render(text => 'Password was not set');
-};
 
 # Public API
 
@@ -261,6 +237,53 @@ EOQ
   
   $c->session->{user_id} = $user->{id};
   $c->render(json => {logged_in => Mojo::JSON::true});
+};
+
+post '/api/set_password' => sub ($c) {
+  my $username = $c->param('username');
+  my $code = $c->param('code');
+  my $current = $c->param('current');
+  my $password = $c->param('password');
+  my $verify = $c->param('verify');
+  
+  return $c->render(json => {success => Mojo::JSON::false, error => 'Missing parameters'})
+    unless defined $username and defined $password and defined $verify;
+  return $c->render(json => {success => Mojo::JSON::false, error => 'Passwords do not match'})
+    unless $password eq $verify;
+  
+  my $user_id;
+  if (defined($user_id = $c->stash('user_id'))) {
+    return $c->render(json => {success => Mojo::JSON::false, error => 'Missing parameters'})
+      unless defined $current;
+    
+    my $query = 'SELECT "password_hash" FROM "users" WHERE "username"=$1';
+    my $current_hash = $c->pg->db->query($query, $username)->arrays->first;
+    return $c->render(json => {success => Mojo::JSON::false, error => 'Unknown user or invalid password'})
+      unless defined $current_hash;
+    $current_hash = $current_hash->[0];
+    
+    return $c->render(json => {success => Mojo::JSON::false, error => 'Unknown user or invalid password'})
+      unless bcrypt($current, $current_hash) eq $current_hash;
+  } else {
+    return $c->render(json => {success => Mojo::JSON::false, error => 'Missing parameters'})
+      unless defined $code;
+  
+    my $query = <<'EOQ';
+SELECT "id" FROM "users" WHERE "username"=$1 AND "password_reset_code"=decode($2, 'hex')
+EOQ
+    $user_id = $c->pg->db->query($query, $username, $code)->arrays->first;
+    return $c->render(json => {success => Mojo::JSON::false, error => 'Unknown user or invalid code'})
+      unless defined $user_id;
+    $user_id = $user_id->[0];
+  }
+  
+  my $hash = $c->hash_password($password, $username);
+  my $query = <<'EOQ';
+UPDATE "users" SET "password_hash"=$1, "password_reset_code"=NULL WHERE "id"=$2
+EOQ
+  my $updated = $c->pg->db->query($query, $hash, $user_id)->rows;
+  return $c->render(json => {success => Mojo::JSON::true}) if $updated > 0;
+  $c->render(json => {success => Mojo::JSON::false});
 };
 
 get '/api/songs/search' => sub ($c) {
