@@ -64,8 +64,9 @@ helper valid_bot_key => sub ($c, $bot_key) {
 };
 
 helper search_songs => sub ($c, $search) {
-  my $and_search = join ' & ', map { "'$_':*" } map { quotemeta } split ' ', $search;
-  my $or_search = join ' | ', map { "'$_':*" } map { quotemeta } split ' ', $search;
+  my @terms = map { "'$_':*" } map { quotemeta(tr[/][ ]r) } split ' ', $search;
+  my $and_search = join ' & ', @terms;
+  my $or_search = join ' | ', @terms;
   my $query = <<'EOQ';
 SELECT *,
 ts_rank_cd(songtext, to_tsquery('english_nostop', $1)) AS "rank"
