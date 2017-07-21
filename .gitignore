@@ -16,8 +16,6 @@ nytprof.out
 *.o
 *.bs
 /_eumm/
-/rb-songlist-*
-/rb_songlist.conf
 /song-request-queue-*
 /song_request_queue.conf
 /log/*
