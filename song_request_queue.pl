@@ -23,8 +23,8 @@ app->sessions->default_expiration(ONE_WEEK);
 
 helper pg => sub ($c) { state $pg = Mojo::Pg->new($c->config('pg')) };
 
-my $migrations_file = app->home->child('rb_songlist.sql');
-app->pg->auto_migrate(1)->migrations->name('rb_songlist')->from_file($migrations_file);
+my $migrations_file = app->home->child('song_request_queue.sql');
+app->pg->auto_migrate(1)->migrations->name('song_request_queue')->from_file($migrations_file);
 
 helper normalize_duration => sub ($c, $duration) {
   my @duration_segments = split /:/, ($duration // '');
@@ -64,7 +64,7 @@ helper valid_bot_key => sub ($c, $bot_key) {
 };
 
 helper search_songs => sub ($c, $search) {
-  my @terms = map { "'$_':*" } map { quotemeta(tr[/][ ]r) } split ' ', $search;
+  my @terms = map { "'$_':*" } map { quotemeta } split ' ', $search =~ tr[/][ ]r;
   my $and_search = join ' & ', @terms;
   my $or_search = join ' | ', @terms;
   my $query = <<'EOQ';

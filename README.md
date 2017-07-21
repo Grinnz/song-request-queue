@@ -1,4 +1,4 @@
-# Rock Band Songlist
+# Song Request Queue
 
 ## Requirements
 
@@ -10,11 +10,11 @@
 1. Create a PostgreSQL database and user (that can create tables in the database) for the app to use. 
 
 ```
-$ createuser rb_songlist -lP
-$ createdb rb_songlist -O rb_songlist
+$ createuser song_request_user -lP
+$ createdb song_request_queue -O song_request_user
 ```
 
-2. Create rb_songlist.conf as a perl configuration file, example:
+2. Create song_request_queue.conf as a perl configuration file, example:
 
 ```
 {
@@ -43,13 +43,13 @@ $ cpanm --installdeps .
 5. Start the application.
 
 ```
-$ perl rb_songlist.pl daemon --listen='http://*:3000'
+$ perl song_request_queue.pl daemon --listen='http://*:3000'
 ```
 
 Or with hypnotoad (production web server):
 
 ```
-$ hypnotoad rb_songlist.pl
+$ hypnotoad song_request_queue.pl
 ```
 
 See the [Mojolicious deployment cookbook](https://metacpan.org/pod/Mojolicious::Guides::Cookbook#DEPLOYMENT) for more information on deployment options.

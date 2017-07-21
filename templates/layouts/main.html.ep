@@ -4,17 +4,16 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Rock Band Songlist<% if (title) { %> - <%= title %><% } %></title>
+  <title>Song Request Queue<% if (title) { %> - <%= title %><% } %></title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 </head>
 <body>
   <div class="container">
   <div class="row">
-  <div class="col-sm-5"><h1>Rock Band Songlist</h1></div>
 % if (defined stash 'user_id') {
-  <div class="col-sm-2">Logged in as <a href="/account"><%= stash 'username' %></a></div>
+  <div class="col-sm-2 col-sm-offset-5">Logged in as <a href="/account"><%= stash 'username' %></a></div>
 % } else {
-  <div class="col-sm-2"></div>
+  <div class="col-sm-2 col-sm-offset-5"></div>
 % }
   <div class="col-sm-1"><% if (current_route 'index') { %><b>Home</b><% } else { %><a href="/">Home</a><% } %></div>
   <div class="col-sm-1"><% if (current_route 'browse') { %><b>Browse</b><% } else { %><a href="/browse">Browse</a><% } %></div>
@@ -28,8 +27,9 @@
 % } else {
   <div class="col-sm-1"><% if (current_route 'login') { %><b>Login</b><% } else { %><a href="/login">Login</a><% } %></div>
 % }
-  <div class="col-sm-1"><a href="https://github.com/Grinnz/rb-songlist">Source</a></div>
+  <div class="col-sm-1"><a href="https://github.com/Grinnz/song-request-queue">Source</a></div>
   </div>
+  <div class="row"><h1>Song Request Queue</h1></div>
 <%= content %>
   </div>
   <script src="https://unpkg.com/vue@2.4.1"></script>
