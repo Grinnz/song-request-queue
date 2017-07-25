@@ -11,7 +11,7 @@
   <div class="container">
   <div class="row">
 % if (defined stash 'user_id') {
-  <div class="col-sm-2 col-sm-offset-5">Logged in as <a href="/account"><%= stash 'username' %></a></div>
+  <div class="col-sm-2 col-sm-offset-5">Logged in as <% if (current_route 'account') { %><b><%= stash 'username' %></b><% } else { %><a href="/account"><%= stash 'username' %></a><% } %></div>
 % } else {
   <div class="col-sm-2 col-sm-offset-5"></div>
 % }
