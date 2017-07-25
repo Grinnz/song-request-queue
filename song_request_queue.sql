@@ -29,6 +29,7 @@ create table if not exists "users" (
   id serial primary key,
   username text not null unique,
   password_hash text not null default '',
+  created_at timestamp with time zone default now(),
   last_login_at timestamp with time zone,
   password_reset_code bytea,
   is_admin bool not null default false,

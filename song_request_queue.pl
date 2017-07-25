@@ -36,7 +36,7 @@ helper normalize_duration => sub ($c, $duration) {
 
 helper hash_password => sub ($c, $password, $username) {
   my $remote_address = $c->tx->remote_address // '127.0.0.1';
-  my $salt = en_base64 md5 join '$', $username, \my $dummy, Time::HiRes::time, $remote_address;
+  my $salt = en_base64 md5 join '$', $username // '', \my $dummy, Time::HiRes::time, $remote_address;
   my $hash = bcrypt $password, sprintf '$2a$08$%s', $salt;
   return $hash;
 };
@@ -61,6 +61,29 @@ helper valid_bot_key => sub ($c, $bot_key) {
   return 1 if defined $bot_key
     and List::Util::any { $_ eq $bot_key } @{$c->config('bot_keys') // []};
   return 0;
+};
+
+helper check_user_password => sub ($c, $username, $password) {
+  my $query = 'SELECT "id", "password_hash" FROM "users" WHERE "username"=$1';
+  my $user = $c->pg->db->query($query, $username)->hashes->first // return undef;
+  return $user->{id} if bcrypt($password, $user->{password_hash}) eq $user->{password_hash};
+  return undef;
+};
+
+helper check_user_reset_code => sub ($c, $username, $code) {
+    my $query = <<'EOQ';
+SELECT "id" FROM "users" WHERE "username"=$1 AND "password_reset_code"=decode($2, 'hex')
+EOQ
+    my $user = $c->pg->db->query($query, $username, $code)->arrays->first // return undef;
+    return $user->[0];
+};
+
+helper set_user_password => sub ($c, $user_id, $password, $username) {
+  my $hash = $c->hash_password($password, $username);
+  my $query = <<'EOQ';
+UPDATE "users" SET "password_hash"=$1, "password_reset_code"=NULL WHERE "id"=$2
+EOQ
+  return $c->pg->db->query($query, $hash, $user_id)->rows;
 };
 
 helper search_songs => sub ($c, $search) {
@@ -192,7 +215,7 @@ helper set_requested_by => sub ($c, $position, $requested_by) {
 };
 
 helper clear_queue => sub ($c) {
-  my $query = 'DELETE FROM "queue" WHERE true';
+  my $query = 'TRUNCATE TABLE "queue"';
   return $c->pg->db->query($query)->rows;
 };
 
@@ -246,16 +269,12 @@ post '/api/login' => sub ($c) {
   return $c->render(json => {logged_in => false, error => 'Missing parameters'})
     unless defined $username and defined $password;
   
-  my $query = <<'EOQ';
-SELECT "id", "username", "password_hash" FROM "users" WHERE "username"=$1
-EOQ
-  my $user = $c->pg->db->query($query, $username)->hashes->first;
-  return $c->render(json => {logged_in => false, error => 'Login failed'})
-    unless defined $user and bcrypt($password, $user->{password_hash}) eq $user->{password_hash};
+  my $user_id = $c->check_user_password($username, $password)
+    // return $c->render(json => {logged_in => false, error => 'Login failed'});
   
-  $c->pg->db->query('UPDATE "users" SET "last_login_at"=now() WHERE "id"=$1', $user->{id});
+  $c->pg->db->query('UPDATE "users" SET "last_login_at"=now() WHERE "id"=$1', $user_id);
+  $c->session->{user_id} = $user_id;
   
-  $c->session->{user_id} = $user->{id};
   $c->render(json => {logged_in => true});
 };
 
@@ -275,33 +294,16 @@ post '/api/set_password' => sub ($c) {
   if (defined($user_id = $c->stash('user_id'))) {
     return $c->render(json => {success => false, error => 'Missing parameters'})
       unless defined $current;
-    
-    my $query = 'SELECT "password_hash" FROM "users" WHERE "username"=$1';
-    my $current_hash = $c->pg->db->query($query, $username)->arrays->first;
-    return $c->render(json => {success => false, error => 'Unknown user or invalid password'})
-      unless defined $current_hash;
-    $current_hash = $current_hash->[0];
-    
-    return $c->render(json => {success => false, error => 'Unknown user or invalid password'})
-      unless bcrypt($current, $current_hash) eq $current_hash;
+    $user_id = $c->check_user_password($username, $current)
+      // return $c->render(json => {success => false, error => 'Unknown user or invalid password'});
   } else {
     return $c->render(json => {success => false, error => 'Missing parameters'})
       unless defined $code;
-  
-    my $query = <<'EOQ';
-SELECT "id" FROM "users" WHERE "username"=$1 AND "password_reset_code"=decode($2, 'hex')
-EOQ
-    $user_id = $c->pg->db->query($query, $username, $code)->arrays->first;
-    return $c->render(json => {success => false, error => 'Unknown user or invalid code'})
-      unless defined $user_id;
-    $user_id = $user_id->[0];
+    $user_id = $c->check_user_reset_code($username, $code)
+      // return $c->render(json => {success => false, error => 'Unknown user or invalid code'});
   }
   
-  my $hash = $c->hash_password($password, $username);
-  my $query = <<'EOQ';
-UPDATE "users" SET "password_hash"=$1, "password_reset_code"=NULL WHERE "id"=$2
-EOQ
-  my $updated = $c->pg->db->query($query, $hash, $user_id)->rows;
+  my $updated = $c->set_user_password($user_id, $password, $username);
   return $c->render(json => {success => true}) if $updated > 0;
   $c->render(json => {success => false});
 };
