@@ -1,4 +1,4 @@
-var queue_data = { queue_first: null, queue_remaining: [], editing_requestor: null };
+var queue_data = { queue_first: null, queue_remaining: [], search_for_queue: null, editing_requestor: null };
 var queue_vm = new Vue({
   el: '#request_queue',
   data: queue_data,
@@ -14,7 +14,7 @@ var queue_vm = new Vue({
     unqueue_song: function (position) {
       if (position) {
         queue_vm.set_editing_requestor(null);
-        search_vm.set_search_for_queue(null);
+        queue_vm.set_search_for_queue(null);
         $.ajax({ url: '/api/queue/' + position, method: 'DELETE' })
           .done(function () {
             queue_vm.refresh_queue();
@@ -24,7 +24,7 @@ var queue_vm = new Vue({
     reorder_queue: function (position, direction) {
       if (position) {
         queue_vm.set_editing_requestor(null);
-        search_vm.set_search_for_queue(null);
+        queue_vm.set_search_for_queue(null);
         $.post('/api/queue/' + position, { reorder: direction })
           .done(function () {
             queue_vm.refresh_queue();
@@ -32,7 +32,11 @@ var queue_vm = new Vue({
       }
     },
     set_search_for_queue: function (position) {
-      search_vm.set_search_for_queue(position);
+      queue_data.search_for_queue = position;
+      search_data.search_for_queue = position;
+    },
+    is_search_for_queue: function (position) {
+      return queue_data.search_for_queue == position;
     },
     set_editing_requestor: function (position) {
       queue_data.editing_requestor = position;

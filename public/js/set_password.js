@@ -7,21 +7,15 @@ var set_password_vm = new Vue({
       $.post('/api/set_password', $('#set_password_form').serialize(), 'json')
         .done(function (data) {
           if (data.success) {
-            set_password_vm.set_result_text('Password successfully changed');
+            srq_common.set_result_text(set_password_data, 'Password successfully changed');
           } else {
-            var error = data.error || 'Failed to set password';
-            set_password_vm.set_result_text(error);
+            var error_text = data.error || 'Failed to set password';
+            srq_common.set_result_text(set_password_data, error_text);
           }
         })
         .fail(function () {
-          set_password_vm.set_result_text('Failed to set password');
-        })
-    },
-    set_result_text: function (text) {
-      set_password_data.result_text = text;
-      var result_text_timeout = window.setTimeout(function() {
-        set_password_data.result_text = null;
-      }, 5000);
+          srq_common.set_result_text(set_password_data, 'Failed to set password');
+        });
     }
   }
 });

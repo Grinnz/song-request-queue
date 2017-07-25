@@ -1,13 +1,17 @@
 % layout 'main', load_js => ['song_queue.js','search_songlist.js'];
 <div id="request_queue">
-<div v-if="queue_first" style="border: 1px solid #ddd">
+<div v-if="queue_first" v-bind:style="{
+  'border-width': '1px', 'border-style': 'solid', 'border-color': '#ddd',
+  'background-color': is_search_for_queue(queue_first.position) ? '#d9edf7' : null
+}">
   <div class="row">
     <br>
     <div class="col-sm-10 col-sm-offset-1 text-center">
       <h3>{{ queue_first.title || queue_first.raw_request }}</h3>
     </div>
     <% if (stash 'is_mod') { %><div class="col-sm-1">
-      <button type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(queue_first.position)">Set</button>
+      <button v-if="is_search_for_queue(queue_first.position)" type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(null)">Unset</button>
+      <button v-else type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(queue_first.position)">Set</button>
     </div><% } %>
   </div>
   <div class="row"><h4 class="text-center">{{ queue_first.artist }}</h4></div>
@@ -45,9 +49,10 @@
       <th>Request</th>
       <% if (stash 'is_mod') { %><th>Move</th><% } %>
     </tr>
-    <template v-for="request in queue_remaining"><tr>
+    <template v-for="request in queue_remaining"><tr v-bind:class="{ info: is_search_for_queue(request.position) }">
       <td>{{ request.position }}<% if (stash 'is_mod') { %>&nbsp;&nbsp;
-        <button type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(request.position)">Set</button>
+        <button v-if="is_search_for_queue(request.position)" type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(null)">Unset</button>
+        <button v-else type="button" class="btn btn-primary btn-xs" v-on:click.prevent="set_search_for_queue(request.position)">Set</button>
       <% } %></td>
       <td>{{ request.title }}</td>
       <td>{{ request.artist }}</td>

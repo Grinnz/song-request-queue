@@ -26,6 +26,7 @@ var search_vm = new Vue({
     },
     set_search_for_queue: function (position) {
       search_data.search_for_queue = position;
+      queue_data.search_for_queue = position;
     },
     set_queued_song: function (position, song_id) {
       if (position) {

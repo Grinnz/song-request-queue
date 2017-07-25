@@ -7,21 +7,16 @@ var add_mod_vm = new Vue({
       $.post('/api/users', $('#add_mod_form').serialize(), 'json')
         .done(function (data) {
           if (data.success) {
-            add_mod_data.result_text = 'Created moderator account ' + data.username + ' with reset code ' + data.reset_code;
+            var success_text = 'Created moderator account ' + data.username + ' with reset code ' + data.reset_code;
+            srq_common.set_result_text(add_mod_data, success_text, -1);
           } else {
-            var error = data.error || 'Failed to create moderator account';
-            add_mod_vm.set_result_text(error);
+            var error_text = data.error || 'Failed to create moderator account';
+            srq_common.set_result_text(add_mod_data, error_text);
           }
         })
         .fail(function () {
-          add_mod_vm.set_result_text('Failed to create moderator account');
-        })
-    },
-    set_result_text: function (text) {
-      add_mod_data.result_text = text;
-      var result_text_timeout = window.setTimeout(function() {
-        add_mod_data.result_text = null;
-      }, 5000);
+          srq_common.set_result_text(add_mod_data, 'Failed to create moderator account');
+        });
     }
   }
 });

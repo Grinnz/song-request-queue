@@ -6,17 +6,11 @@ var add_song_vm = new Vue({
     add_song: function (event) {
       $.post('/api/songs', $('#add_song_form').serialize())
         .done(function () {
-          add_song_vm.set_result_text('Song successfully added');
+          srq_common.set_result_text(add_song_data, 'Song successfully added');
         })
         .fail(function () {
-          add_song_vm.set_result_text('Failed to add song');
-        })
-    },
-    set_result_text: function (text) {
-      add_song_data.result_text = text;
-      var result_text_timeout = window.setTimeout(function() {
-        add_song_data.result_text = null;
-      }, 5000);
+          srq_common.set_result_text(add_song_data, 'Failed to add song');
+        });
     }
   }
 });

@@ -11,17 +11,11 @@ var import_vm = new Vue({
         processData: false,
         contentType: false
       }).done(function () {
-          import_vm.set_result_text('Import successful');
+          srq_common.set_result_text(import_data, 'Import successful');
         })
         .fail(function () {
-          import_vm.set_result_text('Failed to import songlist');
-        })
-    },
-    set_result_text: function (text) {
-      import_data.result_text = text;
-      var result_text_timeout = window.setTimeout(function() {
-        import_data.result_text = null;
-      }, 5000);
+          srq_common.set_result_text(import_data, 'Failed to import songlist');
+        });
     }
   }
 });

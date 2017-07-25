@@ -9,19 +9,13 @@ var login_vm = new Vue({
           if (data.logged_in) {
             window.location.href = '/';
           } else {
-            var error = data.error || 'Login failed';
-            login_vm.set_result_text(error);
+            var error_text = data.error || 'Login failed';
+            srq_common.set_result_text(login_data, error_text);
           }
         })
         .fail(function () {
-          login_vm.set_result_text('Login failed');
-        })
-    },
-    set_result_text: function (text) {
-      login_data.result_text = text;
-      var result_text_timeout = window.setTimeout(function() {
-        login_data.result_text = null;
-      }, 5000);
+          srq_common.set_result_text(login_data, 'Login failed');
+        });
     }
   }
 });

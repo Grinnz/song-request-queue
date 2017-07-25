@@ -2,38 +2,31 @@
 <div class="row"><h2>Admin</h2></div>
 <div id="add_song">
   <div class="row"><h3>Add Song</h3></div>
-  <div class="row">
-    <form id="add_song_form" class="form-horizontal" v-on:submit.prevent="add_song">
-      <div class="form-group">
-        <label for="add_song_title" class="col-sm-2 control-label">Title</label>
-        <div class="col-sm-4"><input id="add_song_title" class="form-control" name="title" type="text"></div>
-      </div>
-      <div class="form-group">
-        <label for="add_song_artist" class="col-sm-2 control-label">Artist</label>
-        <div class="col-sm-4"><input id="add_song_artist" class="form-control" name="artist" type="text"></div>
-      </div>
-      <div class="form-group">
-        <label for="add_song_album" class="col-sm-2 control-label">Album</label>
-        <div class="col-sm-4"><input id="add_song_album" class="form-control" name="album" type="text"></div>
-      </div>
-      <div class="form-group">
-        <label for="add_song_track" class="col-sm-2 control-label">Track</label>
-        <div class="col-sm-4"><input id="add_song_track" class="form-control" name="track" type="text"></div>
-      </div>
-      <div class="form-group">
-        <label for="add_song_source" class="col-sm-2 control-label">Source</label>
-        <div class="col-sm-4"><input id="add_song_source" class="form-control" name="source" type="text"></div>
-      </div>
-      <div class="form-group">
-        <label for="add_song_duration" class="col-sm-2 control-label">Duration</label>
-        <div class="col-sm-4"><input id="add_song_duration" class="form-control" name="duration" type="text"></div>
-      </div>
-      <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-4"><button type="submit" class="btn btn-primary">Submit</button>
-        &nbsp;<span><i>{{ result_text }}</i></span></div>
-      </div>
-    </form>
-  </div>
+  <form id="add_song_form" v-on:submit.prevent="add_song">
+    <br>
+    <div class="row">
+      <label for="add_song_title" class="col-sm-1 control-label">Title: </label>
+      <div class="col-sm-3"><input id="add_song_title" class="form-control input-sm" name="title" type="text"></div>
+      <label for="add_song_artist" class="col-sm-1 control-label">Artist: </label>
+      <div class="col-sm-3"><input id="add_song_artist" class="form-control input-sm" name="artist" type="text"></div>
+      <label for="add_song_album" class="col-sm-1 control-label">Album: </label>
+      <div class="col-sm-3"><input id="add_song_album" class="form-control input-sm" name="album" type="text"></div>
+    </div>
+    <br>
+    <div class="row">
+      <label for="add_song_track" class="col-sm-1 control-label">Track: </label>
+      <div class="col-sm-3"><input id="add_song_track" class="form-control input-sm" name="track" type="text"></div>
+      <label for="add_song_source" class="col-sm-1 control-label">Source: </label>
+      <div class="col-sm-3"><input id="add_song_source" class="form-control input-sm" name="source" type="text"></div>
+      <label for="add_song_duration" class="col-sm-1 control-label">Duration: </label>
+      <div class="col-sm-3"><input id="add_song_duration" class="form-control input-sm" name="duration" type="text"></div>
+    </div>
+    <br>
+    <div class="row">
+      <button type="submit" class="btn btn-primary">Submit</button>
+      &nbsp;<span><i>{{ result_text }}</i></span>
+    </div>
+  </form>
 </div>
 <br>
 
