@@ -9,13 +9,16 @@
       <div class="col-sm-3"><input id="add_song_title" class="form-control input-sm" name="title" type="text"></div>
       <label for="add_song_artist" class="col-sm-1 control-label">Artist: </label>
       <div class="col-sm-3"><input id="add_song_artist" class="form-control input-sm" name="artist" type="text"></div>
-      <label for="add_song_album" class="col-sm-1 control-label">Album: </label>
-      <div class="col-sm-3"><input id="add_song_album" class="form-control input-sm" name="album" type="text"></div>
     </div>
     <br>
     <div class="row">
+      <label for="add_song_album" class="col-sm-1 control-label">Album: </label>
+      <div class="col-sm-3"><input id="add_song_album" class="form-control input-sm" name="album" type="text"></div>
       <label for="add_song_track" class="col-sm-1 control-label">Track: </label>
       <div class="col-sm-3"><input id="add_song_track" class="form-control input-sm" name="track" type="text"></div>
+    </div>
+    <br>
+    <div class="row">
       <label for="add_song_source" class="col-sm-1 control-label">Source: </label>
       <div class="col-sm-3"><input id="add_song_source" class="form-control input-sm" name="source" type="text"></div>
       <label for="add_song_duration" class="col-sm-1 control-label">Duration: </label>
