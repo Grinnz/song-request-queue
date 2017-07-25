@@ -48,7 +48,7 @@ create table if not exists "songs" (
   artist_ascii text not null,
   album_ascii text not null default '',
   songtext tsvector not null,
-  unique ("artist","album","title","track")
+  constraint "songs_artist_album_title_track_key" unique ("artist","album","title","track")
 );
 create index if not exists "songs_artist_title" on "songs" ("artist","title");
 create index if not exists "songs_title" on "songs" ("title");

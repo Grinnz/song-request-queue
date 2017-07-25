@@ -122,8 +122,9 @@ helper import_from_csv => sub ($c, $file) {
     my $query = <<'EOQ';
 INSERT INTO "songs" ("title","artist","album","track","source","duration",
 "title_ascii","artist_ascii","album_ascii")
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO UPDATE SET
-"source"="excluded"."source", "duration"="excluded"."duration"
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+ON CONFLICT ON CONSTRAINT "songs_artist_album_title_track_key" DO UPDATE
+SET "source"="excluded"."source", "duration"="excluded"."duration"
 EOQ
     my @params = (@$song{'song title','artist','album name','track #','source','duration'},
       map { scalar unidecode $_ } @$song{'song title','artist','album name'});
