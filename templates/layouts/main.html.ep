@@ -27,7 +27,7 @@
 % } else {
   <div class="col-sm-1"><% if (current_route 'login') { %><b>Login</b><% } else { %><a href="/login">Login</a><% } %></div>
 % }
-  <div class="col-sm-1"><a href="https://github.com/Grinnz/song-request-queue">Source</a></div>
+  <div class="col-sm-1"><a href="https://github.com/Grinnz/song-request-queue" target="_blank">Source</a></div>
   </div>
   <div class="row"><h1>Song Request Queue</h1></div>
 <%= content %>
