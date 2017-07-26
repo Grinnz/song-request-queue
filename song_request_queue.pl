@@ -91,7 +91,7 @@ helper search_songs => sub ($c, $search) {
   my @terms = map { "'$_':*" } map { quotemeta } split ' ', $search =~ tr[/][ ]r;
   my $and_search = join ' & ', @terms;
   my $query = <<'EOQ';
-SELECT *, ts_rank_cd(songtext, to_tsquery('english_nostop', $1)) AS "rank"
+SELECT *, ts_rank_cd(songtext, to_tsquery('english_nostop', $1), 1) AS "rank"
 FROM "songs" WHERE songtext @@ to_tsquery('english_nostop', $1)
 ORDER BY "rank" DESC, "artist", "album", "track", "title"
 EOQ
@@ -100,7 +100,7 @@ EOQ
   
   my $or_search = join ' | ', @terms;
   $query = <<'EOQ';
-SELECT *, ts_rank_cd(songtext_withstop, to_tsquery('english', $1)) AS "rank"
+SELECT *, ts_rank_cd(songtext_withstop, to_tsquery('english', $1), 1) AS "rank"
 FROM "songs" WHERE songtext_withstop @@ to_tsquery('english', $1)
 ORDER BY "rank" DESC, "artist", "album", "track", "title"
 EOQ
