@@ -89,7 +89,6 @@ EOQ
 helper search_songs => sub ($c, $search) {
   my @terms = map { "'$_':*" } map { quotemeta } split ' ', $search =~ tr[/][ ]r;
   my $and_search = join ' & ', @terms;
-  my $or_search = join ' | ', @terms;
   my $query = <<'EOQ';
 SELECT *,
 ts_rank_cd(songtext, to_tsquery('english_nostop', $1)) AS "rank"
@@ -99,6 +98,15 @@ ORDER BY "rank" DESC, "artist", "album", "track", "title"
 EOQ
   my $results = $c->pg->db->query($query, $and_search)->hashes;
   return $results if @$results;
+  
+  my $or_search = join ' | ', @terms;
+  $query = <<'EOQ';
+SELECT *,
+ts_rank_cd(songtext_withstop, to_tsquery('english', $1)) AS "rank"
+FROM "songs"
+WHERE songtext_withstop @@ to_tsquery('english', $1)
+ORDER BY "rank" DESC, "artist", "album", "track", "title"
+EOQ
   return $c->pg->db->query($query, $or_search)->hashes;
 };
 

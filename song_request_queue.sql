@@ -21,6 +21,16 @@ begin
     setweight(to_tsvector('english_nostop',
       replace("new"."album",'/',' ') || ' ' ||
       replace("new"."album_ascii",'/',' ')), 'D');
+  "new"."songtext_withstop" :=
+    setweight(to_tsvector('english',
+      replace("new"."title",'/',' ') || ' ' ||
+      replace("new"."title_ascii",'/',' ')), 'A') ||
+    setweight(to_tsvector('english',
+      replace("new"."artist",'/',' ') || ' ' ||
+      replace("new"."artist_ascii",'/',' ')), 'B') ||
+    setweight(to_tsvector('english',
+      replace("new"."album",'/',' ') || ' ' ||
+      replace("new"."album_ascii",'/',' ')), 'D');
   return new;
 end
 $$ language plpgsql;
@@ -48,12 +58,14 @@ create table if not exists "songs" (
   artist_ascii text not null,
   album_ascii text not null default '',
   songtext tsvector not null,
+  songtext_withstop tsvector not null,
   constraint "songs_artist_album_title_track_key" unique ("artist","album","title","track")
 );
 create index if not exists "songs_artist_title" on "songs" ("artist","title");
 create index if not exists "songs_title" on "songs" ("title");
 create index if not exists "songs_source" on "songs" ("source");
 create index if not exists "songs_songtext" on "songs" using gin ("songtext");
+create index if not exists "songs_songtext_withstop" on "songs" using gin ("songtext_withstop");
 
 create trigger "songs_songtext_trigger" before insert or update on "songs"
   for each row execute procedure songs_update_songtext();
