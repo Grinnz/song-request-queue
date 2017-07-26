@@ -6,6 +6,7 @@ requires 'List::Util' => '1.33';
 requires 'Mojolicious' => '7.31';
 requires 'Mojo::JSON::MaybeXS';
 requires 'Mojo::Pg';
+requires 'Syntax::Keyword::Try';
 requires 'Text::CSV';
 requires 'Text::CSV_XS';
 requires 'Text::Unidecode';

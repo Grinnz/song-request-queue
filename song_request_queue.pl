@@ -9,6 +9,7 @@ use Digest::MD5 qw(md5 md5_hex);
 use List::Util ();
 use Mojo::JSON qw(true false);
 use Mojo::Pg;
+use Syntax::Keyword::Try;
 use Text::CSV 'csv';
 use Text::Unidecode;
 use Time::HiRes;
@@ -90,10 +91,8 @@ helper search_songs => sub ($c, $search) {
   my @terms = map { "'$_':*" } map { quotemeta } split ' ', $search =~ tr[/][ ]r;
   my $and_search = join ' & ', @terms;
   my $query = <<'EOQ';
-SELECT *,
-ts_rank_cd(songtext, to_tsquery('english_nostop', $1)) AS "rank"
-FROM "songs"
-WHERE songtext @@ to_tsquery('english_nostop', $1)
+SELECT *, ts_rank_cd(songtext, to_tsquery('english_nostop', $1)) AS "rank"
+FROM "songs" WHERE songtext @@ to_tsquery('english_nostop', $1)
 ORDER BY "rank" DESC, "artist", "album", "track", "title"
 EOQ
   my $results = $c->pg->db->query($query, $and_search)->hashes;
@@ -101,10 +100,8 @@ EOQ
   
   my $or_search = join ' | ', @terms;
   $query = <<'EOQ';
-SELECT *,
-ts_rank_cd(songtext_withstop, to_tsquery('english', $1)) AS "rank"
-FROM "songs"
-WHERE songtext_withstop @@ to_tsquery('english', $1)
+SELECT *, ts_rank_cd(songtext_withstop, to_tsquery('english', $1)) AS "rank"
+FROM "songs" WHERE songtext_withstop @@ to_tsquery('english', $1)
 ORDER BY "rank" DESC, "artist", "album", "track", "title"
 EOQ
   return $c->pg->db->query($query, $or_search)->hashes;
@@ -353,14 +350,21 @@ group {
     } else {
       my $search = $c->param('query') // '';
       return $c->render(text => 'No song ID or search query provided.') unless length $search;
-      my $search_results = $c->search_songs($search);
+      my $search_results;
+      try { $search_results = $c->search_songs($search) } catch {
+        $c->app->log->error($@);
+        return $c->render(text => 'Internal error searching song database');
+      }
       $song_details = $search_results->first;
       $song_id = $song_details->{id} if defined $song_details;
       $raw_request = $search;
     }
     
     my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
-    $c->queue_song($song_id, $requested_by, $raw_request);
+    try { $c->queue_song($song_id, $requested_by, $raw_request) } catch {
+      $c->app->log->error($@);
+      return $c->render(text => 'Internal error adding song to queue');
+    }
     my $response_title = defined $song_details ? "$song_details->{artist} - $song_details->{title}" : $raw_request;
     $c->render(text => "Added '$response_title' to queue (requested by $requested_by)");
   };
