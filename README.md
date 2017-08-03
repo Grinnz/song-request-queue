@@ -1,5 +1,10 @@
 # Song Request Queue
 
+## Demo
+
+You can try a live demo at [https://song-request.grinnz.com](https://song-request.grinnz.com).
+The admin account has the username and password `demo`, and `demo` also works as a bot key.
+
 ## Requirements
 
 * PostgreSQL 9.5+
@@ -60,7 +65,7 @@ Admin users must be manually added to the `users` table (created once the webapp
 The binary field `password_reset_code` can be set to a one-time-use code to allow the user to set a password on the `/set_password` page.
 
 ```
-> INSERT INTO "users" ("username","password_reset_code") VALUES ('someuser',E'\\xDEADBEEF');
+> INSERT INTO "users" ("username","password_reset_code","is_admin","is_mod") VALUES ('someuser',E'\\xDEADBEEF',true,true);
 ```
 
 Admin users can add queue moderators on the `/admin` page. The reset code will be returned and can be used similarly on the `/set_password` page.
