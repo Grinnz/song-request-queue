@@ -76,6 +76,25 @@ The CSV format is expected to be that exported by the C3 Tools Setlist Manager, 
 * Source
 * Duration
 
+## Bot Requests
+
+Requests can be sent from a bot to the API endpoint `/api/queue/add`.
+The parameters `bot_key`, `requested_by`, and `query` should be included in the query string.
+`bot_key` must match a value in the `bot_keys` array in the config file.
+The endpoint accepts GET requests to accomodate bots with limited HTTP request functionality, but POST should be used when possible to avoid resubmitting requests.
+The endpoint returns a text string indicating success or error that can be displayed by the bot.
+
+```
+song_request_queue.conf:
+...
+  bot_keys => ['foobar'],
+...
+```
+
+```
+GET https://example.com/api/queue/add?bot_key=foobar&requested_by=Grinnz&query=something
+```
+
 ## Copyright and License
 
 This software is Copyright (c) 2017 by Dan Book.
