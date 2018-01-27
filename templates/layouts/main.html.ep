@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Song Request Queue<% if (title) { %> - <%= title %><% } %></title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
 <body>
 % if (stash 'full_width') {
@@ -15,9 +15,9 @@
 % }
   <div class="row">
 % if (defined stash 'user_id') {
-  <div class="col-sm-2 col-sm-offset-5">Logged in as <% if (current_route 'account') { %><b><%= stash 'username' %></b><% } else { %><a href="/account"><%= stash 'username' %></a><% } %></div>
+  <div class="col-sm-2 offset-sm-5 small">Logged in as <% if (current_route 'account') { %><b><%= stash 'username' %></b><% } else { %><a href="/account"><%= stash 'username' %></a><% } %></div>
 % } else {
-  <div class="col-sm-2 col-sm-offset-5"></div>
+  <div class="col-sm-2 offset-sm-5"></div>
 % }
   <div class="col-sm-1"><% if (current_route 'index') { %><b>Home</b><% } else { %><a href="/">Home</a><% } %></div>
   <div class="col-sm-1"><% if (current_route 'browse') { %><b>Browse</b><% } else { %><a href="/browse">Browse</a><% } %></div>
@@ -37,7 +37,7 @@
 <%= content %>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js" integrity="sha256-1Q2q5hg2YXp9fYlM++sIEXOcUb8BRSDUsQ1zXvLBqmA=" crossorigin="anonymous"></script>
-  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script src="/js/common.js"></script>
   <% if (defined stash 'load_js') { foreach my $script (@{stash 'load_js'}) { %><script src="/js/<%= $script %>"></script><% } } %>
 </body>
