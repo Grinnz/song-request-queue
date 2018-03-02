@@ -273,7 +273,7 @@ post '/api/login' => sub ($c) {
   my $username = $c->param('username');
   my $password = $c->param('password');
   return $c->render(json => {logged_in => false, error => 'Missing parameters'})
-    unless defined $username and defined $password;
+    unless length $username and length $password;
   
   my $user_id = $c->check_user_password($username, $password)
     // return $c->render(json => {logged_in => false, error => 'Login failed'});
@@ -431,7 +431,7 @@ group {
   post '/api/users' => sub ($c) {
     my $username = $c->param('username');
     return $c->render(json => {success => false, error => 'No username specified'})
-      unless defined $username and length $username;
+      unless length $username;
     my $is_mod = $c->param('is_mod') ? 1 : 0;
     my $created_user = $c->add_user($username, $is_mod);
     return $c->render(json => {success => false}) unless defined $created_user;
