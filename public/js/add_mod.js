@@ -6,6 +6,7 @@ var add_mod_vm = new Vue({
     add_mod: function (event) {
       var add_mod_body = new URLSearchParams();
       add_mod_body.set('username', add_mod_data.add_mod_username);
+      add_mod_body.set('is_mod', 1);
       fetch('/api/users', {
         method: 'POST',
         body: add_mod_body,

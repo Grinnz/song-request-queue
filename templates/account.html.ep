@@ -2,7 +2,7 @@
 <h2>Account</h2>
 <h3>Set Password</h3>
 <div id="set_password">
-<form id="set_password_form" v-on:submit.prevent="set_password">
+<form v-on:submit.prevent="set_password">
   <div class="form-group row">
     <label for="set_password_username" class="col-sm-2 col-form-label">Username</label>
     <div class="col-sm-4">

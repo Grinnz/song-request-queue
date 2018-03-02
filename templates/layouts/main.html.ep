@@ -40,7 +40,6 @@
   <script src="https://cdn.jsdelivr.net/npm/promise-polyfill@7.1.0/dist/polyfill.min.js" integrity="sha256-0GoNO3c+wysR0M132hrJ5fY7GfIEhrE/N4WwmvqQI7M=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/url-polyfill@1.0.11/url-polyfill.min.js" integrity="sha256-0sYS8XDti4HJJJhXdEweZuW3V13l8xaf0NyZiaML8r4=" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js" integrity="sha256-aB35laj7IZhLTx58xw/Gm1EKOoJJKZt6RY+bH1ReHxs=" crossorigin="anonymous"></script>
-  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script src="/js/common.js"></script>
   <% if (defined stash 'load_js') { foreach my $script (@{stash 'load_js'}) { %><script src="/js/<%= $script %>"></script><% } } %>
 </body>

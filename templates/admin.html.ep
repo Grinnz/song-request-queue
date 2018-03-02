@@ -2,7 +2,7 @@
 <div class="row"><h2>Admin</h2></div>
 <div id="add_song" class="mb-3">
   <div class="row"><h4>Add Song</h4></div>
-  <form id="add_song_form" v-on:submit.prevent="add_song">
+  <form v-on:submit.prevent="add_song">
     <div class="form-row">
       <div class="form-group col-sm-3">
         <label for="add_song_title" class="sr-only">Title</label>
@@ -40,7 +40,7 @@
 
 <div id="import_songlist" class="mb-3">
   <div class="row">
-    <form id="import_songlist_form" class="form-inline" enctype="multipart/form-data" v-on:submit.prevent="import_songlist">
+    <form class="form-inline" enctype="multipart/form-data" v-on:submit.prevent="import_songlist">
       <div class="form-group">
         <label for="import_songlist_file" class="mr-2">Import Songlist:</label>
         <input id="import_songlist_file" class="form-control mr-2" name="songlist" type="file">
@@ -67,12 +67,11 @@
 
 <div id="add_mod">
   <div class="row">
-    <form id="add_mod_form" class="form-inline" v-on:submit.prevent="add_mod">
+    <form class="form-inline" v-on:submit.prevent="add_mod">
       <div class="form-group">
         <label for="add_mod_username" class="mr-2">Add Queue Moderator:</label>
         <input id="add_mod_username" class="form-control mr-2" name="username" type="text" v-model="add_mod_username">
       </div>
-      <input id="add_mod_is_mod" name="is_mod" type="hidden" value="1">
       <button type="submit" class="btn btn-primary">Submit</button>
       &nbsp;<span><i>{{ result_text }}</i></span>
     </form>
@@ -82,7 +81,7 @@
 
 <div id="search_songlist">
 <div class="row">
-  <form id="search_songlist_form" class="form-inline" v-on:submit.prevent="search_songlist">
+  <form class="form-inline" v-on:submit.prevent="search_songlist">
     <div class="form-group">
       <label for="search_songlist_query" class="mr-2">Search Songs:</label>
       <input id="search_songlist_query" class="form-control mr-2" name="query" type="text" v-model="search_songlist_query">
@@ -93,7 +92,7 @@
 </div>
 <br>
 <div class="row">
-  <form class="col-12" id="edit_song_form" v-on:submit.prevent="edit_song">
+  <form class="col-12" v-on:submit.prevent="edit_song">
   <table class="table table-hover table-bordered">
     <thead class="thead-light">
       <tr>
@@ -110,27 +109,27 @@
       <template v-for="song in search_songlist_results">
       <tr v-bind:id="'song_result_' + song.id">
         <td>
-          <input v-if="editing_song == song.id" id="edit_song_title" class="form-control" name="title" v-model="edit_song_title">
+          <input v-if="editing_song == song.id" class="form-control" name="title" v-model="edit_song_title">
           <span v-else>{{ song.title }}</span>
         </td>
         <td>
-          <input v-if="editing_song == song.id" id="edit_song_artist" class="form-control" name="artist" v-model="edit_song_artist">
+          <input v-if="editing_song == song.id" class="form-control" name="artist" v-model="edit_song_artist">
           <span v-else>{{ song.artist }}</span>
         </td>
         <td>
-          <input v-if="editing_song == song.id" id="edit_song_album" class="form-control" name="album" v-model="edit_song_album">
+          <input v-if="editing_song == song.id" class="form-control" name="album" v-model="edit_song_album">
           <span v-else>{{ song.album }}</span>
         </td>
         <td>
-          <input v-if="editing_song == song.id" id="edit_song_track" class="form-control" name="track" v-model="edit_song_track">
+          <input v-if="editing_song == song.id" class="form-control" name="track" v-model="edit_song_track">
           <span v-else>{{ song.track }}</span>
         </td>
         <td>
-          <input v-if="editing_song == song.id" id="edit_song_source" class="form-control" name="source" v-model="edit_song_source">
+          <input v-if="editing_song == song.id" class="form-control" name="source" v-model="edit_song_source">
           <span v-else>{{ song.source }}</span>
         </td>
         <td>
-          <input v-if="editing_song == song.id" id="edit_song_duration" class="form-control" name="duration" v-model="edit_song_duration">
+          <input v-if="editing_song == song.id" class="form-control" name="duration" v-model="edit_song_duration">
           <span v-else>{{ song.duration }}</span>
         </td>
         <td style="white-space: nowrap">
