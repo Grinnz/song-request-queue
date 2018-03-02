@@ -292,19 +292,20 @@ post '/api/set_password' => sub ($c) {
   my $verify = $c->param('verify');
   
   return $c->render(json => {success => false, error => 'Missing parameters'})
-    unless defined $username and defined $password and defined $verify;
+    unless defined $password and defined $verify;
   return $c->render(json => {success => false, error => 'Passwords do not match'})
     unless $password eq $verify;
   
   my $user_id;
   if (defined($user_id = $c->stash('user_id'))) {
+    $username = $c->stash('username');
     return $c->render(json => {success => false, error => 'Missing parameters'})
       unless defined $current;
     $user_id = $c->check_user_password($username, $current)
       // return $c->render(json => {success => false, error => 'Unknown user or invalid password'});
   } else {
     return $c->render(json => {success => false, error => 'Missing parameters'})
-      unless defined $code;
+      unless defined $username and defined $code;
     $user_id = $c->check_user_reset_code($username, $code)
       // return $c->render(json => {success => false, error => 'Unknown user or invalid code'});
   }

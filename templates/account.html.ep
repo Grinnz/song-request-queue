@@ -4,12 +4,6 @@
 <div id="set_password">
 <form v-on:submit.prevent="set_password">
   <div class="form-group row">
-    <label for="set_password_username" class="col-sm-2 col-form-label">Username</label>
-    <div class="col-sm-4">
-      <input id="set_password_username" class="form-control" name="username" type="text" value="<%= stash 'username' %>" v-model="set_password_username">
-    </div>
-  </div>
-  <div class="form-group row">
     <label for="set_password_current" class="col-sm-2 col-form-label">Current Password</label>
     <div class="col-sm-4">
       <input id="set_password_current" class="form-control" name="current" type="password" v-model="set_password_current">
