@@ -72,7 +72,7 @@ create trigger "songs_songtext_trigger" before insert or update on "songs"
 
 create table if not exists "queue" (
   id serial primary key,
-  position integer not null unique,
+  position integer not null unique deferrable,
   song_id integer null,
   requested_by text not null default '',
   requested_at timestamp with time zone default now(),
@@ -87,3 +87,8 @@ drop table if exists "users";
 drop function if exists "songs_update_songtext";
 drop text search configuration if exists "english_nostop";
 drop text search dictionary if exists "english_stem_nostop";
+
+--2 up
+alter table "queue"
+  drop constraint "queue_position_key",
+  add constraint "queue_position_key" unique ("position") deferrable;
