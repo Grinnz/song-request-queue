@@ -85,7 +85,7 @@
   <form id="search_songlist_form" class="form-inline" v-on:submit.prevent="search_songlist">
     <div class="form-group">
       <label for="search_songlist_query" class="mr-2">Search Songs:</label>
-      <input id="search_songlist_query" class="form-control mr-2" name="query" type="text">
+      <input id="search_songlist_query" class="form-control mr-2" name="query" type="text" v-model="search_songlist_query">
     </div>
     <button type="submit" class="btn btn-primary mr-2">Search</button>
     <button type="button" class="btn btn-danger" v-on:click.prevent="clear_search_songlist">Clear</button>
