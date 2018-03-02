@@ -4,18 +4,17 @@ var import_vm = new Vue({
   data: import_data,
   methods: {
     import_songlist: function (event) {
-      $.ajax({
-        url: '/api/songs/import',
+      var import_formdata = new FormData();
+      import_formdata.append('songlist', document.getElementById('import_songlist_file').files[0]);
+      fetch('/api/songs/import', {
         method: 'POST',
-        data: new FormData($('#import_songlist_form')[0]),
-        processData: false,
-        contentType: false
-      }).done(function () {
-          srq_common.set_result_text(import_data, 'Import successful');
-        })
-        .fail(function () {
-          srq_common.set_result_text(import_data, 'Failed to import songlist');
-        });
+        body: import_formdata,
+        credentials: 'include'
+      }).then(function(response) {
+        srq_common.set_result_text(import_data, 'Import successful');
+      }).catch(function(error) {
+        srq_common.set_result_text(import_data, 'Failed to import songlist');
+      });
     }
   }
 });

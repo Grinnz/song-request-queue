@@ -5,13 +5,13 @@
   <div class="form-group row">
     <label for="login_username" class="col-sm-2 col-form-label">Username</label>
     <div class="col-sm-4">
-      <input id="login_username" class="form-control" name="username" type="text">
+      <input id="login_username" class="form-control" name="username" type="text" v-model="login_username">
     </div>
   </div>
   <div class="form-group row">
     <label for="login_password" class="col-sm-2 col-form-label">Password</label>
     <div class="col-sm-4">
-      <input id="login_password" class="form-control" name="password" type="password">
+      <input id="login_password" class="form-control" name="password" type="password" v-model="login_password">
     </div>
   </div>
   <div class="form-group row">

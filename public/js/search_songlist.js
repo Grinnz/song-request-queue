@@ -3,7 +3,13 @@ var search_data = {
   search_songlist_results: [],
   search_for_queue: null,
   confirming_delete_song: null,
-  editing_song: null
+  editing_song: null,
+  edit_song_title: '',
+  edit_song_artist: '',
+  edit_song_album: '',
+  edit_song_track: '',
+  edit_song_source: '',
+  edit_song_duration: ''
 };
 var search_vm = new Vue({
   el: '#search_songlist',
@@ -76,18 +82,39 @@ var search_vm = new Vue({
         });
       }
     },
-    set_editing_song: function (song_id) {
-      search_data.editing_song = song_id;
+    set_editing_song: function (song) {
+      if (song === null) {
+        search_data.editing_song = null;
+      } else {
+        search_data.editing_song = song.id;
+        search_data.edit_song_title = song.title;
+        search_data.edit_song_artist = song.artist;
+        search_data.edit_song_album = song.album;
+        search_data.edit_song_track = song.track;
+        search_data.edit_song_source = song.source;
+        search_data.edit_song_duration = song.duration;
+      }
     },
     edit_song: function (event) {
       if (search_data.editing_song) {
         var song_id = search_data.editing_song;
-        var form_data = $('#edit_song_form').serialize();
+        var edit_song_body = new URLSearchParams();
+        edit_song_body.set('title', search_data.edit_song_title);
+        edit_song_body.set('artist', search_data.edit_song_artist);
+        edit_song_body.set('album', search_data.edit_song_album);
+        edit_song_body.set('track', search_data.edit_song_track);
+        edit_song_body.set('source', search_data.edit_song_source);
+        edit_song_body.set('duration', search_data.edit_song_duration);
         search_data.editing_song = null;
-        $.post('/api/songs/' + song_id, form_data)
-          .done(function () {
-            search_vm.search_songlist();
-          })
+        fetch('/api/songs/' + song_id, {
+          method: 'POST',
+          body: edit_song_body,
+          credentials: 'include'
+        }).then(function(response) {
+          search_vm.search_songlist();
+        }).catch(function(error) {
+          console.log('Error editing song', error);
+        });
       }
     }
   }

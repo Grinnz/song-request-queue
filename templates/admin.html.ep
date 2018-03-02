@@ -6,29 +6,29 @@
     <div class="form-row">
       <div class="form-group col-sm-3">
         <label for="add_song_title" class="sr-only">Title</label>
-        <input id="add_song_title" class="form-control form-control-sm" name="title" type="text" placeholder="Title">
+        <input id="add_song_title" class="form-control form-control-sm" name="title" type="text" placeholder="Title" v-model="add_song_title">
       </div>
       <div class="form-group col-sm-3">
         <label for="add_song_artist" class="sr-only">Artist</label>
-        <input id="add_song_artist" class="form-control form-control-sm" name="artist" type="text" placeholder="Artist">
+        <input id="add_song_artist" class="form-control form-control-sm" name="artist" type="text" placeholder="Artist" v-model="add_song_artist">
       </div>
       <div class="w-100"></div>
       <div class="form-group col-sm-3">
         <label for="add_song_album" class="sr-only">Album</label>
-        <input id="add_song_album" class="form-control form-control-sm" name="album" type="text" placeholder="Album">
+        <input id="add_song_album" class="form-control form-control-sm" name="album" type="text" placeholder="Album" v-model="add_song_album">
       </div>
       <div class="form-group col-sm-3">
         <label for="add_song_track" class="sr-only">Track</label>
-        <input id="add_song_track" class="form-control form-control-sm" name="track" type="text" placeholder="Track">
+        <input id="add_song_track" class="form-control form-control-sm" name="track" type="text" placeholder="Track" v-model="add_song_track">
       </div>
       <div class="w-100"></div>
       <div class="form-group col-sm-3">
         <label for="add_song_source" class="sr-only">Source</label>
-        <input id="add_song_source" class="form-control form-control-sm" name="source" type="text" placeholder="Source">
+        <input id="add_song_source" class="form-control form-control-sm" name="source" type="text" placeholder="Source" v-model="add_song_source">
       </div>
       <div class="form-group col-sm-3">
         <label for="add_song_duration" class="sr-only">Duration</label>
-        <input id="add_song_duration" class="form-control form-control-sm" name="duration" type="text" placeholder="Duration">
+        <input id="add_song_duration" class="form-control form-control-sm" name="duration" type="text" placeholder="Duration" v-model="add_song_duration">
       </div>
     </div>
     <div class="form-row">
@@ -70,7 +70,7 @@
     <form id="add_mod_form" class="form-inline" v-on:submit.prevent="add_mod">
       <div class="form-group">
         <label for="add_mod_username" class="mr-2">Add Queue Moderator:</label>
-        <input id="add_mod_username" class="form-control mr-2" name="username" type="text">
+        <input id="add_mod_username" class="form-control mr-2" name="username" type="text" v-model="add_mod_username">
       </div>
       <input id="add_mod_is_mod" name="is_mod" type="hidden" value="1">
       <button type="submit" class="btn btn-primary">Submit</button>
@@ -110,27 +110,27 @@
       <template v-for="song in search_songlist_results">
       <tr v-bind:id="'song_result_' + song.id">
         <td>
-          <input v-if="editing_song == song.id" id="edit_song_title" class="form-control" name="title" v-bind:value="song.title">
+          <input v-if="editing_song == song.id" id="edit_song_title" class="form-control" name="title" v-model="edit_song_title">
           <span v-else>{{ song.title }}</span>
         </td>
         <td>
-          <input v-if="editing_song == song.id" id="edit_song_artist" class="form-control" name="artist" v-bind:value="song.artist">
+          <input v-if="editing_song == song.id" id="edit_song_artist" class="form-control" name="artist" v-model="edit_song_artist">
           <span v-else>{{ song.artist }}</span>
         </td>
         <td>
-          <input v-if="editing_song == song.id" id="edit_song_album" class="form-control" name="album" v-bind:value="song.album">
+          <input v-if="editing_song == song.id" id="edit_song_album" class="form-control" name="album" v-model="edit_song_album">
           <span v-else>{{ song.album }}</span>
         </td>
         <td>
-          <input v-if="editing_song == song.id" id="edit_song_track" class="form-control" name="track" v-bind:value="song.track">
+          <input v-if="editing_song == song.id" id="edit_song_track" class="form-control" name="track" v-model="edit_song_track">
           <span v-else>{{ song.track }}</span>
         </td>
         <td>
-          <input v-if="editing_song == song.id" id="edit_song_source" class="form-control" name="source" v-bind:value="song.source">
+          <input v-if="editing_song == song.id" id="edit_song_source" class="form-control" name="source" v-model="edit_song_source">
           <span v-else>{{ song.source }}</span>
         </td>
         <td>
-          <input v-if="editing_song == song.id" id="edit_song_duration" class="form-control" name="duration" v-bind:value="song.duration">
+          <input v-if="editing_song == song.id" id="edit_song_duration" class="form-control" name="duration" v-model="edit_song_duration">
           <span v-else>{{ song.duration }}</span>
         </td>
         <td style="white-space: nowrap">
@@ -144,7 +144,7 @@
               <button type="button" class="btn btn-success btn-sm" v-on:click.prevent="unconfirm_delete_song(song.id)">N</button>
             </template>
             <template v-else>
-              <button type="button" class="btn btn-info btn-sm" v-on:click.prevent="set_editing_song(song.id)">✎</button>
+              <button type="button" class="btn btn-info btn-sm" v-on:click.prevent="set_editing_song(song)">✎</button>
               <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="confirm_delete_song(song.id)">✖</button>
             </template>
           </template>
