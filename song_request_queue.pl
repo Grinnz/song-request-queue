@@ -300,6 +300,8 @@ post '/api/set_password' => sub ($c) {
   if (length $username) {
     return $c->render(json => {success => false, error => 'Missing parameters'})
       unless length $code;
+    return $c->render(json => {success => false, error => 'Unknown user or invalid code'})
+      unless $code =~ m/\A([0-9a-f]{2})+\z/i;
     $user_id = $c->check_user_reset_code($username, $code)
       // return $c->render(json => {success => false, error => 'Unknown user or invalid code'});
   } elsif (!defined($username = $c->stash('username'))) {
