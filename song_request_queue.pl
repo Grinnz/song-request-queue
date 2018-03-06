@@ -7,7 +7,7 @@ use Mojolicious::Lite;
 use Crypt::Eksblowfish::Bcrypt qw(en_base64 bcrypt);
 use Digest::MD5 qw(md5 md5_hex);
 use List::Util ();
-use Mojo::JSON qw(true false);
+use Mojo::JSON qw(decode_json true false);
 use Mojo::Pg;
 use Syntax::Keyword::Try;
 use Text::CSV 'csv';
@@ -33,6 +33,17 @@ helper normalize_duration => sub ($c, $duration) {
   my $minutes = pop @duration_segments;
   my $hours = pop @duration_segments;
   return sprintf '%02d:%02d:%02d', $hours // 0, $minutes // 0, $seconds // 0;
+};
+
+helper form_duration => sub ($c, $ms) {
+  $ms //= 0;
+  my $seconds = int($ms / 1000);
+  $ms -= $seconds * 1000;
+  my $minutes = int($seconds / 60);
+  $seconds -= $minutes * 60;
+  my $hours = int($minutes / 60);
+  $minutes -= $hours * 60;
+  return sprintf '%02d:%02d:%02d', $hours, $minutes, $seconds;
 };
 
 helper hash_password => sub ($c, $password, $username) {
@@ -133,6 +144,28 @@ SET "source"="excluded"."source", "duration"="excluded"."duration"
 EOQ
     my @params = (@$song{'song title','artist','album name','track #','source','duration'},
       map { scalar unidecode $_ } @$song{'song title','artist','album name'});
+    $db->query($query, @params);
+  }
+  $tx->commit;
+  return 1;
+};
+
+helper import_from_json => sub ($c, $file) {
+  $file =~ s/,(?=\s*]\s*\z)//;
+  my $songs = decode_json $file;
+  my $db = $c->pg->db;
+  my $tx = $db->begin;
+  foreach my $song (@$songs) {
+    $song->{songLength} = $c->form_duration($song->{songLength});
+    my $query = <<'EOQ';
+INSERT INTO "songs" ("title","artist","album","track","source","duration",
+"title_ascii","artist_ascii","album_ascii")
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+ON CONFLICT ON CONSTRAINT "songs_artist_album_title_track_key" DO UPDATE
+SET "source"="excluded"."source", "duration"="excluded"."duration"
+EOQ
+    my @params = (@$song{'songName','artistName','albumName','trackNo','charterName','songLength'},
+      map { scalar unidecode $_ } @$song{'songName','artistName','albumName'});
     $db->query($query, @params);
   }
   $tx->commit;
@@ -444,7 +477,12 @@ group {
     my $upload = $c->req->upload('songlist');
     return $c->render(text => 'No songlist provided.') unless defined $upload;
     my $name = $upload->filename;
-    $c->import_from_csv(\($upload->asset->slurp));
+    my $contents = $upload->asset->slurp;
+    if ($contents =~ m/^[\[\{]/ or $name =~ m/\.json$/) {
+      $c->import_from_json($contents);
+    } else {
+      $c->import_from_csv(\$contents);
+    }
     $c->render(text => "Import of $name successful.");
   };
   
