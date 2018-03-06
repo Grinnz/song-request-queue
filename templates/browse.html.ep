@@ -19,7 +19,7 @@
         <td><%= $song->{artist} %></td>
         <td><%= $song->{album} %></td>
         <td><%= $song->{track} %></td>
-        <td><%= $song->{source} %></td>
+        <td><%= $song->{source} =~ s/ DLC$/\N{U+00A0}DLC/r %></td>
         <td><%= $song->{duration} %></td>
       </tr><% } %>
     </tbody>
