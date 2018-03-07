@@ -92,3 +92,11 @@ drop text search dictionary if exists "english_stem_nostop";
 alter table "queue"
   drop constraint "queue_position_key",
   add constraint "queue_position_key" unique ("position") deferrable;
+
+--3 up
+alter table "songs" drop constraint "songs_artist_album_title_track_key";
+create unique index "songs_artist_album_title_track_key" on "songs" ("artist","album","title",coalesce("track",0));
+
+--3 down
+drop index "songs_artist_album_title_track_key";
+alter table "songs" add constraint "songs_artist_album_title_track_key" unique ("artist","album","title","track");
