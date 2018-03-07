@@ -132,6 +132,7 @@ helper import_from_csv => sub ($c, $file) {
   my $tx = $db->begin;
   foreach my $song (@$songs) {
     $song->{duration} = $c->normalize_duration($song->{duration});
+    $song->{'track #'} = int $song->{'track #'} if defined $song->{'track #'};
     my $query = <<'EOQ';
 INSERT INTO "songs" ("title","artist","album","track","source","duration",
 "title_ascii","artist_ascii","album_ascii")
@@ -154,6 +155,7 @@ helper import_from_json => sub ($c, $file) {
   my $tx = $db->begin;
   foreach my $song (@$songs) {
     $song->{songLength} = $c->normalize_duration($song->{songLength} / 1000);
+    $song->{trackNo} = int $song->{trackNo} if defined $song->{trackNo};
     my $query = <<'EOQ';
 INSERT INTO "songs" ("title","artist","album","track","source","duration",
 "title_ascii","artist_ascii","album_ascii")
@@ -174,6 +176,7 @@ helper add_song => sub ($c, $details) {
   $properties{$_} = $details->{$_} for grep { defined $details->{$_} } qw(title artist album track source duration);
   $properties{"${_}_ascii"} = unidecode $details->{$_} for qw(title artist album);
   $properties{duration} = $c->normalize_duration($properties{duration});
+  $properties{track} = int $properties{track} if defined $properties{track};
   my $inserted = $c->pg->db->insert('songs', \%properties, {returning => 'id'})->arrays->first;
   return $inserted->[0];
 };
@@ -185,6 +188,7 @@ helper update_song => sub ($c, $song_id, $details) {
   $updates{"${_}_ascii"} = unidecode $details->{$_} for grep { defined $details->{$_} }
     qw(title artist album);
   $updates{duration} = $c->normalize_duration($updates{duration});
+  $updates{track} = int $updates{track} if defined $updates{track};
   return $c->pg->db->update('songs', \%updates, {id => $song_id})->rows;
 };
 
