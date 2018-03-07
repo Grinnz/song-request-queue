@@ -100,3 +100,41 @@ create unique index "songs_artist_album_title_track_key" on "songs" ("artist","a
 --3 down
 drop index "songs_artist_album_title_track_key";
 alter table "songs" add constraint "songs_artist_album_title_track_key" unique ("artist","album","title","track");
+
+--4 up
+drop index "songs_artist_album_title_track_key";
+create unique index "songs_artist_album_title_source_track_key" on "songs" ("artist","album","title","source",coalesce("track",0));
+
+create or replace function "songs_update_songtext"() returns trigger as $$
+begin
+  "new"."songtext" :=
+    setweight(to_tsvector('english_nostop',
+      replace("new"."title",'/',' ') || ' ' ||
+      replace("new"."title_ascii",'/',' ')), 'A') ||
+    setweight(to_tsvector('english_nostop',
+      replace("new"."artist",'/',' ') || ' ' ||
+      replace("new"."artist_ascii",'/',' ')), 'B') ||
+    setweight(to_tsvector('english_nostop',
+      replace("new"."album",'/',' ') || ' ' ||
+      replace("new"."album_ascii",'/',' ')), 'D') ||
+    setweight(to_tsvector('english_nostop',
+      replace("new"."source",'/',' ')), 'D');
+  "new"."songtext_withstop" :=
+    setweight(to_tsvector('english',
+      replace("new"."title",'/',' ') || ' ' ||
+      replace("new"."title_ascii",'/',' ')), 'A') ||
+    setweight(to_tsvector('english',
+      replace("new"."artist",'/',' ') || ' ' ||
+      replace("new"."artist_ascii",'/',' ')), 'B') ||
+    setweight(to_tsvector('english',
+      replace("new"."album",'/',' ') || ' ' ||
+      replace("new"."album_ascii",'/',' ')), 'D') ||
+    setweight(to_tsvector('english',
+      replace("new"."source",'/',' ')), 'D');
+  return new;
+end
+$$ language plpgsql;
+
+--4 down
+drop index "songs_artist_album_title_source_track_key";
+create unique index "songs_artist_album_title_track_key" on "songs" ("artist","album","title",coalesce("track",0));

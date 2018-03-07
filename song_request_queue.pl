@@ -104,7 +104,7 @@ helper search_songs => sub ($c, $search) {
   my $query = <<'EOQ';
 SELECT *, ts_rank_cd(songtext, to_tsquery('english_nostop', $1), 1) AS "rank"
 FROM "songs" WHERE songtext @@ to_tsquery('english_nostop', $1)
-ORDER BY "rank" DESC, "artist", "album", "track", "title"
+ORDER BY "rank" DESC, "artist", "album", "track", "title", "source"
 EOQ
   my $results = $c->pg->db->query($query, $and_search)->hashes;
   return $results if @$results;
@@ -113,7 +113,7 @@ EOQ
   $query = <<'EOQ';
 SELECT *, ts_rank_cd(songtext_withstop, to_tsquery('english', $1), 1) AS "rank"
 FROM "songs" WHERE songtext_withstop @@ to_tsquery('english', $1)
-ORDER BY "rank" DESC, "artist", "album", "track", "title"
+ORDER BY "rank" DESC, "artist", "album", "track", "title", "source"
 EOQ
   return $c->pg->db->query($query, $or_search)->hashes;
 };
@@ -124,7 +124,7 @@ helper song_details => sub ($c, $song_id) {
 };
 
 helper all_song_details => sub ($c) {
-  my $query = 'SELECT * FROM "songs" ORDER BY "artist", "album", "track", "title"';
+  my $query = 'SELECT * FROM "songs" ORDER BY "artist", "album", "track", "title", "source"';
   return $c->pg->db->query($query)->hashes;
 };
 
@@ -139,8 +139,8 @@ helper import_from_csv => sub ($c, $file) {
 INSERT INTO "songs" ("title","artist","album","track","source","duration",
 "title_ascii","artist_ascii","album_ascii")
 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-ON CONFLICT ("title","artist","album",coalesce("track",0)) DO UPDATE
-SET "source"="excluded"."source", "duration"="excluded"."duration"
+ON CONFLICT ("artist","album","title","source",coalesce("track",0)) DO UPDATE
+SET "duration"="excluded"."duration"
 EOQ
     my @params = (@$song{'song title','artist','album name','track #','source','duration'},
       map { scalar unidecode $_ } @$song{'song title','artist','album name'});
@@ -161,8 +161,8 @@ helper import_from_json => sub ($c, $file) {
 INSERT INTO "songs" ("title","artist","album","track","source","duration",
 "title_ascii","artist_ascii","album_ascii")
 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-ON CONFLICT ("title","artist","album",coalesce("track",0)) DO UPDATE
-SET "source"="excluded"."source", "duration"="excluded"."duration"
+ON CONFLICT ("artist","album","title","source",coalesce("track",0)) DO UPDATE
+SET "duration"="excluded"."duration"
 EOQ
     my @params = (@$song{'songName','artistName','albumName','trackNo','charterName','songLength'},
       map { scalar unidecode $_ } @$song{'songName','artistName','albumName'});
