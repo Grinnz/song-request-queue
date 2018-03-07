@@ -22,16 +22,19 @@ var set_password_vm = new Vue({
         body: set_password_body,
         credentials: 'include'
       }).then(function(response) {
-        return response.json();
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
       }).then(function(data) {
         if (data.success) {
           srq_common.set_result_text(set_password_data, 'Password successfully changed');
         } else {
-          var error_text = data.error || 'Failed to set password';
-          srq_common.set_result_text(set_password_data, error_text);
+          throw new Error(data.error || 'Failed to set password');
         }
       }).catch(function(error) {
-        srq_common.set_result_text(set_password_data, 'Failed to set password');
+        srq_common.set_result_text(set_password_data, error.toString());
       });
     }
   }

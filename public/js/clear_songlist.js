@@ -15,9 +15,13 @@ var clear_songlist_vm = new Vue({
         method: 'DELETE',
         credentials: 'include'
       }).then(function(response) {
-        srq_common.set_result_text(clear_songlist_data, 'Songlist cleared');
+        if (response.ok) {
+          srq_common.set_result_text(clear_songlist_data, 'Songlist cleared');
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
       }).catch(function(error) {
-        srq_common.set_result_text(clear_songlist_data, 'Failed to clear songlist');
+        srq_common.set_result_text(clear_songlist_data, error.toString());
       });
     }
   }

@@ -19,7 +19,11 @@ var search_vm = new Vue({
       var search_url = new URL('/api/songs/search', window.location.href);
       search_url.searchParams.set('query', search_data.search_songlist_query);
       fetch(search_url).then(function(response) {
-        return response.json();
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
       }).then(function(results) {
         search_data.search_songlist_results = results;
       }).catch(function(error) {
@@ -38,7 +42,11 @@ var search_vm = new Vue({
         body: queue_add_body,
         credentials: 'include'
       }).then(function(response) {
-        queue_vm.refresh_queue();
+        if (response.ok) {
+          queue_vm.refresh_queue();
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
       }).catch(function(error) {
         console.log('Error adding song to queue', error);
       });
@@ -57,7 +65,11 @@ var search_vm = new Vue({
           body: queue_set_body,
           credentials: 'include'
         }).then(function(response) {
-          queue_vm.refresh_queue();
+          if (response.ok) {
+            queue_vm.refresh_queue();
+          } else {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
         }).catch(function(error) {
           console.log('Error setting queue position', error);
         });
@@ -76,7 +88,11 @@ var search_vm = new Vue({
           method: 'DELETE',
           credentials: 'include'
         }).then(function(response) {
-          search_vm.search_songlist();
+          if (response.ok) {
+            search_vm.search_songlist();
+          } else {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
         }).catch(function(error) {
           console.log('Error deleting song', error);
         });
@@ -113,7 +129,11 @@ var search_vm = new Vue({
           body: edit_song_body,
           credentials: 'include'
         }).then(function(response) {
-          search_vm.search_songlist();
+          if (response.ok) {
+            search_vm.search_songlist();
+          } else {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
         }).catch(function(error) {
           console.log('Error editing song', error);
         });

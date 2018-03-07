@@ -11,7 +11,11 @@ var queue_vm = new Vue({
   methods: {
     refresh_queue: function (event) {
       fetch('/api/queue').then(function(response) {
-        return response.json();
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
       }).then(function(entries) {
         queue_vm.set_editing_requestor(null);
         queue_data.queue_first = entries.shift();
@@ -28,7 +32,11 @@ var queue_vm = new Vue({
           method: 'DELETE',
           credentials: 'include'
         }).then(function(response) {
-          queue_vm.refresh_queue();
+          if (response.ok) {
+            queue_vm.refresh_queue();
+          } else {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
         }).catch(function(error) {
           console.log('Error removing song from queue', error);
         });
@@ -45,7 +53,11 @@ var queue_vm = new Vue({
           body: queue_reorder_body,
           credentials: 'include'
         }).then(function(response) {
-          queue_vm.refresh_queue();
+          if (response.ok) {
+            queue_vm.refresh_queue();
+          } else {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
         }).catch(function(error) {
           console.log('Error reordering song queue', error);
         });
@@ -72,7 +84,11 @@ var queue_vm = new Vue({
           body: edit_requestor_body,
           credentials: 'include'
         }).then(function(response) {
-          queue_vm.refresh_queue();
+          if (response.ok) {
+            queue_vm.refresh_queue();
+          } else {
+            throw new Error(response.status + ' ' + response.statusText);
+          }
         }).catch(function(error) {
           console.log('Error editing song requestor', error);
         });

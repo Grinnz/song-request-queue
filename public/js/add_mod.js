@@ -12,17 +12,20 @@ var add_mod_vm = new Vue({
         body: add_mod_body,
         credentials: 'include'
       }).then(function(response) {
-        return response.json();
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
       }).then(function(data) {
         if (data.success) {
           var success_text = 'Created moderator account ' + data.username + ' with reset code ' + data.reset_code;
           srq_common.set_result_text(add_mod_data, success_text, -1);
         } else {
-          var error_text = data.error || 'Failed to create moderator account';
-          srq_common.set_result_text(add_mod_data, error_text);
+          throw new Error(data.error || 'Failed to create moderator account');
         }
       }).catch(function(error) {
-        srq_common.set_result_text(add_mod_data, 'Failed to create moderator account');
+        srq_common.set_result_text(add_mod_data, error.toString());
       });
     }
   }

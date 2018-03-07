@@ -26,9 +26,15 @@ var add_song_vm = new Vue({
         body: add_song_body,
         credentials: 'include'
       }).then(function(response) {
-        srq_common.set_result_text(add_song_data, 'Song successfully added');
+        if (response.ok) {
+          return response.text();
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
+      }).then(function(data) {
+        srq_common.set_result_text(add_song_data, data);
       }).catch(function(error) {
-        srq_common.set_result_text(add_song_data, 'Failed to add song');
+        srq_common.set_result_text(add_song_data, error.toString());
       });
     },
     clear_add_song: function (event) {

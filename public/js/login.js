@@ -12,16 +12,19 @@ var login_vm = new Vue({
         body: login_body,
         credentials: 'include'
       }).then(function(response) {
-        return response.json();
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
       }).then(function(data) {
         if (data.logged_in) {
           window.location.href = '/';
         } else {
-          var error_text = data.error || 'Login failed';
-          srq_common.set_result_text(login_data, error_text);
+          throw new Error(data.error || 'Login failed');
         }
       }).catch(function(error) {
-        srq_common.set_result_text(login_data, 'Login failed');
+        srq_common.set_result_text(login_data, error.toString());
       });
     }
   }

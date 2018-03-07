@@ -11,9 +11,13 @@ var import_vm = new Vue({
         body: import_formdata,
         credentials: 'include'
       }).then(function(response) {
-        srq_common.set_result_text(import_data, 'Import successful');
+        if (response.ok) {
+          srq_common.set_result_text(import_data, 'Import successful');
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
       }).catch(function(error) {
-        srq_common.set_result_text(import_data, 'Failed to import songlist');
+        srq_common.set_result_text(import_data, error.toString());
       });
     }
   }
