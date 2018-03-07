@@ -29,20 +29,17 @@ app->pg->auto_migrate(1)->migrations->name('song_request_queue')->from_file($mig
 
 helper normalize_duration => sub ($c, $duration) {
   my @duration_segments = split /:/, ($duration // '');
-  my $seconds = pop @duration_segments;
-  my $minutes = pop @duration_segments;
-  my $hours = pop @duration_segments;
-  return sprintf '%02d:%02d:%02d', $hours // 0, $minutes // 0, $seconds // 0;
-};
-
-helper form_duration => sub ($c, $ms) {
-  $ms //= 0;
-  my $seconds = int($ms / 1000);
-  $ms -= $seconds * 1000;
-  my $minutes = int($seconds / 60);
-  $seconds -= $minutes * 60;
-  my $hours = int($minutes / 60);
-  $minutes -= $hours * 60;
+  my $seconds = pop(@duration_segments) // 0;
+  my $minutes = pop(@duration_segments) // 0;
+  my $hours = pop(@duration_segments) // 0;
+  if ($seconds > 60) {
+    $minutes += int($seconds / 60);
+    $seconds %= 60;
+  }
+  if ($minutes > 60) {
+    $hours += int($minutes / 60);
+    $minutes %= 60;
+  }
   return sprintf '%02d:%02d:%02d', $hours, $minutes, $seconds;
 };
 
@@ -156,7 +153,7 @@ helper import_from_json => sub ($c, $file) {
   my $db = $c->pg->db;
   my $tx = $db->begin;
   foreach my $song (@$songs) {
-    $song->{songLength} = $c->form_duration($song->{songLength});
+    $song->{songLength} = $c->normalize_duration($song->{songLength} / 1000);
     my $query = <<'EOQ';
 INSERT INTO "songs" ("title","artist","album","track","source","duration",
 "title_ascii","artist_ascii","album_ascii")
@@ -174,17 +171,18 @@ EOQ
 
 helper add_song => sub ($c, $details) {
   my %properties;
-  $properties{$_} = $details->{$_} for qw(title artist album track source duration);
+  $properties{$_} = $details->{$_} for grep { defined $details->{$_} } qw(title artist album track source duration);
   $properties{"${_}_ascii"} = unidecode $details->{$_} for qw(title artist album);
+  $properties{duration} = $c->normalize_duration($properties{duration});
   my $inserted = $c->pg->db->insert('songs', \%properties, {returning => 'id'})->arrays->first;
   return $inserted->[0];
 };
 
 helper update_song => sub ($c, $song_id, $details) {
   my %updates;
-  $updates{$_} = $details->{$_} for grep { exists $details->{$_} }
+  $updates{$_} = $details->{$_} for grep { defined $details->{$_} }
     qw(title artist album track source duration);
-  $updates{"${_}_ascii"} = unidecode $details->{$_} for grep { exists $details->{$_} }
+  $updates{"${_}_ascii"} = unidecode $details->{$_} for grep { defined $details->{$_} }
     qw(title artist album);
   $updates{duration} = $c->normalize_duration($updates{duration});
   return $c->pg->db->update('songs', \%updates, {id => $song_id})->rows;

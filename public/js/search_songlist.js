@@ -102,7 +102,9 @@ var search_vm = new Vue({
         edit_song_body.set('title', search_data.edit_song_title);
         edit_song_body.set('artist', search_data.edit_song_artist);
         edit_song_body.set('album', search_data.edit_song_album);
-        edit_song_body.set('track', search_data.edit_song_track);
+        if (search_data.edit_song_track !== null && search_data.edit_song_track !== '') {
+          edit_song_body.set('track', search_data.edit_song_track);
+        }
         edit_song_body.set('source', search_data.edit_song_source);
         edit_song_body.set('duration', search_data.edit_song_duration);
         search_data.editing_song = null;
