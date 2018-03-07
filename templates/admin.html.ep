@@ -32,7 +32,8 @@
       </div>
     </div>
     <div class="form-row">
-      <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+      <button type="submit" class="btn btn-primary btn-sm mr-2">Submit</button>
+      <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="clear_add_song">Clear</button>
       &nbsp;<span><i>{{ result_text }}</i></span>
     </div>
   </form>

@@ -30,6 +30,14 @@ var add_song_vm = new Vue({
       }).catch(function(error) {
         srq_common.set_result_text(add_song_data, 'Failed to add song');
       });
+    },
+    clear_add_song: function (event) {
+      add_song_data.add_song_title = '';
+      add_song_data.add_song_artist = '';
+      add_song_data.add_song_album = '';
+      add_song_data.add_song_track = '';
+      add_song_data.add_song_source = '';
+      add_song_data.add_song_duration = '';
     }
   }
 });
