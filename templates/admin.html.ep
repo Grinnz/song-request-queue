@@ -40,26 +40,25 @@
 </div>
 
 <div id="import_songlist" class="mb-3">
+  <div class="row"><h4>Import Songlist</h4></div>
+  <div class="row">
+    <span>Songlists can be imported from either the C3 Tools Setlist Manager CSV export or the Clone Hero JSON export.</span>
+  </div>
   <div class="row">
     <form class="form-inline" enctype="multipart/form-data" v-on:submit.prevent="import_songlist">
-      <div class="form-group">
-        <label for="import_songlist_file" class="mr-2">Import Songlist:</label>
-        <input id="import_songlist_file" class="form-control mr-2" name="songlist" type="file">
-      </div>
+      <input id="import_songlist_file" class="form-control mr-2" name="songlist" type="file">
       <button type="submit" class="btn btn-primary">Submit</button>
       &nbsp;<span><i>{{ result_text }}</i></span>
     </form>
   </div>
-  <div class="row">
-    <span>Songlists can be imported from either the C3 Tools Setlist Manager CSV export or the Clone Hero JSON export.</span>
-  </div>
 </div>
 
 <div id="clear_songlist">
+  <div class="row"><h4>Clear Songlist and Queue</h4></div>
   <div class="row">
     <div class="form-group">
-      <label for="clear_songlist_button">Clear Songlist and Queue:<span v-if="confirming_clear_songlist"> Are You Sure?</span></label>
       <template v-if="confirming_clear_songlist">
+        <label for="clear_songlist_button">Are You Sure?</label>
         <button id="clear_songlist_button" type="button" class="btn btn-danger" v-on:click.prevent="clear_songlist">Yes, Delete All Songs</button>
         <button type="button" class="btn btn-success" v-on:click.prevent="unconfirm_clear_songlist">Cancel</button>
       </template>
@@ -70,23 +69,22 @@
 </div>
 
 <div id="add_mod">
+  <div class="row"><h4>Add Queue Moderator</h4></div>
+  <div class="row">
+    <span>You will receive a code; direct the user to go to the <a href="/set_password">Set Password</a> page and enter it to set their password.</span>
+  </div>
   <div class="row">
     <form class="form-inline" v-on:submit.prevent="add_mod">
-      <div class="form-group">
-        <label for="add_mod_username" class="mr-2">Add Queue Moderator:</label>
-        <input id="add_mod_username" class="form-control mr-2" name="username" type="text" placeholder="Username" v-model="add_mod_username">
-      </div>
+      <input id="add_mod_username" class="form-control mr-2" name="username" type="text" placeholder="Username" v-model="add_mod_username">
       <button type="submit" class="btn btn-primary">Submit</button>
       &nbsp;<span><i>{{ result_text }}</i></span>
     </form>
-  </div>
-  <div class="row">
-    <span>You will receive a code; direct the user to go to the <a href="/set_password">Set Password</a> page and enter it to set their password.</span>
   </div>
 </div>
 <br>
 
 <div id="search_songlist">
+<div class="row"><h4>Manage Songs</h4></div>
 <div class="row">
   <form class="form-inline" v-on:submit.prevent="search_songlist">
     <div class="form-group">
