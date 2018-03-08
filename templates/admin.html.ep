@@ -41,7 +41,7 @@
 
 <div id="import_songlist" class="mb-3">
   <div class="row"><h4>Import Songlist</h4></div>
-  <div class="row">
+  <div class="row mb-2">
     <span>Songlists can be imported from either the C3 Tools Setlist Manager CSV export or the Clone Hero JSON export.</span>
   </div>
   <div class="row">
@@ -70,7 +70,7 @@
 
 <div id="add_mod">
   <div class="row"><h4>Add Queue Moderator</h4></div>
-  <div class="row">
+  <div class="row mb-2">
     <span>You will receive a code; direct the user to go to the <a href="/set_password">Set Password</a> page and enter it to set their password.</span>
   </div>
   <div class="row">
