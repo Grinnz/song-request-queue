@@ -112,6 +112,7 @@
         <th>Artist</th>
         <th>Album</th>
         <th>Track</th>
+        <th>Genre</th>
         <th>Source</th>
         <th>Duration</th>
         <% if (stash 'is_mod') { %><th>Queue</th><% } %>
@@ -123,6 +124,7 @@
         <td>{{ song.artist }}</td>
         <td>{{ song.album }}</td>
         <td>{{ song.track }}</td>
+        <td>{{ song.genre }}</td>
         <td>{{ song.source }}</td>
         <td>{{ song.duration }}</td>
         <% if (stash 'is_mod') { %><td>

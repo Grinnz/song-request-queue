@@ -128,43 +128,46 @@ helper all_song_details => sub ($c) {
 helper import_from_csv => sub ($c, $file) {
   my $songs = csv(in => $file, encoding => 'UTF-8', detect_bom => 1)
     or die Text::CSV->error_diag;
-  my $db = $c->pg->db;
-  my $tx = $db->begin;
-  foreach my $song (@$songs) {
-    $song->{duration} = $c->normalize_duration($song->{duration});
-    $song->{'track #'} = int $song->{'track #'} if defined $song->{'track #'};
-    my $query = <<'EOQ';
-INSERT INTO "songs" ("title","artist","album","track","source","duration",
-"title_ascii","artist_ascii","album_ascii")
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-ON CONFLICT ("artist","album","title","source",coalesce("track",0)) DO UPDATE
-SET "duration"="excluded"."duration"
-EOQ
-    my @params = (@$song{'song title','artist','album name','track #','source','duration'},
-      map { scalar unidecode $_ } @$song{'song title','artist','album name'});
-    $db->query($query, @params);
-  }
-  $tx->commit;
-  return 1;
+  $c->import_songs([map +{
+    title    => $_->{'song title'},
+    artist   => $_->{artist},
+    album    => $_->{'album name'},
+    track    => $_->{'track #'},
+    genre    => $_->{genre},
+    source   => $_->{source},
+    duration => $_->{duration},
+  }, @$songs]);
 };
 
 helper import_from_json => sub ($c, $file) {
   $file =~ s/,(?=\s*]\s*\z)//;
   my $songs = decode_json $file;
+  $c->import_songs([map +{
+    title    => $_->{songName},
+    artist   => $_->{artistName},
+    album    => $_->{albumName},
+    track    => undef,
+    genre    => $_->{genreName},
+    source   => $_->{charterName},
+    duration => $_->{songLength} / 1000,
+  }, @$songs]);
+};
+
+helper import_songs => sub ($c, $songs) {
   my $db = $c->pg->db;
   my $tx = $db->begin;
   foreach my $song (@$songs) {
-    $song->{songLength} = $c->normalize_duration($song->{songLength} / 1000);
-    $song->{trackNo} = int $song->{trackNo} if defined $song->{trackNo};
+    $song->{duration} = $c->normalize_duration($song->{duration});
+    $song->{track} = int $song->{track} if defined $song->{track};
     my $query = <<'EOQ';
-INSERT INTO "songs" ("title","artist","album","track","source","duration",
+INSERT INTO "songs" ("title","artist","album","track","genre","source","duration",
 "title_ascii","artist_ascii","album_ascii")
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
 ON CONFLICT ("artist","album","title","source",coalesce("track",0)) DO UPDATE
-SET "duration"="excluded"."duration"
+SET "genre"="excluded"."genre", "duration"="excluded"."duration"
 EOQ
-    my @params = (@$song{'songName','artistName','albumName','trackNo','charterName','songLength'},
-      map { scalar unidecode $_ } @$song{'songName','artistName','albumName'});
+    my @params = (@$song{'title','artist','album','track','genre','source','duration'},
+      map { scalar unidecode $_ } @$song{'title','artist','album'});
     $db->query($query, @params);
   }
   $tx->commit;
@@ -173,7 +176,8 @@ EOQ
 
 helper add_song => sub ($c, $details) {
   my %properties;
-  $properties{$_} = $details->{$_} for grep { defined $details->{$_} } qw(title artist album track source duration);
+  $properties{$_} = $details->{$_} for grep { defined $details->{$_} }
+    qw(title artist album track genre source duration);
   $properties{"${_}_ascii"} = unidecode $details->{$_} for qw(title artist album);
   $properties{duration} = $c->normalize_duration($properties{duration});
   $properties{track} = int $properties{track} if defined $properties{track};
@@ -184,7 +188,7 @@ helper add_song => sub ($c, $details) {
 helper update_song => sub ($c, $song_id, $details) {
   my %updates;
   $updates{$_} = $details->{$_} for grep { defined $details->{$_} }
-    qw(title artist album track source duration);
+    qw(title artist album track genre source duration);
   $updates{"${_}_ascii"} = unidecode $details->{$_} for grep { defined $details->{$_} }
     qw(title artist album);
   $updates{duration} = $c->normalize_duration($updates{duration});

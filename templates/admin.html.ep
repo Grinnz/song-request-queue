@@ -105,6 +105,7 @@
         <th>Artist</th>
         <th>Album</th>
         <th>Track</th>
+        <th>Genre</th>
         <th>Source</th>
         <th>Duration</th>
         <th>Admin</th>
@@ -128,6 +129,10 @@
         <td>
           <input v-if="editing_song == song.id" class="form-control" name="track" v-model="edit_song_track">
           <span v-else>{{ song.track }}</span>
+        </td>
+        <td>
+          <input v-if="editing_song == song.id" class="form-control" name="genre" v-model="edit_song_genre">
+          <span v-else>{{ song.genre }}</span>
         </td>
         <td>
           <input v-if="editing_song == song.id" class="form-control" name="source" v-model="edit_song_source">
