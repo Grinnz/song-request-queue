@@ -23,9 +23,14 @@
       </div>
       <div class="w-100"></div>
       <div class="form-group col-sm-3">
+        <label for="add_song_genre" class="sr-only">Genre</label>
+        <input id="add_song_genre" class="form-control form-control-sm" name="genre" type="text" placeholder="Genre" v-model="add_song_genre">
+      </div>
+      <div class="form-group col-sm-3">
         <label for="add_song_source" class="sr-only">Source</label>
         <input id="add_song_source" class="form-control form-control-sm" name="source" type="text" placeholder="Source" v-model="add_song_source">
       </div>
+      <div class="w-100"></div>
       <div class="form-group col-sm-3">
         <label for="add_song_duration" class="sr-only">Duration</label>
         <input id="add_song_duration" class="form-control form-control-sm" name="duration" type="text" placeholder="Duration" v-model="add_song_duration">
