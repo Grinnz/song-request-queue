@@ -108,29 +108,27 @@ create unique index "songs_artist_album_title_source_track_key" on "songs" ("art
 create or replace function "songs_update_songtext"() returns trigger as $$
 begin
   "new"."songtext" :=
-    setweight(to_tsvector('english_nostop',
-      replace("new"."title",'/',' ') || ' ' ||
-      replace("new"."title_ascii",'/',' ')), 'A') ||
-    setweight(to_tsvector('english_nostop',
-      replace("new"."artist",'/',' ') || ' ' ||
-      replace("new"."artist_ascii",'/',' ')), 'B') ||
-    setweight(to_tsvector('english_nostop',
-      replace("new"."album",'/',' ') || ' ' ||
-      replace("new"."album_ascii",'/',' ')), 'D') ||
-    setweight(to_tsvector('english_nostop',
-      replace("new"."source",'/',' ')), 'D');
+    setweight(to_tsvector('english_nostop', concat_ws(' ',
+      replace("new"."title",'/',' '),
+      replace("new"."title_ascii",'/',' '))), 'A') ||
+    setweight(to_tsvector('english_nostop', concat_ws(' ',
+      replace("new"."artist",'/',' '),
+      replace("new"."artist_ascii",'/',' '))), 'B') ||
+    setweight(to_tsvector('english_nostop', concat_ws(' ',
+      replace("new"."album",'/',' '),
+      replace("new"."album_ascii",'/',' '),
+      replace("new"."source",'/',' '))), 'D');
   "new"."songtext_withstop" :=
-    setweight(to_tsvector('english',
-      replace("new"."title",'/',' ') || ' ' ||
-      replace("new"."title_ascii",'/',' ')), 'A') ||
-    setweight(to_tsvector('english',
-      replace("new"."artist",'/',' ') || ' ' ||
-      replace("new"."artist_ascii",'/',' ')), 'B') ||
-    setweight(to_tsvector('english',
-      replace("new"."album",'/',' ') || ' ' ||
-      replace("new"."album_ascii",'/',' ')), 'D') ||
-    setweight(to_tsvector('english',
-      replace("new"."source",'/',' ')), 'D');
+    setweight(to_tsvector('english', concat_ws(' ',
+      replace("new"."title",'/',' '),
+      replace("new"."title_ascii",'/',' '))), 'A') ||
+    setweight(to_tsvector('english', concat_ws(' ',
+      replace("new"."artist",'/',' '),
+      replace("new"."artist_ascii",'/',' '))), 'B') ||
+    setweight(to_tsvector('english', concat_ws(' ',
+      replace("new"."album",'/',' '),
+      replace("new"."album_ascii",'/',' '),
+      replace("new"."source",'/',' '))), 'D');
   return new;
 end
 $$ language plpgsql;
