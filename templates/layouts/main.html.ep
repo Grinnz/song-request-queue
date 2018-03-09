@@ -33,7 +33,7 @@
 % }
   <div class="col-sm-1"><a href="https://github.com/Grinnz/song-request-queue" target="_blank">Source</a></div>
   </div>
-  <div class="row"><h1>Song Request Queue</h1></div>
+  <h1>Song Request Queue</h1>
 <%= content %>
   </div>
 % if (defined stash 'load_js') {
