@@ -60,7 +60,7 @@
         <td>{{ request.title }}</td>
         <td>{{ request.artist }}</td>
         <td>{{ request.duration }}</td>
-        <td style="white-space: nowrap"><span v-if="request.raw_request">"{{ request.raw_request }}" </span>
+        <td><span v-if="request.raw_request">"{{ request.raw_request }}" </span>
           <% if (stash 'is_mod') { %>
             <template v-if="editing_requestor == request.position">
             <form class="form-inline" v-on:submit.prevent="edit_requestor(request.position)">(
