@@ -1,6 +1,6 @@
 % layout 'main', title => 'Admin', load_js => ['import_songlist.js','search_songlist.js','clear_songlist.js','add_song.js','add_mod.js'];
-<h2>Admin</h2>
-<div id="add_song" class="mb-3">
+<div id="add_song" class="container mb-3">
+  <h2>Admin</h2>
   <h4>Add Song</h4>
   <form v-on:submit.prevent="add_song">
     <div class="form-row">
@@ -36,16 +36,16 @@
         <input id="add_song_duration" class="form-control form-control-sm" name="duration" type="text" placeholder="Duration" v-model="add_song_duration">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-3">
+      <div class="form-group col-sm-6">
         <button type="submit" class="btn btn-primary btn-sm mr-2">Submit</button>
-        <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="clear_add_song">Clear</button>
+        <button type="button" class="btn btn-danger btn-sm mr-2" v-on:click.prevent="clear_add_song">Clear</button>
+        <span><i>{{ result_text }}</i></span>
       </div>
-      <span><i>{{ result_text }}</i></span>
     </div>
   </form>
 </div>
 
-<div id="import_songlist" class="mb-3">
+<div id="import_songlist" class="container mb-3">
   <h4>Import Songlist</h4>
   <div class="mb-2">
     Songlists can be imported from either the C3 Tools Setlist Manager CSV export or the Clone Hero JSON export.
@@ -57,7 +57,7 @@
   </form>
 </div>
 
-<div id="clear_songlist">
+<div id="clear_songlist" class="container">
   <h4>Clear Songlist and Queue</h4>
   <div class="form-group">
     <template v-if="confirming_clear_songlist">
@@ -70,7 +70,7 @@
   </div>
 </div>
 
-<div id="add_mod">
+<div id="add_mod" class="container">
   <h4>Add Queue Moderator</h4>
   <div class="mb-2">
     You will receive a code; direct the user to go to the <a href="/set_password">Set Password</a> page and enter it to set their password.
@@ -83,7 +83,7 @@
 </div>
 <br>
 
-<div id="search_songlist">
+<div id="search_songlist" class="container">
   <h4>Manage Songs</h4>
   <form class="form-inline mb-2" v-on:submit.prevent="search_songlist">
     <div class="form-group">

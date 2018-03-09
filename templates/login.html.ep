@@ -1,5 +1,5 @@
 % layout 'main', title => 'Login', load_js => ['login.js'];
-<div id="login">
+<div id="login" class="container">
 <h2>Login</h2>
 <form id="login_form" v-on:submit.prevent="do_login">
   <div class="form-group row">

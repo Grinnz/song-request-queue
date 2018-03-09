@@ -1,11 +1,10 @@
 % layout 'main', load_js => ['song_queue.js','search_songlist.js'];
-<div id="request_queue">
-  <div v-if="queue_first" v-bind:style="{
+<div id="request_queue" class="container mb-2">
+  <div v-if="queue_first" class="py-4" v-bind:style="{
     'border-width': '1px', 'border-style': 'solid', 'border-color': '#ddd',
     'background-color': is_search_for_queue(queue_first.position) ? '#d9edf7' : null
   }">
-    <div class="row mt-4 mb-2">
-      <br>
+    <div class="row mb-2">
       <div class="col-sm-10 offset-sm-1 text-center">
         <h3>{{ queue_first.title || queue_first.raw_request }}</h3>
       </div>
@@ -37,7 +36,6 @@
         </div>
       <% } %>
     </div>
-    <br>
   </div>
   <table v-if="queue_remaining.length" class="table table-hover table-bordered">
     <thead class="thead-light">
@@ -83,8 +81,7 @@
     </tbody>
   </table>
 </div>
-<br>
-<div id="search_songlist">
+<div id="search_songlist" class="container">
   <form class="form-inline mb-2" v-on:submit.prevent="search_songlist">
     <div class="form-group">
       <template v-if="search_for_queue">
