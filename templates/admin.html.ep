@@ -143,7 +143,7 @@
           <input v-if="editing_song == song.id" class="form-control" name="source" v-model="edit_song_source">
           <span v-else>{{ song.source }}</span>
         </td>
-        <td>
+        <td class="text-right">
           <input v-if="editing_song == song.id" class="form-control" name="duration" v-model="edit_song_duration">
           <span v-else>{{ srq_common.pretty_duration(song.duration) }}</span>
         </td>
