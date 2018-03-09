@@ -30,7 +30,7 @@
         </template>
       <% } else { %>({{ queue_first.requested_by }})<% } %>
     </div>
-    <div class="col-sm-5 text-center">Duration: {{ queue_first.duration }}</div>
+    <div class="col-sm-5 text-center">Duration: {{ srq_common.pretty_duration(queue_first.duration) }}</div>
     <% if (stash 'is_mod') { %>
       <div class="col-sm-1">
         <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="unqueue_song(queue_first.position)">Done</button>
@@ -59,7 +59,7 @@
         <% } %></td>
         <td>{{ request.title }}</td>
         <td>{{ request.artist }}</td>
-        <td>{{ request.duration }}</td>
+        <td>{{ srq_common.pretty_duration(request.duration) }}</td>
         <td><span v-if="request.raw_request">"{{ request.raw_request }}" </span>
           <% if (stash 'is_mod') { %>
             <template v-if="editing_requestor == request.position">
@@ -126,7 +126,7 @@
         <td>{{ song.track }}</td>
         <td>{{ song.genre }}</td>
         <td>{{ song.source }}</td>
-        <td>{{ song.duration }}</td>
+        <td>{{ srq_common.pretty_duration(song.duration) }}</td>
         <% if (stash 'is_mod') { %><td>
           <button type="button" v-if="search_for_queue" class="btn btn-success btn-sm" v-on:click.prevent="set_queued_song(search_for_queue, song.id)">Set ({{ search_for_queue }})</button>
           <button type="button" v-else class="btn btn-success btn-sm" v-on:click.prevent="queue_song(song.id)">Queue</button>

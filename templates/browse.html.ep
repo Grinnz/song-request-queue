@@ -22,7 +22,7 @@
         <td><%= $song->{track} %></td>
         <td><%= $song->{genre} %></td>
         <td><%= $song->{source} =~ s/ DLC$/\N{U+00A0}DLC/r %></td>
-        <td><%= $song->{duration} %></td>
+        <td><%= $song->{duration} =~ s/^0(0:0?)?//r %></td>
       </tr><% } %>
     </tbody>
   </table>

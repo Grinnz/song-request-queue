@@ -8,5 +8,8 @@ var srq_common = {
         data.result_text = null;
       }, timeout);
     }
+  },
+  pretty_duration: function(duration) {
+    return duration.replace(/^0(0:0?)?/, '');
   }
 };
