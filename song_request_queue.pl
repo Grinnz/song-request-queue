@@ -287,7 +287,11 @@ get '/browse' => sub ($c) {
   $sort_by = 'artist' unless $allowed_sort{$sort_by};
   my $sort_dir = $c->param('sort_dir') // 'asc';
   $sort_dir = 'asc' unless $sort_dir eq 'desc';
-  $c->render(songlist => $c->all_song_details($sort_by, $sort_dir));
+  $c->render(
+    songlist => $c->all_song_details($sort_by, $sort_dir),
+    sort_by => $sort_by,
+    sort_dir => $sort_dir,
+  );
 };
 
 get '/admin' => sub ($c) {
