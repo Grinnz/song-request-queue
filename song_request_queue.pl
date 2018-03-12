@@ -116,13 +116,12 @@ EOQ
 };
 
 helper song_details => sub ($c, $song_id) {
-  my $query = 'SELECT * FROM "songs" WHERE "id"=$1';
-  return $c->pg->db->query($query, $song_id)->hashes->first;
+  return $c->pg->db->select('songs', ['*'], {id => $song_id})->hashes->first;
 };
 
-helper all_song_details => sub ($c) {
-  my $query = 'SELECT * FROM "songs" ORDER BY "artist", "album", "track", "title", "source"';
-  return $c->pg->db->query($query)->hashes;
+helper all_song_details => sub ($c, $sort_by = 'artist', $sort_dir = 'asc') {
+  my @sorts = ($sort_by, grep { $_ ne $sort_by } qw(artist album track title source));
+  return $c->pg->db->select('songs', ['*'], undef, {-$sort_dir => \@sorts})->hashes;
 };
 
 helper import_from_csv => sub ($c, $file) {
@@ -283,7 +282,12 @@ under '/' => sub ($c) {
 get '/' => 'index';
 
 get '/browse' => sub ($c) {
-  $c->render(songlist => $c->all_song_details);
+  my $sort_by = $c->param('sort_by') // 'artist';
+  my %allowed_sort = map { ($_ => 1) } qw(title artist album track genre source duration);
+  $sort_by = 'artist' unless $allowed_sort{$sort_by};
+  my $sort_dir = $c->param('sort_dir') // 'asc';
+  $sort_dir = 'asc' unless $sort_dir eq 'desc';
+  $c->render(songlist => $c->all_song_details($sort_by, $sort_dir));
 };
 
 get '/admin' => sub ($c) {
