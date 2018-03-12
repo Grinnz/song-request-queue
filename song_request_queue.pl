@@ -51,8 +51,7 @@ helper hash_password => sub ($c, $password, $username) {
 };
 
 helper user_details => sub ($c, $user_id) {
-  my $query = 'SELECT "username", "is_admin", "is_mod" FROM "users" WHERE "id"=$1';
-  return $c->pg->db->query($query, $user_id)->hashes->first;
+  return $c->pg->db->select('users', [qw(username is_admin is_mod)], {id => $user_id})->hashes->first;
 };
 
 helper add_user => sub ($c, $username, $is_mod) {
@@ -73,17 +72,16 @@ helper valid_bot_key => sub ($c, $bot_key) {
 };
 
 helper check_user_password => sub ($c, $username, $password) {
-  my $query = 'SELECT "id", "password_hash" FROM "users" WHERE "username"=$1';
-  my $user = $c->pg->db->query($query, $username)->hashes->first // return undef;
+  my $user = $c->pg->db->select('users', [qw(id password_hash)], {username => $username})->hashes->first // return undef;
   return $user->{id} if bcrypt($password, $user->{password_hash}) eq $user->{password_hash};
   return undef;
 };
 
 helper check_user_reset_code => sub ($c, $username, $code) {
-    my $query = <<'EOQ';
-SELECT "id" FROM "users" WHERE "username"=$1 AND "password_reset_code"=decode($2, 'hex')
-EOQ
-    my $user = $c->pg->db->query($query, $username, $code)->arrays->first // return undef;
+    my $user = $c->pg->db->select('users', ['id'], {
+      username => $username,
+      password_reset_code => {'=' => \[q{decode(?, 'hex')}, $code]}
+    })->arrays->first // return undef;
     return $user->[0];
 };
 
@@ -232,16 +230,18 @@ helper unqueue_song => sub ($c, $position) {
 };
 
 helper reorder_queue => sub ($c, $position, $direction) {
-  my $query = 'SELECT "id" FROM "queue" WHERE "position"=$1';
-  $c->pg->db->query($query, $position)->arrays->first // return 0;
+  $c->pg->db->select('queue', ['id'], {position => $position})->arrays->first // return 0;
+  my ($swap_to, $compare);
   if (defined $direction and $direction eq 'up') {
-    $query = 'SELECT MAX("position") FROM "queue" WHERE "position"<$1';
+    $swap_to = 'MAX("position")';
+    $compare = '<';
   } else {
-    $query = 'SELECT MIN("position") FROM "queue" WHERE "position">$1';
+    $swap_to = 'MIN("position")';
+    $compare = '>';
   }
-  my $swap_position = $c->pg->db->query($query, $position)->arrays->first // return 0;
+  my $swap_position = $c->pg->db->select('queue', [\$swap_to], {position => {$compare => $position}})->arrays->first // return 0;
   $swap_position = $swap_position->[0] // return 0;
-  $query = <<'EOQ';
+  my $query = <<'EOQ';
 UPDATE "queue" SET "position" = CASE WHEN "position" = $1 THEN $2 ELSE $1 END
 WHERE "position" IN ($1,$2)
 EOQ
