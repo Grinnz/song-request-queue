@@ -144,3 +144,8 @@ create index "songs_genre" on "songs" ("genre");
 --5 down
 drop index "songs_genre";
 alter table "songs" drop "genre";
+
+--6 up
+create index "songs_album" on "songs" ("album");
+create index "songs_track" on "songs" ("track");
+create index "songs_duration" on "songs" ("duration");
