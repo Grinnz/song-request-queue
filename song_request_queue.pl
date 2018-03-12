@@ -207,13 +207,11 @@ helper all_song_details => sub ($c, $sort_by = 'artist', $sort_dir = 'asc') {
 };
 
 helper queue_details => sub ($c) {
-  my $query = <<'EOQ';
-SELECT "songs"."id" AS "song_id", "title", "artist", "album", "track",
-"source", "duration", "requested_by", "requested_at", "raw_request", "position"
-FROM "queue" LEFT JOIN "songs" ON "songs"."id"="queue"."song_id"
-ORDER BY "queue"."position"
-EOQ
-  return $c->pg->db->query($query)->hashes;
+  my @from = ('queue', [-left => 'songs', 'songs.id' => 'queue.song_id']);
+  my @select = (['songs.id' => 'song_id'],
+    (map { "songs.$_" } qw(title artist album track source duration)),
+    (map { "queue.$_" } qw(requested_by requested_at raw_request position)));
+  return $c->pg->db->select(\@from, \@select, undef, 'queue.position')->hashes;
 };
 
 helper queue_song => sub ($c, $song_id, $requested_by, $raw_request) {

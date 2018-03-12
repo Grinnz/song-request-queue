@@ -5,7 +5,7 @@ requires 'Digest::MD5';
 requires 'List::Util' => '1.33';
 requires 'Mojolicious' => '7.31';
 requires 'Mojo::JSON::MaybeXS';
-requires 'Mojo::Pg';
+requires 'Mojo::Pg' => '4.08';
 requires 'Syntax::Keyword::Try';
 requires 'Text::CSV';
 requires 'Text::CSV_XS';
