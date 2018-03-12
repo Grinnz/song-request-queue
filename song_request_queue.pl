@@ -57,10 +57,11 @@ helper user_details => sub ($c, $user_id) {
 helper add_user => sub ($c, $username, $is_mod) {
   my $remote_address = $c->tx->remote_address // '127.0.0.1';
   my $code = uc md5_hex join '$', $username, \my $dummy, Time::HiRes::time, $remote_address;
-  my $query = <<'EOQ';
-INSERT INTO "users" ("username","is_mod","password_reset_code") VALUES ($1, $2, decode($3, 'hex')) RETURNING "id"
-EOQ
-  my $created = $c->pg->db->query($query, $username, $is_mod, $code)->arrays->first;
+  my $created = $c->pg->db->insert('users', {
+    username => $username,
+    is_mod => $is_mod,
+    password_reset_code => \[q{decode(?, 'hex')}, $code],
+  }, {returning => ['id']})->arrays->first;
   return undef unless defined $created;
   return {user_id => $created->[0], reset_code => $code};
 };
@@ -87,10 +88,10 @@ helper check_user_reset_code => sub ($c, $username, $code) {
 
 helper set_user_password => sub ($c, $user_id, $password, $username) {
   my $hash = $c->hash_password($password, $username);
-  my $query = <<'EOQ';
-UPDATE "users" SET "password_hash"=$1, "password_reset_code"=NULL WHERE "id"=$2
-EOQ
-  return $c->pg->db->query($query, $hash, $user_id)->rows;
+  return $c->pg->db->update('users', {
+    password_hash => $hash,
+    password_reset_code => undef,
+  }, {id => $user_id})->rows;
 };
 
 helper import_from_csv => sub ($c, $file) {
@@ -165,14 +166,12 @@ helper update_song => sub ($c, $song_id, $details) {
 };
 
 helper delete_song => sub ($c, $song_id) {
-  my $query = 'DELETE FROM "songs" WHERE "id"=$1 RETURNING "title"';
-  my $deleted = $c->pg->db->query($query, $song_id)->arrays->first;
+  my $deleted = $c->pg->db->delete('songs', {id => $song_id}, {returning => 'title'})->arrays->first;
   return defined $deleted ? $deleted->[0] : undef;
 };
 
 helper clear_songs => sub ($c) {
-  my $query = 'TRUNCATE TABLE "songs" CASCADE';
-  return $c->pg->db->query($query)->rows;
+  return $c->pg->db->query('TRUNCATE TABLE "songs" CASCADE')->rows;
 };
 
 my @song_details_cols = qw(id title artist album track genre source duration);
