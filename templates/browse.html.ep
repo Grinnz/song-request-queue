@@ -6,16 +6,10 @@
       <tr>
 % for my $column (qw(title artist album track genre source duration)) {
         <th style="white-space: nowrap">
-  % if ($column eq stash 'sort_by') {
-    % if ('asc' eq stash 'sort_dir') {
-          <a href="?sort_by=<%= $column %>&sort_dir=desc">↓
-    % } else {
-          <a href="?sort_by=<%= $column %>&sort_dir=asc">↑
-    % }
-  % } else {
-          <a href="?sort_by=<%= $column %>&sort_dir=asc">⇅
-  % }
-          <%= ucfirst $column %></a>
+          <a style="display: block; width: 100%; text-decoration: none"
+            href="?sort_by=<%= $column %>&sort_dir=<%= (stash('sort_by') eq $column xor stash('sort_dir') eq 'desc') ? 'desc' : 'asc' %>">
+            <%= stash('sort_by') eq $column ? (stash('sort_dir') eq 'asc' ? '↓' : '↑') : '⇅' %> <%= ucfirst $column %>
+          </a>
         </th>
 % }
       </tr>
