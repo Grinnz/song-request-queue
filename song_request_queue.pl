@@ -177,11 +177,14 @@ helper clear_songs => sub ($c) {
   return $c->pg->db->query($query)->rows;
 };
 
+my @song_details_cols = qw(id title artist album track genre source duration);
+
 helper search_songs => sub ($c, $search) {
+  my $select = join ', ', map { qq{"$_"} } @song_details_cols;
   my @terms = map { "'$_':*" } map { quotemeta } split ' ', $search =~ tr[/][ ]r;
   my $and_search = join ' & ', @terms;
-  my $query = <<'EOQ';
-SELECT *, ts_rank_cd(songtext, to_tsquery('english_nostop', $1), 1) AS "rank"
+  my $query = "SELECT $select, " . <<'EOQ';
+ts_rank_cd(songtext, to_tsquery('english_nostop', $1), 1) AS "rank"
 FROM "songs" WHERE songtext @@ to_tsquery('english_nostop', $1)
 ORDER BY "rank" DESC, "artist", "album", "track", "title", "source"
 EOQ
@@ -189,8 +192,8 @@ EOQ
   return $results if @$results;
   
   my $or_search = join ' | ', @terms;
-  $query = <<'EOQ';
-SELECT *, ts_rank_cd(songtext_withstop, to_tsquery('english', $1), 1) AS "rank"
+  $query = "SELECT $select, " . <<'EOQ';
+ts_rank_cd(songtext_withstop, to_tsquery('english', $1), 1) AS "rank"
 FROM "songs" WHERE songtext_withstop @@ to_tsquery('english', $1)
 ORDER BY "rank" DESC, "artist", "album", "track", "title", "source"
 EOQ
@@ -198,18 +201,18 @@ EOQ
 };
 
 helper song_details => sub ($c, $song_id) {
-  return $c->pg->db->select('songs', ['*'], {id => $song_id})->hashes->first;
+  return $c->pg->db->select('songs', \@song_details_cols, {id => $song_id})->hashes->first;
 };
 
 helper all_song_details => sub ($c, $sort_by = 'artist', $sort_dir = 'asc') {
   my @sorts = ($sort_by, grep { $_ ne $sort_by } qw(artist album track title source));
-  return $c->pg->db->select('songs', ['*'], undef, {-$sort_dir => \@sorts})->hashes;
+  return $c->pg->db->select('songs', \@song_details_cols, undef, {-$sort_dir => \@sorts})->hashes;
 };
 
 helper queue_details => sub ($c) {
   my @from = ('queue', [-left => 'songs', 'songs.id' => 'queue.song_id']);
   my @select = (['songs.id' => 'song_id'],
-    (map { "songs.$_" } qw(title artist album track source duration)),
+    (map { "songs.$_" } @song_details_cols),
     (map { "queue.$_" } qw(requested_by requested_at raw_request position)));
   return $c->pg->db->select(\@from, \@select, undef, 'queue.position')->hashes;
 };
