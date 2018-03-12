@@ -95,35 +95,6 @@ EOQ
   return $c->pg->db->query($query, $hash, $user_id)->rows;
 };
 
-helper search_songs => sub ($c, $search) {
-  my @terms = map { "'$_':*" } map { quotemeta } split ' ', $search =~ tr[/][ ]r;
-  my $and_search = join ' & ', @terms;
-  my $query = <<'EOQ';
-SELECT *, ts_rank_cd(songtext, to_tsquery('english_nostop', $1), 1) AS "rank"
-FROM "songs" WHERE songtext @@ to_tsquery('english_nostop', $1)
-ORDER BY "rank" DESC, "artist", "album", "track", "title", "source"
-EOQ
-  my $results = $c->pg->db->query($query, $and_search)->hashes;
-  return $results if @$results;
-  
-  my $or_search = join ' | ', @terms;
-  $query = <<'EOQ';
-SELECT *, ts_rank_cd(songtext_withstop, to_tsquery('english', $1), 1) AS "rank"
-FROM "songs" WHERE songtext_withstop @@ to_tsquery('english', $1)
-ORDER BY "rank" DESC, "artist", "album", "track", "title", "source"
-EOQ
-  return $c->pg->db->query($query, $or_search)->hashes;
-};
-
-helper song_details => sub ($c, $song_id) {
-  return $c->pg->db->select('songs', ['*'], {id => $song_id})->hashes->first;
-};
-
-helper all_song_details => sub ($c, $sort_by = 'artist', $sort_dir = 'asc') {
-  my @sorts = ($sort_by, grep { $_ ne $sort_by } qw(artist album track title source));
-  return $c->pg->db->select('songs', ['*'], undef, {-$sort_dir => \@sorts})->hashes;
-};
-
 helper import_from_csv => sub ($c, $file) {
   my $songs = csv(in => $file, encoding => 'UTF-8', detect_bom => 1)
     or die Text::CSV->error_diag;
@@ -204,6 +175,35 @@ helper delete_song => sub ($c, $song_id) {
 helper clear_songs => sub ($c) {
   my $query = 'TRUNCATE TABLE "songs" CASCADE';
   return $c->pg->db->query($query)->rows;
+};
+
+helper search_songs => sub ($c, $search) {
+  my @terms = map { "'$_':*" } map { quotemeta } split ' ', $search =~ tr[/][ ]r;
+  my $and_search = join ' & ', @terms;
+  my $query = <<'EOQ';
+SELECT *, ts_rank_cd(songtext, to_tsquery('english_nostop', $1), 1) AS "rank"
+FROM "songs" WHERE songtext @@ to_tsquery('english_nostop', $1)
+ORDER BY "rank" DESC, "artist", "album", "track", "title", "source"
+EOQ
+  my $results = $c->pg->db->query($query, $and_search)->hashes;
+  return $results if @$results;
+  
+  my $or_search = join ' | ', @terms;
+  $query = <<'EOQ';
+SELECT *, ts_rank_cd(songtext_withstop, to_tsquery('english', $1), 1) AS "rank"
+FROM "songs" WHERE songtext_withstop @@ to_tsquery('english', $1)
+ORDER BY "rank" DESC, "artist", "album", "track", "title", "source"
+EOQ
+  return $c->pg->db->query($query, $or_search)->hashes;
+};
+
+helper song_details => sub ($c, $song_id) {
+  return $c->pg->db->select('songs', ['*'], {id => $song_id})->hashes->first;
+};
+
+helper all_song_details => sub ($c, $sort_by = 'artist', $sort_dir = 'asc') {
+  my @sorts = ($sort_by, grep { $_ ne $sort_by } qw(artist album track title source));
+  return $c->pg->db->select('songs', ['*'], undef, {-$sort_dir => \@sorts})->hashes;
 };
 
 helper queue_details => sub ($c) {
