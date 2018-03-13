@@ -215,16 +215,16 @@ helper queue_details => sub ($c) {
 };
 
 helper queue_song => sub ($c, $song_id, $requested_by, $raw_request) {
-  my $query = <<'EOQ';
-INSERT INTO "queue" ("song_id","requested_by","raw_request","position")
-VALUES ($1,$2,$3,COALESCE((SELECT MAX("position") FROM "queue"),0)+1)
-EOQ
-  return $c->pg->db->query($query, $song_id, $requested_by, $raw_request)->rows;
+  return $c->pg->db->insert('queue', {
+    song_id => $song_id,
+    requested_by => $requested_by,
+    raw_request => $raw_request,
+    position => \['COALESCE((SELECT MAX("position") FROM "queue"),0)+1'],
+  })->rows;
 };
 
 helper unqueue_song => sub ($c, $position) {
-  my $query = 'DELETE FROM "queue" WHERE "position"=$1 RETURNING "song_id"';
-  my $deleted = $c->pg->db->query($query, $position)->arrays->first;
+  my $deleted = $c->pg->db->delete('queue', {position => $position}, {returning => 'song_id'})->arrays->first;
   return defined $deleted ? $deleted->[0] : undef;
 };
 
@@ -240,27 +240,22 @@ helper reorder_queue => sub ($c, $position, $direction) {
   }
   my $swap_position = $c->pg->db->select('queue', [\$swap_to], {position => {$compare => $position}})->arrays->first // return 0;
   $swap_position = $swap_position->[0] // return 0;
-  my $query = <<'EOQ';
-UPDATE "queue" SET "position" = CASE WHEN "position" = $1 THEN $2 ELSE $1 END
-WHERE "position" IN ($1,$2)
-EOQ
-  $c->pg->db->query($query, $position, $swap_position);
+  $c->pg->db->update('queue', {
+    position => \['CASE WHEN "position" = ? THEN ?::integer ELSE ?::integer END', $position, $swap_position, $position],
+  }, {position => [$position, $swap_position]});
   return 1;
 };
 
 helper set_queued_song => sub ($c, $position, $song_id) {
-  my $query = 'UPDATE "queue" SET "song_id"=$1 WHERE "position"=$2';
-  return $c->pg->db->query($query, $song_id, $position)->rows;
+  return $c->pg->db->update('queue', {song_id => $song_id}, {position => $position})->rows;
 };
 
 helper set_requested_by => sub ($c, $position, $requested_by) {
-  my $query = 'UPDATE "queue" SET "requested_by"=$1 WHERE "position"=$2';
-  return $c->pg->db->query($query, $requested_by, $position)->rows;
+  return $c->pg->db->update('queue', {requested_by => $requested_by}, {position => $position})->rows;
 };
 
 helper clear_queue => sub ($c) {
-  my $query = 'TRUNCATE TABLE "queue"';
-  return $c->pg->db->query($query)->rows;
+  return $c->pg->db->query('TRUNCATE TABLE "queue"')->rows;
 };
 
 # Pages
