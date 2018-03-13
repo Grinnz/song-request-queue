@@ -132,16 +132,19 @@ helper import_songs => sub ($c, $songs) {
   foreach my $song (@$songs) {
     $song->{duration} = $c->normalize_duration($song->{duration});
     $song->{track} = int $song->{track} if defined $song->{track};
-    my $query = <<'EOQ';
-INSERT INTO "songs" ("title","artist","album","track","genre","source","duration",
-"title_ascii","artist_ascii","album_ascii")
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-ON CONFLICT ("artist","album","title","source",coalesce("track",0)) DO UPDATE
-SET "genre"="excluded"."genre", "duration"="excluded"."duration"
-EOQ
-    my @params = (@$song{'title','artist','album','track','genre','source','duration'},
-      map { scalar unidecode $_ } @$song{'title','artist','album'});
-    $db->query($query, @params);
+    $db->insert('songs', {
+      title => $song->{title},
+      artist => $song->{artist},
+      album => $song->{album},
+      track => $song->{track},
+      genre => $song->{genre},
+      source => $song->{source},
+      duration => $song->{duration},
+      title_ascii => scalar unidecode($song->{title}),
+      artist_ascii => scalar unidecode($song->{artist}),
+      album_ascii => scalar unidecode($song->{album}),
+    }, {on_conflict => \['("artist","album","title","source",coalesce("track",0)) DO UPDATE
+      SET "genre"="excluded"."genre", "duration"="excluded"."duration"']});
   }
   $tx->commit;
   return 1;
