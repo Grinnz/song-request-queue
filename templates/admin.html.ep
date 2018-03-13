@@ -52,7 +52,7 @@
   </div>
   <form class="form-inline" enctype="multipart/form-data" v-on:submit.prevent="import_songlist">
     <input id="import_songlist_file" class="form-control mr-2" name="songlist" type="file">
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary mr-2">Submit</button>
     &nbsp;<span><i>{{ result_text }}</i></span>
   </form>
 </div>

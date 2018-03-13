@@ -6,6 +6,7 @@ var import_vm = new Vue({
     import_songlist: function (event) {
       var import_formdata = new FormData();
       import_formdata.append('songlist', document.getElementById('import_songlist_file').files[0]);
+      srq_common.set_result_text(import_data, 'Importing songs...', -1);
       fetch('/api/songs/import', {
         method: 'POST',
         body: import_formdata,

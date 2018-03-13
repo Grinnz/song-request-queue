@@ -141,11 +141,9 @@ helper song_for_insert => sub ($c, $details) {
 helper import_songs => sub ($c, $songs) {
   my $db = $c->pg->db;
   my $tx = $db->begin;
-  foreach my $song (@$songs) {
-    $db->insert('songs', $c->song_for_insert($song),
-      {on_conflict => \['("artist","album","title","source",coalesce("track",0)) DO UPDATE
-      SET "genre"="excluded"."genre", "duration"="excluded"."duration"']});
-  }
+  $db->insert('songs', $c->song_for_insert($_),
+    {on_conflict => \['("artist","album","title","source",coalesce("track",0)) DO UPDATE
+    SET "genre"="excluded"."genre", "duration"="excluded"."duration"']}) for @$songs;
   $tx->commit;
   return 1;
 };
