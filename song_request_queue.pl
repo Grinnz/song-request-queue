@@ -94,6 +94,10 @@ helper set_user_password => sub ($c, $user_id, $password, $username) {
   }, {id => $user_id})->rows;
 };
 
+helper update_last_login => sub ($c, $user_id) {
+  $c->pg->db->update('users', {last_login_at => \['now()']}, {id => $user_id});
+};
+
 helper import_from_csv => sub ($c, $file) {
   my $songs = csv(in => $file, encoding => 'UTF-8', detect_bom => 1)
     or die Text::CSV->error_diag;
@@ -320,7 +324,7 @@ post '/api/login' => sub ($c) {
   my $user_id = $c->check_user_password($username, $password)
     // return $c->render(json => {logged_in => false, error => 'Login failed'});
   
-  $c->pg->db->query('UPDATE "users" SET "last_login_at"=now() WHERE "id"=$1', $user_id);
+  $c->update_last_login($user_id);
   $c->session->{user_id} = $user_id;
   
   $c->render(json => {logged_in => true});
