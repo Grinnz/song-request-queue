@@ -126,18 +126,24 @@ helper import_from_json => sub ($c, $file) {
   }, @$songs]);
 };
 
+helper song_for_insert => sub ($c, $details) {
+  my %song;
+  $song{$_} = $details->{$_}
+    for grep { defined $details->{$_} } qw(title artist album genre source);
+  $song{"${_}_ascii"} = unidecode $details->{$_}
+    for grep { defined $details->{$_} } qw(title artist album);
+  $song{duration} = $c->normalize_duration($details->{duration})
+    if defined $details->{duration};
+  $song{track} = int $details->{track} if defined $details->{track};
+  return \%song;
+};
+
 helper import_songs => sub ($c, $songs) {
   my $db = $c->pg->db;
   my $tx = $db->begin;
   foreach my $song (@$songs) {
-    $song->{duration} = $c->normalize_duration($song->{duration});
-    $song->{track} = int $song->{track} if defined $song->{track};
-    $db->insert('songs', {
-      %$song{qw(title artist album track genre source duration)},
-      title_ascii => scalar unidecode($song->{title}),
-      artist_ascii => scalar unidecode($song->{artist}),
-      album_ascii => scalar unidecode($song->{album}),
-    }, {on_conflict => \['("artist","album","title","source",coalesce("track",0)) DO UPDATE
+    $db->insert('songs', $c->song_for_insert($song),
+      {on_conflict => \['("artist","album","title","source",coalesce("track",0)) DO UPDATE
       SET "genre"="excluded"."genre", "duration"="excluded"."duration"']});
   }
   $tx->commit;
@@ -145,25 +151,11 @@ helper import_songs => sub ($c, $songs) {
 };
 
 helper add_song => sub ($c, $details) {
-  my %properties;
-  $properties{$_} = $details->{$_} for grep { defined $details->{$_} }
-    qw(title artist album track genre source duration);
-  $properties{"${_}_ascii"} = unidecode $details->{$_} for qw(title artist album);
-  $properties{duration} = $c->normalize_duration($properties{duration});
-  $properties{track} = int $properties{track} if defined $properties{track};
-  my $inserted = $c->pg->db->insert('songs', \%properties, {returning => 'id'})->arrays->first;
-  return $inserted->[0];
+  return $c->pg->db->insert('songs', $c->song_for_insert($details), {returning => 'id'})->arrays->first->[0];
 };
 
 helper update_song => sub ($c, $song_id, $details) {
-  my %updates;
-  $updates{$_} = $details->{$_} for grep { defined $details->{$_} }
-    qw(title artist album track genre source duration);
-  $updates{"${_}_ascii"} = unidecode $details->{$_} for grep { defined $details->{$_} }
-    qw(title artist album);
-  $updates{duration} = $c->normalize_duration($updates{duration});
-  $updates{track} = int $updates{track} if defined $updates{track};
-  return $c->pg->db->update('songs', \%updates, {id => $song_id})->rows;
+  return $c->pg->db->update('songs', $c->song_for_insert($details), {id => $song_id})->rows;
 };
 
 helper delete_song => sub ($c, $song_id) {
