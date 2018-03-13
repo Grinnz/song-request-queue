@@ -199,9 +199,14 @@ helper song_details => sub ($c, $song_id) {
 };
 
 helper all_song_details => sub ($c, $sort_by = 'artist', $sort_dir = 'asc') {
-  my @sorts = ($sort_by, grep { $_ ne $sort_by } qw(artist album track title source));
+  my @sort = qw(artist album track title source);
+  if ($sort_by eq 'album') {
+    @sort = qw(album track artist title source);
+  } else {
+    @sort = ($sort_by, grep { $_ ne $sort_by } @sort);
+  }
   return $c->pg->db->select('songs', \@song_details_cols, undef,
-    {-$sort_dir => \@sorts})->hashes;
+    {-$sort_dir => \@sort})->hashes;
 };
 
 helper queue_details => sub ($c) {
