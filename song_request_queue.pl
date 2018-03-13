@@ -1,7 +1,6 @@
 #!/usr/bin/env perl
 
-use strict;
-use warnings;
+use 5.020;
 use Mojo::JSON::MaybeXS;
 use Mojolicious::Lite;
 use Crypt::Eksblowfish::Bcrypt qw(en_base64 bcrypt);
@@ -51,7 +50,8 @@ helper hash_password => sub ($c, $password, $username) {
 };
 
 helper user_details => sub ($c, $user_id) {
-  return $c->pg->db->select('users', [qw(username is_admin is_mod)], {id => $user_id})->hashes->first;
+  return $c->pg->db->select('users', [qw(username is_admin is_mod)],
+    {id => $user_id})->hashes->first;
 };
 
 helper add_user => sub ($c, $username, $is_mod) {
@@ -73,7 +73,8 @@ helper valid_bot_key => sub ($c, $bot_key) {
 };
 
 helper check_user_password => sub ($c, $username, $password) {
-  my $user = $c->pg->db->select('users', [qw(id password_hash)], {username => $username})->hashes->first // return undef;
+  my $user = $c->pg->db->select('users', [qw(id password_hash)],
+    {username => $username})->hashes->first // return undef;
   return $user->{id} if bcrypt($password, $user->{password_hash}) eq $user->{password_hash};
   return undef;
 };
@@ -151,15 +152,18 @@ helper import_songs => sub ($c, $songs) {
 };
 
 helper add_song => sub ($c, $details) {
-  return $c->pg->db->insert('songs', $c->song_for_insert($details), {returning => 'id'})->arrays->first->[0];
+  return $c->pg->db->insert('songs', $c->song_for_insert($details),
+    {returning => 'id'})->arrays->first->[0];
 };
 
 helper update_song => sub ($c, $song_id, $details) {
-  return $c->pg->db->update('songs', $c->song_for_insert($details), {id => $song_id})->rows;
+  return $c->pg->db->update('songs', $c->song_for_insert($details),
+    {id => $song_id})->rows;
 };
 
 helper delete_song => sub ($c, $song_id) {
-  my $deleted = $c->pg->db->delete('songs', {id => $song_id}, {returning => 'title'})->arrays->first;
+  my $deleted = $c->pg->db->delete('songs', {id => $song_id},
+    {returning => 'title'})->arrays->first;
   return defined $deleted ? $deleted->[0] : undef;
 };
 
@@ -191,12 +195,14 @@ EOQ
 };
 
 helper song_details => sub ($c, $song_id) {
-  return $c->pg->db->select('songs', \@song_details_cols, {id => $song_id})->hashes->first;
+  return $c->pg->db->select('songs', \@song_details_cols,
+    {id => $song_id})->hashes->first;
 };
 
 helper all_song_details => sub ($c, $sort_by = 'artist', $sort_dir = 'asc') {
   my @sorts = ($sort_by, grep { $_ ne $sort_by } qw(artist album track title source));
-  return $c->pg->db->select('songs', \@song_details_cols, undef, {-$sort_dir => \@sorts})->hashes;
+  return $c->pg->db->select('songs', \@song_details_cols, undef,
+    {-$sort_dir => \@sorts})->hashes;
 };
 
 helper queue_details => sub ($c) {
@@ -217,34 +223,34 @@ helper queue_song => sub ($c, $song_id, $requested_by, $raw_request) {
 };
 
 helper unqueue_song => sub ($c, $position) {
-  my $deleted = $c->pg->db->delete('queue', {position => $position}, {returning => 'song_id'})->arrays->first;
+  my $deleted = $c->pg->db->delete('queue', {position => $position},
+    {returning => 'song_id'})->arrays->first;
   return defined $deleted ? $deleted->[0] : undef;
 };
 
 helper reorder_queue => sub ($c, $position, $direction) {
-  $c->pg->db->select('queue', ['id'], {position => $position})->arrays->first // return 0;
-  my ($swap_to, $compare);
-  if (defined $direction and $direction eq 'up') {
-    $swap_to = 'MAX("position")';
-    $compare = '<';
-  } else {
-    $swap_to = 'MIN("position")';
-    $compare = '>';
-  }
-  my $swap_position = $c->pg->db->select('queue', [\$swap_to], {position => {$compare => $position}})->arrays->first // return 0;
+  $c->pg->db->select('queue', ['id'],
+    {position => $position})->arrays->first // return 0;
+  my ($swap_to, $compare) = (defined $direction and $direction eq 'up')
+    ? ('MAX("position")','<') : ('MIN("position")','>');
+  my $swap_position = $c->pg->db->select('queue', [\$swap_to],
+    {position => {$compare => $position}})->arrays->first // return 0;
   $swap_position = $swap_position->[0] // return 0;
-  $c->pg->db->update('queue', {
-    position => \['CASE WHEN "position" = ? THEN ?::integer ELSE ?::integer END', $position, $swap_position, $position],
-  }, {position => [$position, $swap_position]});
+  $c->pg->db->update('queue',
+    {position => \['CASE WHEN "position" = ? THEN ?::integer ELSE ?::integer END',
+      $position, $swap_position, $position]},
+    {position => [$position, $swap_position]});
   return 1;
 };
 
 helper set_queued_song => sub ($c, $position, $song_id) {
-  return $c->pg->db->update('queue', {song_id => $song_id}, {position => $position})->rows;
+  return $c->pg->db->update('queue', {song_id => $song_id},
+    {position => $position})->rows;
 };
 
 helper set_requested_by => sub ($c, $position, $requested_by) {
-  return $c->pg->db->update('queue', {requested_by => $requested_by}, {position => $position})->rows;
+  return $c->pg->db->update('queue', {requested_by => $requested_by},
+    {position => $position})->rows;
 };
 
 helper clear_queue => sub ($c) {
@@ -269,9 +275,9 @@ under '/' => sub ($c) {
 
 get '/' => 'index';
 
+my %allowed_sort = map { ($_ => 1) } qw(title artist album track genre source duration);
 get '/browse' => sub ($c) {
   my $sort_by = $c->param('sort_by') // 'artist';
-  my %allowed_sort = map { ($_ => 1) } qw(title artist album track genre source duration);
   $sort_by = 'artist' unless $allowed_sort{$sort_by};
   my $sort_dir = $c->param('sort_dir') // 'asc';
   $sort_dir = 'asc' unless $sort_dir eq 'desc';
