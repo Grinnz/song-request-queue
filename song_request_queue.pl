@@ -101,7 +101,7 @@ helper update_last_login => sub ($c, $user_id) {
 helper import_from_csv => sub ($c, $file) {
   my $songs = csv(in => $file, encoding => 'UTF-8', detect_bom => 1)
     or die Text::CSV->error_diag;
-  $c->import_songs([map +{
+  $_ = {
     title    => $_->{'song title'},
     artist   => $_->{artist},
     album    => $_->{'album name'},
@@ -109,21 +109,23 @@ helper import_from_csv => sub ($c, $file) {
     genre    => $_->{genre},
     source   => $_->{source},
     duration => $_->{duration},
-  }, @$songs]);
+  } for @$songs;
+  $c->import_songs($songs);
 };
 
 helper import_from_json => sub ($c, $file) {
   $file =~ s/,(?=\s*]\s*\z)//;
   my $songs = decode_json $file;
-  $c->import_songs([map +{
+  $_ = {
     title    => $_->{songName},
     artist   => $_->{artistName},
     album    => $_->{albumName},
     track    => undef,
     genre    => $_->{genreName},
     source   => $_->{charterName},
-    duration => $_->{songLength} / 1000,
-  }, @$songs]);
+    duration => ($_->{songLength} / 1000),
+  } for @$songs;
+  $c->import_songs($songs);
 };
 
 helper song_for_insert => sub ($c, $details) {
