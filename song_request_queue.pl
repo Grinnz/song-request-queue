@@ -5,7 +5,6 @@ use Mojo::JSON::MaybeXS;
 use Mojolicious::Lite;
 use Crypt::Eksblowfish::Bcrypt qw(en_base64 bcrypt);
 use Digest::MD5 qw(md5 md5_hex);
-use List::Util ();
 use Mojo::JSON qw(decode_json true false);
 use Mojo::Pg;
 use Syntax::Keyword::Try;
@@ -68,7 +67,7 @@ helper add_user => sub ($c, $username, $is_mod) {
 
 helper valid_bot_key => sub ($c, $bot_key) {
   return 1 if defined $bot_key
-    and List::Util::any { $_ eq $bot_key } @{$c->config('bot_keys') // []};
+    and grep { $_ eq $bot_key } @{$c->config('bot_keys') // []};
   return 0;
 };
 
