@@ -133,13 +133,7 @@ helper import_songs => sub ($c, $songs) {
     $song->{duration} = $c->normalize_duration($song->{duration});
     $song->{track} = int $song->{track} if defined $song->{track};
     $db->insert('songs', {
-      title => $song->{title},
-      artist => $song->{artist},
-      album => $song->{album},
-      track => $song->{track},
-      genre => $song->{genre},
-      source => $song->{source},
-      duration => $song->{duration},
+      %$song{qw(title artist album track genre source duration)},
       title_ascii => scalar unidecode($song->{title}),
       artist_ascii => scalar unidecode($song->{artist}),
       album_ascii => scalar unidecode($song->{album}),
