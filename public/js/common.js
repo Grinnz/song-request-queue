@@ -10,6 +10,6 @@ var srq_common = {
     }
   },
   pretty_duration: function(duration) {
-    return duration.replace(/^0(0:0?)?/, '');
+    return duration === null ? null : duration.replace(/^0(0:0?)?/, '');
   }
 };
