@@ -149,3 +149,32 @@ alter table "songs" drop "genre";
 create index "songs_album" on "songs" ("album");
 create index "songs_track" on "songs" ("track");
 create index "songs_duration" on "songs" ("duration");
+
+--7 up
+create or replace function "songs_update_songtext"() returns trigger as $$
+begin
+  "new"."songtext" :=
+    setweight(to_tsvector('english_nostop', concat_ws(' ',
+      translate("new"."title",'/.','  '),
+      translate("new"."title_ascii",'/.','  '))), 'A') ||
+    setweight(to_tsvector('english_nostop', concat_ws(' ',
+      translate("new"."artist",'/.','  '),
+      translate("new"."artist_ascii",'/.','  '))), 'B') ||
+    setweight(to_tsvector('english_nostop', concat_ws(' ',
+      translate("new"."album",'/.','  '),
+      translate("new"."album_ascii",'/.','  '),
+      translate("new"."source",'/.','  '))), 'D');
+  "new"."songtext_withstop" :=
+    setweight(to_tsvector('english', concat_ws(' ',
+      translate("new"."title",'/.','  '),
+      translate("new"."title_ascii",'/.','  '))), 'A') ||
+    setweight(to_tsvector('english', concat_ws(' ',
+      translate("new"."artist",'/.','  '),
+      translate("new"."artist_ascii",'/.','  '))), 'B') ||
+    setweight(to_tsvector('english', concat_ws(' ',
+      translate("new"."album",'/.','  '),
+      translate("new"."album_ascii",'/.','  '),
+      translate("new"."source",'/.','  '))), 'D');
+  return new;
+end
+$$ language plpgsql;
