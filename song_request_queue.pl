@@ -74,7 +74,8 @@ helper valid_bot_key => sub ($c, $bot_key) {
 helper check_user_password => sub ($c, $username, $password) {
   my $user = $c->pg->db->select('users', [qw(id password_hash)],
     {username => $username})->hashes->first // return undef;
-  return $user->{id} if bcrypt($password, $user->{password_hash}) eq $user->{password_hash};
+  return $user->{id} if length $user->{password_hash}
+    and bcrypt($password, $user->{password_hash}) eq $user->{password_hash};
   return undef;
 };
 
