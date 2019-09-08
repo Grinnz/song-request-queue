@@ -100,7 +100,7 @@ helper update_last_login => sub ($c, $user_id) {
 };
 
 helper import_from_csv => sub ($c, $file) {
-  my $songs = csv(in => $file, encoding => 'UTF-8', detect_bom => 1, auto_diag => 2);
+  my $songs = csv(in => $file, encoding => 'UTF-8', detect_bom => 1, sep_set => [',', "\t"], auto_diag => 2);
   $_ = {
     title    => $_->{'song title'},
     artist   => $_->{artist},
