@@ -178,3 +178,12 @@ begin
   return new;
 end
 $$ language plpgsql;
+
+--8 up
+drop index "songs_artist_album_title_source_track_key";
+create unique index "songs_artist_album_title_source_track_key" on "songs" ("artist","album","title",coalesce("source",''),coalesce("track",0));
+
+alter table "songs" alter column "source" drop not null;
+
+--8 down
+alter table "songs" alter column "source" set not null;
