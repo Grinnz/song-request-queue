@@ -17,12 +17,12 @@
   <form v-on:submit.prevent="add_song">
     <div class="form-row">
       <div class="form-group col-sm-3">
-        <label for="add_song_title" class="sr-only">Title</label>
-        <input id="add_song_title" class="form-control form-control-sm" name="title" type="text" placeholder="Title" v-model="add_song_title">
-      </div>
-      <div class="form-group col-sm-3">
         <label for="add_song_artist" class="sr-only">Artist</label>
         <input id="add_song_artist" class="form-control form-control-sm" name="artist" type="text" placeholder="Artist" v-model="add_song_artist">
+      </div>
+      <div class="form-group col-sm-3">
+        <label for="add_song_title" class="sr-only">Title</label>
+        <input id="add_song_title" class="form-control form-control-sm" name="title" type="text" placeholder="Title" v-model="add_song_title">
       </div>
       <div class="w-100"></div>
       <div class="form-group col-sm-3">
@@ -97,8 +97,8 @@
   <table class="table table-hover table-bordered">
     <thead class="thead-light">
       <tr>
-        <th>Title</th>
         <th>Artist</th>
+        <th>Title</th>
         <th>Album</th>
         <th>Track</th>
         <th>Genre</th>
@@ -111,12 +111,12 @@
       <template v-for="song in search_songlist_results">
       <tr v-bind:id="'song_result_' + song.id">
         <td>
-          <input v-if="editing_song == song.id" class="form-control" name="title" v-model="edit_song_title">
-          <span v-else>{{ song.title }}</span>
-        </td>
-        <td>
           <input v-if="editing_song == song.id" class="form-control" name="artist" v-model="edit_song_artist">
           <span v-else>{{ song.artist }}</span>
+        </td>
+        <td>
+          <input v-if="editing_song == song.id" class="form-control" name="title" v-model="edit_song_title">
+          <span v-else>{{ song.title }}</span>
         </td>
         <td>
           <input v-if="editing_song == song.id" class="form-control" name="album" v-model="edit_song_album">
