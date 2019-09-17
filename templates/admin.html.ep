@@ -47,6 +47,10 @@
         <label for="add_song_duration" class="sr-only">Duration</label>
         <input id="add_song_duration" class="form-control form-control-sm" name="duration" type="text" placeholder="Duration" v-model="add_song_duration">
       </div>
+      <div class="form-group col-sm-3">
+        <label for="add_song_url" class="sr-only">URL</label>
+        <input id="add_song_url" class="form-control form-control-sm" name="url" type="text" placeholder="URL" v-model="add_song_url">
+      </div>
       <div class="w-100"></div>
       <div class="form-group col-sm-6">
         <button type="submit" class="btn btn-primary btn-sm mr-2">Submit</button>
@@ -104,6 +108,7 @@
         <th>Genre</th>
         <th>Source</th>
         <th>Duration</th>
+        <th>URL</th>
         <th>Admin</th>
       </tr>
     </thead>
@@ -137,6 +142,10 @@
         <td class="text-right">
           <input v-if="editing_song == song.id" class="form-control" name="duration" v-model="edit_song_duration">
           <span v-else>{{ srq_common.pretty_duration(song.duration) }}</span>
+        </td>
+        <td>
+          <input v-if="editing_song == song.id" class="form-control" name="url" v-model="edit_song_url">
+          <span v-else-if="song.url"><a v-bind:href="song.url" target="_blank">▼</a></span>
         </td>
         <td style="white-space: nowrap">
           <template v-if="editing_song == song.id">

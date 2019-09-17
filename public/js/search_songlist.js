@@ -10,7 +10,8 @@ var search_data = {
   edit_song_track: '',
   edit_song_genre: '',
   edit_song_source: '',
-  edit_song_duration: ''
+  edit_song_duration: '',
+  edit_song_url: '',
 };
 var search_vm = new Vue({
   el: '#search_songlist',
@@ -111,6 +112,7 @@ var search_vm = new Vue({
         search_data.edit_song_genre = song.genre;
         search_data.edit_song_source = song.source;
         search_data.edit_song_duration = song.duration;
+        search_data.edit_song_url = song.url;
       }
     },
     edit_song: function (event) {
@@ -124,8 +126,13 @@ var search_vm = new Vue({
           edit_song_body.set('track', search_data.edit_song_track);
         }
         edit_song_body.set('genre', search_data.edit_song_genre);
-        edit_song_body.set('source', search_data.edit_song_source);
+        if (search_data.edit_song_source !== null) {
+          edit_song_body.set('source', search_data.edit_song_source);
+        }
         edit_song_body.set('duration', search_data.edit_song_duration);
+        if (search_data.edit_song_url !== null && search_data.edit_song_url !== '') {
+          edit_song_body.set('url', search_data.edit_song_url);
+        }
         search_data.editing_song = null;
         fetch('/api/songs/' + song_id, {
           method: 'POST',

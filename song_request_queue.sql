@@ -187,3 +187,9 @@ alter table "songs" alter column "source" drop not null;
 
 --8 down
 alter table "songs" alter column "source" set not null;
+
+--9 up
+alter table "songs" add "url" text;
+
+--9 down
+alter table "songs" drop "url";

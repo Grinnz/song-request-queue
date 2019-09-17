@@ -17,7 +17,7 @@
     <tbody>
       <% for my $song (@$songlist) { %><tr id="<%= "song_result_$song->{id}" %>">
         <td><%= $song->{artist} %></td>
-        <td><%= $song->{title} %></td>
+        <td><% if (length $song->{url}) { %><a href="<%= $song->{url} %>" target="_blank">▼</a> <% } %><%= $song->{title} %></td>
         <td><%= $song->{album} %></td>
         <td><%= $song->{track} %></td>
         <td><%= $song->{genre} %></td>

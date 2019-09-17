@@ -131,12 +131,16 @@ helper import_from_json => sub ($c, $file) {
 helper song_for_insert => sub ($c, $details) {
   my %song;
   $song{$_} = $details->{$_}
-    for grep { defined $details->{$_} } qw(title artist album genre source);
+    for grep { defined $details->{$_} } qw(title artist album genre source url);
   $song{"${_}_ascii"} = unidecode $details->{$_}
     for grep { defined $details->{$_} } qw(title artist album);
   $song{duration} = $c->normalize_duration($details->{duration})
     if defined $details->{duration};
   $song{track} = int $details->{track} if defined $details->{track};
+  if (defined $details->{url}) {
+    my $url = $details->{url} =~ m/^https?:/ ? $details->{url} : "http://$details->{url}";
+    $song{url} = Mojo::URL->new($url)->to_string;
+  }
   return \%song;
 };
 
@@ -174,7 +178,7 @@ helper clear_songs => sub ($c) {
   return $c->pg->db->query('TRUNCATE TABLE "songs" CASCADE')->rows;
 };
 
-my @song_details_cols = qw(id title artist album track genre source duration);
+my @song_details_cols = qw(id title artist album track genre source duration url);
 
 helper search_songs => sub ($c, $search) {
   my $select = join ', ', map { qq{"$_"} } @song_details_cols;
