@@ -63,7 +63,7 @@
 
 <div id="export_songlist" class="container">
   <h4>Export Songlist</h4>
-  <a class="btn btn-secondary mb-2" href="/api/songs/export" target="_blank">Export JSON</a>
+  <a class="btn btn-info mb-2" href="/api/songs/export" target="_blank">Export JSON</a>
 </div>
 
 <div id="clear_songlist" class="container">
@@ -154,8 +154,8 @@
         </td>
         <td style="white-space: nowrap">
           <template v-if="editing_song == song.id">
-            <button type="submit" class="btn btn-info btn-sm">✓</button>
-            <button type="button" class="btn btn-info btn-sm" v-on:click.prevent="set_editing_song(null)">✖</button>
+            <button type="submit" class="btn btn-secondary btn-sm">✓</button>
+            <button type="button" class="btn btn-secondary btn-sm" v-on:click.prevent="set_editing_song(null)">✖</button>
           </template>
           <template v-else>
             <template v-if="confirming_delete_song == song.id">Delete?
@@ -163,7 +163,7 @@
               <button type="button" class="btn btn-success btn-sm" v-on:click.prevent="unconfirm_delete_song(song.id)">N</button>
             </template>
             <template v-else>
-              <button type="button" class="btn btn-info btn-sm" v-on:click.prevent="set_editing_song(song)">✎</button>
+              <button type="button" class="btn btn-secondary btn-sm" v-on:click.prevent="set_editing_song(song)">✎</button>
               <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="confirm_delete_song(song.id)">✖</button>
             </template>
           </template>
