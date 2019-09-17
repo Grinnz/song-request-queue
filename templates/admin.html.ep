@@ -150,7 +150,7 @@
         </td>
         <td>
           <input v-if="editing_song == song.id" class="form-control" name="url" v-model="edit_song_url">
-          <span v-else-if="song.url"><a v-bind:href="song.url" target="_blank">▼</a></span>
+          <span v-else-if="song.url"><a class="btn btn-info btn-sm" v-bind:href="song.url" target="_blank">▼</a></span>
         </td>
         <td style="white-space: nowrap">
           <template v-if="editing_song == song.id">
