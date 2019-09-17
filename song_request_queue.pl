@@ -5,7 +5,8 @@ use Mojo::JSON::MaybeXS;
 use Mojolicious::Lite;
 use Crypt::Eksblowfish::Bcrypt qw(en_base64 bcrypt);
 use Digest::MD5 qw(md5 md5_hex);
-use Mojo::JSON qw(decode_json true false);
+use Mojo::Asset::Memory;
+use Mojo::JSON qw(decode_json encode_json true false);
 use Mojo::Pg;
 use Syntax::Keyword::Try;
 use Text::CSV 'csv';
@@ -117,15 +118,30 @@ helper import_from_json => sub ($c, $file) {
   $file =~ s/,(?=\s*]\s*\z)//;
   my $songs = decode_json $file;
   $_ = {
-    title    => $_->{songName},
-    artist   => $_->{artistName},
-    album    => $_->{albumName},
-    track    => undef,
-    genre    => $_->{genreName},
-    source   => $_->{charterName},
-    duration => ($_->{songLength} / 1000),
+    title    => $_->{title} // $_->{songName},
+    artist   => $_->{artist} // $_->{artistName},
+    album    => $_->{album} // $_->{albumName},
+    track    => $_->{track},
+    genre    => $_->{genre} // $_->{genreName},
+    source   => $_->{source} // $_->{charterName},
+    duration => $_->{duration} // (defined $_->{songLength} ? ($_->{songLength} / 1000) : undef),
+    url      => $_->{url},
   } for @$songs;
   $c->import_songs($songs);
+};
+
+helper export_to_json => sub ($c, $songs) {
+  $_ = {
+    title    => $_->{title},
+    artist   => $_->{artist},
+    album    => $_->{album},
+    track    => $_->{track},
+    genre    => $_->{genre},
+    source   => $_->{source},
+    duration => $_->{duration},
+    url      => $_->{url},
+  } for @$songs;
+  return Mojo::Asset::Memory->new->add_chunk(encode_json $songs);
 };
 
 helper song_for_insert => sub ($c, $details) {
@@ -378,6 +394,13 @@ get '/api/songs/search' => sub ($c) {
   return $c->render(json => []) unless length $search;
   my $results = $c->search_songs($search);
   $c->render(json => $results);
+};
+
+get '/api/songs/export' => sub ($c) {
+  my $asset = $c->export_to_json($c->all_song_details);
+  $c->res->headers->content_type('application/json;charset=UTF-8')
+    ->content_disposition('attachment; filename="songs.json"');
+  $c->reply->asset($asset);
 };
 
 get '/api/songs/:song_id' => sub ($c) {

@@ -3,7 +3,7 @@
   <h2>Admin</h2>
   <h4>Import Songlist</h4>
   <div class="mb-2">
-    Songlists can be imported from either the C3 Tools Setlist Manager CSV export or the Clone Hero JSON export.
+    Songlists can be imported from the C3 Tools Setlist Manager CSV export, the Clone Hero JSON export, or the below export option.
   </div>
   <form class="form-inline" enctype="multipart/form-data" v-on:submit.prevent="import_songlist">
     <input id="import_songlist_file" class="form-control mr-2" name="songlist" type="file">
@@ -59,6 +59,11 @@
       </div>
     </div>
   </form>
+</div>
+
+<div id="export_songlist" class="container">
+  <h4>Export Songlist</h4>
+  <a class="btn btn-secondary mb-2" href="/api/songs/export" target="_blank">Export JSON</a>
 </div>
 
 <div id="clear_songlist" class="container">
