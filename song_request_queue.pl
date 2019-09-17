@@ -438,6 +438,8 @@ group {
         return $c->render(text => 'Internal error searching song database');
       }
       $song_details = $search_results->first;
+      return $c->render(text => "No match found for '$search'")
+        if !defined $song_details and $c->app->config->{reject_unknown_requests};
       $song_id = $song_details->{id} if defined $song_details;
       $raw_request = $search;
     }
