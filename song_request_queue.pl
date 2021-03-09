@@ -497,8 +497,12 @@ group {
     }
     
     my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
-    return $c->render(text => "$requested_by already has a song in the queue; use !srupdate to update your request")
-      if !$c->stash('is_mod') and $c->app->config->{reject_multiple_requests} and $c->requester_is_in_queue($requested_by);
+    if (!$c->stash('is_mod') and $c->app->config->{reject_multiple_requests} and $c->requester_is_in_queue($requested_by)) {
+      my $cmd_text = $c->app->config->{update_command_text};
+      my $error = "$requested_by already has a song in the queue";
+      $error .= "; $cmd_text" if $cmd_text;
+      return $c->render(text => $error);
+    }
     try { $c->queue_song($song_id, $requested_by, $raw_request) } catch {
       $c->app->log->error($@);
       return $c->render(text => 'Internal error adding song to queue');
