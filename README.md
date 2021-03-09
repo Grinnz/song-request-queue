@@ -91,8 +91,8 @@ The JSON format is expected to be that exported by Clone Hero, or in general to 
 
 ## Bot Requests
 
-Requests can be sent from a bot to the API endpoint `/api/queue/add`.
-The parameters `bot_key`, `requested_by`, and `query` should be included in the query string.
+Requests can be sent from a bot to the API endpoints `/api/queue/add`, `/api/queue/update`, and `/api/queue/remove`.
+The parameters `bot_key`, `requested_by`, and `query` (except for when removing) should be included in the query string.
 `bot_key` must match a value in the `bot_keys` array in the config file.
 The endpoint accepts GET requests to accomodate bots with limited HTTP request functionality, but POST should be used when possible to avoid resubmitting requests.
 The endpoint returns a text string indicating success or error that can be displayed by the bot.
@@ -106,6 +106,8 @@ song_request_queue.conf:
 
 ```
 GET https://example.com/api/queue/add?bot_key=foobar&requested_by=Grinnz&query=something
+GET https://example.com/api/queue/update?bot_key=foobar&requested_by=Grinnz&query=something%20else
+GET https://example.com/api/queue/remove?bot_key=foobar&requested_by=Grinnz
 ```
 
 ## Copyright and License

@@ -317,6 +317,17 @@ helper set_requested_by => sub ($c, $position, $requested_by) {
     {position => $position})->rows;
 };
 
+helper set_queued_song_for_requester => sub ($c, $requested_by, $song_id, $raw_request) {
+  return $c->pg->db->update('queue', {song_id => $song_id, raw_request => $raw_request},
+    {requested_by => $requested_by})->rows;
+};
+
+helper unqueue_song_for_requester => sub ($c, $requested_by) {
+  my $deleted = $c->pg->db->delete('queue', {requested_by => $requested_by},
+    {returning => 'song_id'})->arrays->first;
+  return defined $deleted ? $deleted->[0] : undef;
+};
+
 helper clear_queue => sub ($c) {
   return $c->pg->db->query('TRUNCATE TABLE "queue"')->rows;
 };
@@ -487,6 +498,39 @@ group {
     }
     my $response_title = defined $song_details ? "$song_details->{artist} - $song_details->{title}" : $raw_request;
     $c->render(text => "Added '$response_title' to queue (requested by $requested_by)");
+  };
+  
+  any '/api/queue/update' => sub ($c) {
+    my $search = $c->param('query') // '';
+    return $c->render(text => 'No search query provided.') unless length $search;
+    my $search_results;
+    try { $search_results = $c->search_songs($search) } catch {
+      $c->app->log->error($@);
+      return $c->render(text => 'Internal error searching song database');
+    }
+    my $song_details = $search_results->first;
+    return $c->render(text => "No match found for '$search'") unless defined $song_details;
+    
+    my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
+    my $updated;
+    try { $updated = $c->set_queued_song_for_requester($requested_by, $song_details->{id}, $search) } catch {
+      $c->app->log->error($@);
+      return $c->render(text => 'Internal error updating song queue');
+    }
+    return $c->render(text => "$requested_by does not have a request in the queue") unless $updated;
+    return $c->render(text => "Updated request to '$song_details->{artist} - $song_details->{title}' (requested by $requested_by)");
+  };
+  
+  any '/api/queue/remove' => sub ($c) {
+    my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
+    my $removed;
+    try { $removed = $c->unqueue_song_for_requester($requested_by) } catch {
+      $c->app->log->error($@);
+      return $c->render(text => 'Internal error removing song from queue');
+    }
+    return $c->render(text => "$requested_by does not have a request in the queue") unless defined $removed;
+    my $removed_song = $c->song_details($removed);
+    return $c->render(text => "Removed request '$removed_song->{artist} - $removed_song->{title}' (requested by $requested_by)");
   };
   
   post '/api/queue/:position' => sub ($c) {

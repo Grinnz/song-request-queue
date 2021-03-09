@@ -193,3 +193,6 @@ alter table "songs" add "url" text;
 
 --9 down
 alter table "songs" drop "url";
+
+--10 up
+create index "queue_requested_by" on "queue" ("requested_by");
