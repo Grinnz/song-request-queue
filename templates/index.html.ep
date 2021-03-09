@@ -15,7 +15,12 @@
     </div>
     <div class="row mb-2"><h4 class="col-sm-12 text-center">{{ queue_first.artist }}</h4></div>
     <div class="row">
-      <div class="col-sm-5 offset-sm-1 text-center">Request: <span v-if="queue_first.raw_request">"{{ queue_first.raw_request }}" </span>
+      <% if (stash 'is_mod') { %>
+        <div class="col-sm-1">
+          <button type="button" class="btn btn-info btn-sm ml-2" v-on:click.prevent="queue_promote_random()">Rand</button>
+        </div>
+      <% } %>
+      <div class="col-sm-5<% if (!stash 'is_mod') { %> offset-sm-1<% } %> text-center">Request: <span v-if="queue_first.raw_request">"{{ queue_first.raw_request }}" </span>
         <% if (stash 'is_mod') { %>
           <template v-if="editing_requestor == queue_first.position">
           <form class="form-inline" v-on:submit.prevent="edit_requestor(queue_first.position)">(

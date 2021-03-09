@@ -312,6 +312,17 @@ helper reorder_queue => sub ($c, $position, $direction) {
   return 1;
 };
 
+helper promote_random_queued_song => sub ($c) {
+  my $position = $c->pg->db->select('queue', ['position'],
+    undef, {order_by => \'RANDOM()', limit => 1})->arrays->first // return 0;
+  $position = $position->[0];
+  $c->pg->db->update('queue',
+    {position => \['CASE WHEN "position" = ? THEN 1
+      WHEN "position" < ? THEN "position" + 1
+      ELSE "position" END', $position, $position]});
+  return $position;
+};
+
 helper set_queued_song => sub ($c, $position, $song_id) {
   return $c->pg->db->update('queue', {song_id => $song_id},
     {position => $position})->rows;
@@ -552,6 +563,13 @@ group {
     return $c->render(text => "$requested_by does not have a request in the queue") unless defined $removed;
     my $removed_song = $c->song_details($removed);
     return $c->render(text => "Removed request '$removed_song->{artist} - $removed_song->{title}' (requested by $requested_by)");
+  };
+  
+  post '/api/queue/promote_random' => sub ($c) {
+    return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_mod');
+    my $promoted = $c->promote_random_queued_song;
+    return $c->render(text => "Failed to promote a random queued song") unless $promoted;
+    return $c->render(text => "Promoted queued song from position $promoted to 1");
   };
   
   post '/api/queue/:position' => sub ($c) {

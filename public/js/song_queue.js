@@ -63,6 +63,22 @@ var queue_vm = new Vue({
         });
       }
     },
+    queue_promote_random: function () {
+      queue_vm.set_editing_requestor(null);
+      queue_vm.set_search_for_queue(null);
+      fetch('/api/queue/promote_random', {
+        method: 'POST',
+        credentials: 'include'
+      }).then(function(response) {
+        if (response.ok) {
+          queue_vm.refresh_queue();
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
+      }).catch(function(error) {
+        console.log('Error promoting random song', error);
+      });
+    },
     set_search_for_queue: function (position) {
       queue_data.search_for_queue = position;
       search_data.search_for_queue = position;
