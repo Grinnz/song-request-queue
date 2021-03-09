@@ -1,10 +1,10 @@
 requires 'perl' => '5.020';
 requires 'experimental';
+requires 'Cpanel::JSON::XS' => '4.09';
 requires 'Crypt::Eksblowfish::Bcrypt';
 requires 'Digest::MD5';
-requires 'Mojolicious' => '7.31';
+requires 'Mojolicious' => '7.87';
 requires 'Mojo::Log::Role::Clearable';
-requires 'Mojo::JSON::MaybeXS';
 requires 'Mojo::Pg' => '4.08';
 requires 'Spreadsheet::ParseXLSX';
 requires 'Syntax::Keyword::Try';

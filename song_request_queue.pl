@@ -1,7 +1,6 @@
 #!/usr/bin/env perl
 
 use 5.020;
-use Mojo::JSON::MaybeXS;
 use Mojolicious::Lite;
 use Crypt::Eksblowfish::Bcrypt qw(en_base64 bcrypt);
 use Digest::MD5 qw(md5 md5_hex);
