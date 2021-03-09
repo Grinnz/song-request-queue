@@ -258,6 +258,11 @@ helper song_details => sub ($c, $song_id) {
     {id => $song_id})->hashes->first;
 };
 
+helper random_song_details => sub ($c) {
+  return $c->pg->db->select('songs', \@song_details_cols,
+    undef, {order_by => \'RANDOM()', limit => 1})->hashes->first;
+};
+
 helper all_song_details => sub ($c, $sort_by = 'artist', $sort_dir = 'asc') {
   my @sort = qw(artist album track title source);
   if ($sort_by eq 'album') {
@@ -476,9 +481,14 @@ group {
   
   any '/api/queue/add' => sub ($c) {
     my $song_id = $c->param('song_id');
+    my $random = $c->param('random');
     my $song_details;
     my $raw_request;
-    if (defined $song_id) {
+    if ($random) {
+      $song_details = $c->random_song_details;
+      return $c->render(text => 'No songs to add to queue') unless defined $song_details;
+      $song_id = $song_details->{id};
+    } elsif (defined $song_id) {
       $song_details = $c->song_details($song_id);
       return $c->render(text => "Invalid song ID $song_id") unless defined $song_details;
     } else {
