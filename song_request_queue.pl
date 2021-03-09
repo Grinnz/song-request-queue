@@ -317,6 +317,11 @@ helper set_requested_by => sub ($c, $position, $requested_by) {
     {position => $position})->rows;
 };
 
+helper requester_is_in_queue => sub ($c, $requested_by) {
+  return defined $c->pg->db->select('queue', ['id'],
+    {requested_by => $requested_by})->arrays->first;
+};
+
 helper set_queued_song_for_requester => sub ($c, $requested_by, $song_id, $raw_request) {
   return $c->pg->db->update('queue', {song_id => $song_id, raw_request => $raw_request},
     {requested_by => $requested_by})->rows;
@@ -492,6 +497,8 @@ group {
     }
     
     my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
+    return $c->render(text => "$requested_by already has a song in the queue; use !srupdate to update your request")
+      if !$c->stash('is_mod') and $c->app->config->{reject_multiple_requests} and $c->requester_is_in_queue($requested_by);
     try { $c->queue_song($song_id, $requested_by, $raw_request) } catch {
       $c->app->log->error($@);
       return $c->render(text => 'Internal error adding song to queue');
