@@ -1,5 +1,6 @@
 % layout 'main', load_js => ['song_queue.js','search_songlist.js'];
 <div id="request_queue" class="container mb-2">
+  % my $meta_col = config('queue_meta_column') // 'duration';
   <div v-if="queue_first" class="py-4" v-bind:style="{
     'border-width': '1px', 'border-style': 'solid', 'border-color': '#ddd',
     'background-color': is_search_for_queue(queue_first.position) ? '#d9edf7' : null
@@ -34,7 +35,7 @@
           </template>
         <% } else { %>({{ queue_first.requested_by }})<% } %>
       </div>
-      <div class="col-sm-5 text-center">Duration: {{ srq_common.pretty_duration(queue_first.duration) }}</div>
+      <div class="col-sm-5 text-center"><%= $meta_col eq 'source' ? 'Source: {{ queue_first.source }}' : 'Duration: {{ srq_common.pretty_duration(queue_first.duration) }}' %></div>
       <% if (stash 'is_mod') { %>
         <div class="col-sm-1">
           <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="unqueue_song(queue_first.position)">Done</button>
@@ -48,7 +49,7 @@
         <th>#</th>
         <th>Artist</th>
         <th>Title</th>
-        <th>Duration</th>
+        <th><%= ucfirst $meta_col %></th>
         <th>Request</th>
         <% if (stash 'is_mod') { %><th>Move</th><% } %>
       </tr>
@@ -61,7 +62,7 @@
         <% } %></td>
         <td>{{ request.artist }}</td>
         <td>{{ request.title }}</td>
-        <td class="text-right">{{ srq_common.pretty_duration(request.duration) }}</td>
+        <td class="text-right"><%= $meta_col eq 'source' ? '{{ request.source }}' : '{{ srq_common.pretty_duration(request.duration) }}' %></td>
         <td><span v-if="request.raw_request">"{{ request.raw_request }}" </span>
           <% if (stash 'is_mod') { %>
             <template v-if="editing_requestor == request.position">
