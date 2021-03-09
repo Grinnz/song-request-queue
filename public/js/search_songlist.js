@@ -53,6 +53,23 @@ var search_vm = new Vue({
         console.log('Error adding song to queue', error);
       });
     },
+    queue_random_song: function () {
+      var queue_random_body = new URLSearchParams();
+      queue_random_body.set('random', 1);
+      fetch('/api/queue/add', {
+        method: 'POST',
+        body: queue_random_body,
+        credentials: 'include'
+      }).then(function(response) {
+        if (response.ok) {
+          queue_vm.refresh_queue();
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
+      }).catch(function(error) {
+        console.log('Error adding random song to queue', error);
+      });
+    },
     set_search_for_queue: function (position) {
       search_data.search_for_queue = position;
       queue_data.search_for_queue = position;

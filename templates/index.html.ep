@@ -94,7 +94,8 @@
       <input id="search_songlist_query" class="form-control mr-2" name="query" type="text" placeholder="Title/Artist/Album/Source" v-model="search_songlist_query">
     </div>
     <button type="submit" class="btn btn-primary mr-2">Search</button>
-    <button type="button" class="btn btn-danger" v-on:click.prevent="clear_search_songlist">Clear</button>
+    <button type="button" class="btn btn-danger mr-2" v-on:click.prevent="clear_search_songlist">Clear</button>
+    <% if (stash 'is_mod') { %><button type="button" class="btn btn-warning" v-on:click.prevent="queue_random_song()">Queue Random Song</button><% } %>
   </form>
   <table class="table table-hover table-bordered">
     <thead class="thead-light">
