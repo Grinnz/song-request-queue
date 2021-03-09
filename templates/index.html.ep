@@ -36,7 +36,7 @@
       <div class="col-sm-5 text-center"><%= $meta_col eq 'source' ? 'Source: {{ queue_first.source }}' : 'Duration: {{ srq_common.pretty_duration(queue_first.duration) }}' %></div>
       <% if (stash 'is_mod') { %>
         <div class="col-sm-1">
-          <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="unqueue_song(queue_first.position)">Done</button>
+          <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="unqueue_song(queue_first.position)">Next</button>
         </div>
       <% } %>
     </div>
