@@ -313,13 +313,18 @@ helper reorder_queue => sub ($c, $position, $direction) {
 };
 
 helper promote_random_queued_song => sub ($c) {
-  my $position = $c->pg->db->select('queue', ['position'],
-    undef, {order_by => \'RANDOM()', limit => 1})->arrays->first // return 0;
+  my $db = $c->pg->db;
+  my $top_position = $db->select('queue', ['position'],
+    undef, {order_by => 'position', limit => 1})->arrays->first // return undef;
+  $top_position = $top_position->[0];
+  my $position = $db->select('queue', ['position'],
+    {position => {'!=' => $top_position}},
+    {order_by => \'RANDOM()', limit => 1})->arrays->first // return undef;
   $position = $position->[0];
-  $c->pg->db->update('queue',
-    {position => \['CASE WHEN "position" = ? THEN 1
-      WHEN "position" < ? THEN "position" + 1
-      ELSE "position" END', $position, $position]});
+  my $tx = $db->begin;
+  $db->delete('queue', {position => $top_position});
+  $db->update('queue', {position => $top_position}, {position => $position});
+  $tx->commit;
   return $position;
 };
 
