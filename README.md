@@ -27,6 +27,7 @@ $ createdb song_request_queue -O song_request_user
   hypnotoad => {
     listen => ['http://*:8080'], # 8080 is default for hypnotoad
   },
+  logfile => '/var/log/srq.log',
   secrets => ['change this'],
 }
 ```

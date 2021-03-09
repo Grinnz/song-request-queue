@@ -8,6 +8,7 @@ use Digest::MD5 qw(md5 md5_hex);
 use Mojo::Asset::Memory;
 use Mojo::JSON qw(decode_json encode_json true false);
 use Mojo::Pg;
+use Spreadsheet::ParseXLSX;
 use Syntax::Keyword::Try;
 use Text::CSV 'csv';
 use Text::Unidecode;
@@ -16,6 +17,8 @@ use Time::Seconds;
 use experimental 'signatures';
 
 plugin 'Config';
+
+app->log->with_roles('Mojo::Log::Role::Clearable')->path(app->config->{logfile}) if app->config->{logfile};
 
 app->secrets(app->config->{secrets}) if app->config->{secrets};
 
@@ -127,6 +130,40 @@ helper import_from_json => sub ($c, $file) {
     duration => $_->{duration} // (defined $_->{songLength} ? ($_->{songLength} / 1000) : undef),
     url      => $_->{url},
   } for @$songs;
+  $c->import_songs($songs);
+};
+
+helper import_from_xlsx => sub ($c, $file) {
+  my $parser = Spreadsheet::ParseXLSX->new;
+  my $workbook = $parser->parse($file) // die "Failed to parse $file: " . $parser->error;
+  my $songs = [];
+  foreach my $worksheet ($workbook->worksheets) {
+    my ($row_min, $row_max) = $worksheet->row_range;
+    my ($col_min, $col_max) = $worksheet->col_range;
+    my %cols;
+    foreach my $col ($col_min..$col_max) {
+      my $heading = $worksheet->get_cell($row_min, $col)->value;
+      if ($heading =~ m/Artist/i) {
+        $cols{artist} = $col;
+      } elsif ($heading =~ m/Song Name/i) {
+        $cols{title} = $col;
+      } elsif ($heading =~ m/Author/i) {
+        $cols{source} = $col;
+      }
+    }
+    foreach my $row ($row_min+1..$row_max) {
+      my %song;
+      foreach my $key (qw(title artist album track genre source duration url)) {
+        next unless defined $cols{$key};
+        my $cell = $worksheet->get_cell($row, $cols{$key});
+        $song{$key} = defined $cell ? $cell->value : '';
+      }
+      next unless grep { length } values %song;
+      $song{album} //= '';
+      $song{duration} //= 0;
+      push @$songs, \%song;
+    }
+  }
   $c->import_songs($songs);
 };
 
@@ -523,7 +560,9 @@ group {
     return $c->render(text => 'No songlist provided.') unless defined $upload;
     my $name = $upload->filename;
     my $contents = $upload->asset->slurp;
-    if ($contents =~ m/^[\[\{]/ or $name =~ m/\.json$/) {
+    if ($name =~ m/\.xlsx$/i) {
+      $c->import_from_xlsx(\$contents);
+    } elsif ($contents =~ m/^[\[\{]/ or $name =~ m/\.json$/i) {
       $c->import_from_json($contents);
     } else {
       $c->import_from_csv(\$contents);
