@@ -148,6 +148,14 @@ helper import_from_xlsx => sub ($c, $file) {
         $cols{title} = $col;
       } elsif ($heading =~ m/Author/i) {
         $cols{source} = $col;
+      } elsif ($heading =~ m/Album/i) {
+        $cols{album} = $col;
+      } elsif ($heading =~ m/Duration/i) {
+        $cols{duration} = $col;
+      } elsif ($heading =~ m/Genre/i) {
+        $cols{genre} = $col;
+      } elsif ($heading =~ m/Track/i) {
+        $cols{track} = $col;
       }
     }
     foreach my $row ($row_min+1..$row_max) {
