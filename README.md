@@ -73,7 +73,7 @@ Admin users can add queue moderators on the `/admin` page. The reset code will b
 
 ## Song format
 
-Songs can be manually added on the Admin page, but can also be imported in CSV or JSON format.
+Songs can be manually added on the Admin page, but can also be imported in CSV, JSON, or XLSX format.
 The CSV format is expected to be that exported by the C3 Tools Setlist Manager, or in general to have headers and the following columns (order not important):
 * Song Title
 * Artist
@@ -88,6 +88,14 @@ The JSON format is expected to be that exported by Clone Hero, or in general to 
 * albumName
 * charterName
 * songLength
+
+The XLSX format is expected to have the following columns (order not important):
+* Song Name
+* Artist
+* Album Name
+* Track
+* Author
+* Duration
 
 ## Bot Requests
 
