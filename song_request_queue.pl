@@ -2,8 +2,8 @@
 
 use 5.020;
 use Mojolicious::Lite;
-use Crypt::Eksblowfish::Bcrypt qw(en_base64 bcrypt);
-use Digest::MD5 qw(md5 md5_hex);
+use Crypt::Passphrase;
+use Digest::MD5 qw(md5_hex);
 use Mojo::Asset::Memory;
 use Mojo::JSON qw(decode_json encode_json true false);
 use Mojo::Pg;
@@ -44,12 +44,7 @@ helper normalize_duration => sub ($c, $duration) {
   return sprintf '%02d:%02d:%02d', $hours, $minutes, $seconds;
 };
 
-helper hash_password => sub ($c, $password, $username) {
-  my $remote_address = $c->tx->remote_address // '127.0.0.1';
-  my $salt = en_base64 md5 join '$', $username // '', \my $dummy, Time::HiRes::time, $remote_address;
-  my $hash = bcrypt $password, sprintf '$2a$08$%s', $salt;
-  return $hash;
-};
+helper authenticator => sub ($c) { Crypt::Passphrase->new(encoder => {module => 'Bcrypt', cost => 8}) };
 
 helper user_details => sub ($c, $user_id) {
   return $c->pg->db->select('users', [qw(username is_admin is_mod)],
@@ -78,7 +73,7 @@ helper check_user_password => sub ($c, $username, $password) {
   my $user = $c->pg->db->select('users', [qw(id password_hash)],
     {username => $username})->hashes->first // return undef;
   return $user->{id} if length $user->{password_hash}
-    and bcrypt($password, $user->{password_hash}) eq $user->{password_hash};
+    and $c->authenticator->verify_password($password, $user->{password_hash});
   return undef;
 };
 
@@ -91,7 +86,7 @@ helper check_user_reset_code => sub ($c, $username, $code) {
 };
 
 helper set_user_password => sub ($c, $user_id, $password, $username) {
-  my $hash = $c->hash_password($password, $username);
+  my $hash = $c->authenticator->hash_password($password);
   return $c->pg->db->update('users', {
     password_hash => $hash,
     password_reset_code => undef,
