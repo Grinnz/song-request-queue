@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 use 5.020;
-use Mojolicious::Lite;
+use Mojolicious::Lite -signatures;
 use Crypt::Passphrase;
 use Digest::MD5 qw(md5_hex);
 use Mojo::Asset::Memory;
@@ -13,7 +13,6 @@ use Text::CSV 'csv';
 use Text::Unidecode;
 use Time::HiRes;
 use Time::Seconds;
-use experimental 'signatures';
 
 plugin 'Config';
 
