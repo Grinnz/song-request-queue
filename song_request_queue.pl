@@ -43,7 +43,7 @@ helper normalize_duration => sub ($c, $duration) {
   return sprintf '%02d:%02d:%02d', $hours, $minutes, $seconds;
 };
 
-helper authenticator => sub ($c) { Crypt::Passphrase->new(encoder => {module => 'Bcrypt', cost => 8}) };
+helper authenticator => sub ($c) { Crypt::Passphrase->new(encoder => {module => 'Bcrypt'}) };
 
 helper user_details => sub ($c, $user_id) {
   return $c->pg->db->select('users', [qw(username is_admin is_mod)],
@@ -76,6 +76,15 @@ helper check_user_password => sub ($c, $username, $password) {
   return undef;
 };
 
+helper rehash_user_password => sub ($c, $user_id, $password) {
+  my $hash = $c->pg->db->select('users', ['password_hash'],
+    {id => $user_id})->arrays->first // return 0;
+  $hash = $hash->[0];
+  return $c->set_user_password($user_id, $password) if length $hash
+    and $c->authenticator->needs_rehash($hash) and $c->authenticator->verify_password($password, $hash);
+  return 0;
+};
+
 helper check_user_reset_code => sub ($c, $username, $code) {
     my $user = $c->pg->db->select('users', ['id'], {
       username => $username,
@@ -84,7 +93,7 @@ helper check_user_reset_code => sub ($c, $username, $code) {
     return $user->[0];
 };
 
-helper set_user_password => sub ($c, $user_id, $password, $username) {
+helper set_user_password => sub ($c, $user_id, $password) {
   my $hash = $c->authenticator->hash_password($password);
   return $c->pg->db->update('users', {
     password_hash => $hash,
@@ -422,6 +431,7 @@ post '/api/login' => sub ($c) {
   my $user_id = $c->check_user_password($username, $password)
     // return $c->render(json => {logged_in => false, error => 'Login failed'});
   
+  $c->rehash_user_password($user_id, $password);
   $c->update_last_login($user_id);
   $c->session->{user_id} = $user_id;
   
@@ -459,7 +469,7 @@ post '/api/set_password' => sub ($c) {
       // return $c->render(json => {success => false, error => 'Unknown user or invalid password'});
   }
   
-  my $updated = $c->set_user_password($user_id, $password, $username);
+  my $updated = $c->set_user_password($user_id, $password);
   return $c->render(json => {success => true}) if $updated > 0;
   $c->render(json => {success => false});
 };
