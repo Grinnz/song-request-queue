@@ -243,24 +243,29 @@ helper clear_songs => sub ($c) {
 
 my @song_details_cols = qw(id title artist album track genre source duration url);
 
-helper search_songs => sub ($c, $search) {
+helper search_songs => sub ($c, $search, $random = 0) {
   my $select = join ', ', map { qq{"$_"} } @song_details_cols;
+  
+  my $and_select = my $or_select = $select;
+  my $order_by;
+  if ($random) {
+    $order_by = 'RANDOM()';
+  } else {
+    $and_select .= q{, ts_rank_cd(songtext, to_tsquery('english_nostop', $1), 1) AS "rank"};
+    $or_select .= q{, ts_rank_cd(songtext_withstop, to_tsquery('english', $1), 1) AS "rank"};
+    $order_by = '"rank" DESC, "artist", "album", "track", "title", "source"';
+  }
+  
   my @terms = map { "'$_':*" } map { quotemeta } split ' ', $search =~ tr[/][ ]r;
   my $and_search = join ' & ', @terms;
-  my $query = "SELECT $select, " . <<'EOQ';
-ts_rank_cd(songtext, to_tsquery('english_nostop', $1), 1) AS "rank"
-FROM "songs" WHERE songtext @@ to_tsquery('english_nostop', $1)
-ORDER BY "rank" DESC, "artist", "album", "track", "title", "source"
-EOQ
+  my $query = qq{SELECT $and_select FROM "songs"
+    WHERE songtext \@\@ to_tsquery('english_nostop', \$1) ORDER BY $order_by};
   my $results = $c->pg->db->query($query, $and_search)->hashes;
   return $results if @$results;
   
   my $or_search = join ' | ', @terms;
-  $query = "SELECT $select, " . <<'EOQ';
-ts_rank_cd(songtext_withstop, to_tsquery('english', $1), 1) AS "rank"
-FROM "songs" WHERE songtext_withstop @@ to_tsquery('english', $1)
-ORDER BY "rank" DESC, "artist", "album", "track", "title", "source"
-EOQ
+  $query = qq{SELECT $or_select FROM "songs"
+    WHERE songtext_withstop \@\@ to_tsquery('english', \$1) ORDER BY $order_by};
   return $c->pg->db->query($query, $or_search)->hashes;
 };
 
@@ -509,21 +514,17 @@ group {
   
   any '/api/queue/add' => sub ($c) {
     my $song_id = $c->param('song_id');
+    my $search = $c->param('query') // '';
     my $random = $c->param('random');
+    
     my $song_details;
     my $raw_request;
-    if ($random) {
-      $song_details = $c->random_song_details;
-      return $c->render(text => 'No songs to add to queue') unless defined $song_details;
-      $song_id = $song_details->{id};
-    } elsif (defined $song_id) {
+    if (defined $song_id) {
       $song_details = $c->song_details($song_id);
       return $c->render(text => "Invalid song ID $song_id") unless defined $song_details;
-    } else {
-      my $search = $c->param('query') // '';
-      return $c->render(text => 'No song ID or search query provided.') unless length $search;
+    } elsif (length $search) {
       my $search_results;
-      try { $search_results = $c->search_songs($search) } catch {
+      try { $search_results = $c->search_songs($search, $random) } catch {
         $c->app->log->error($@);
         return $c->render(text => 'Internal error searching song database');
       }
@@ -532,6 +533,12 @@ group {
         if !defined $song_details and $c->app->config->{reject_unknown_requests};
       $song_id = $song_details->{id} if defined $song_details;
       $raw_request = $search;
+    } elsif ($random) {
+      $song_details = $c->random_song_details;
+      return $c->render(text => 'No songs to add to queue') unless defined $song_details;
+      $song_id = $song_details->{id};
+    } else {
+      return $c->render(text => 'No song ID or search query provided.');
     }
     
     my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
@@ -551,14 +558,23 @@ group {
   
   any '/api/queue/update' => sub ($c) {
     my $search = $c->param('query') // '';
-    return $c->render(text => 'No search query provided.') unless length $search;
-    my $search_results;
-    try { $search_results = $c->search_songs($search) } catch {
-      $c->app->log->error($@);
-      return $c->render(text => 'Internal error searching song database');
+    my $random = $c->param('random');
+    
+    my $song_details;
+    if (length $search) {
+      my $search_results;
+      try { $search_results = $c->search_songs($search, $random) } catch {
+        $c->app->log->error($@);
+        return $c->render(text => 'Internal error searching song database');
+      }
+      $song_details = $search_results->first;
+      return $c->render(text => "No match found for '$search'") unless defined $song_details;
+    } elsif ($random) {
+      $song_details = $c->random_song_details;
+      return $c->render(text => 'No songs to add to queue') unless defined $song_details;
+    } else {
+      return $c->render(text => 'No search query provided.');
     }
-    my $song_details = $search_results->first;
-    return $c->render(text => "No match found for '$search'") unless defined $song_details;
     
     my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
     my $updated;
