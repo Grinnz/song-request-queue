@@ -30,7 +30,9 @@
         <a class="nav-item nav-link<% if (current_route 'login') { %> active<% } %>" href="/login">Login</a>
 % }
         <a class="nav-item nav-link" href="https://github.com/Grinnz/song-request-queue" target="_blank">Source</a>
+% if (defined stash 'load_js') {
         <button type="button" class="btn btn-warning btn-sm" onclick="srq_common.toggle_dark_mode()">💡</button>
+% }
       </div>
     </nav>
   </div>
