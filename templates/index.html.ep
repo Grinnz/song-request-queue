@@ -99,7 +99,7 @@
     </div>
     <button type="submit" class="btn btn-primary mr-2">Search</button>
     <button type="button" class="btn btn-danger mr-2" v-on:click.prevent="clear_search_songlist">Clear</button>
-    <% if (stash 'is_mod') { %><button type="button" class="btn btn-warning" v-on:click.prevent="queue_random_song()">Queue Random Song</button><% } %>
+    <% if (stash 'is_mod') { %><button type="button" class="btn btn-warning" v-on:click.prevent="queue_random_song(search_songlist_query)">Queue Random Song</button><% } %>
   </form>
   <table class="table table-hover table-bordered">
     <thead class="thead-light">

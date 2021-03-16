@@ -53,9 +53,12 @@ var search_vm = new Vue({
         console.log('Error adding song to queue', error);
       });
     },
-    queue_random_song: function () {
+    queue_random_song: function (query) {
       var queue_random_body = new URLSearchParams();
       queue_random_body.set('random', 1);
+      if (query !== null && query !== '') {
+        queue_random_body.set('query', query);
+      }
       fetch('/api/queue/add', {
         method: 'POST',
         body: queue_random_body,
