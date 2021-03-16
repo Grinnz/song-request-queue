@@ -32,11 +32,11 @@ helper normalize_duration => sub ($c, $duration) {
   my $seconds = pop(@duration_segments) // 0;
   my $minutes = pop(@duration_segments) // 0;
   my $hours = pop(@duration_segments) // 0;
-  if ($seconds > 60) {
+  if ($seconds >= 60) {
     $minutes += int($seconds / 60);
     $seconds %= 60;
   }
-  if ($minutes > 60) {
+  if ($minutes >= 60) {
     $hours += int($minutes / 60);
     $minutes %= 60;
   }
