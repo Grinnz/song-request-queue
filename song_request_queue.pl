@@ -123,13 +123,13 @@ helper import_from_json => sub ($c, $file) {
   $file =~ s/,(?=\s*]\s*\z)//;
   my $songs = decode_json $file;
   $_ = {
-    title    => $_->{title} // $_->{songName},
-    artist   => $_->{artist} // $_->{artistName},
-    album    => $_->{album} // $_->{albumName},
+    title    => $_->{title} // $_->{Name} // $_->{songName},
+    artist   => $_->{artist} // $_->{Artist} // $_->{artistName},
+    album    => $_->{album} // $_->{Album} // $_->{albumName},
     track    => $_->{track},
-    genre    => $_->{genre} // $_->{genreName},
-    source   => $_->{source} // $_->{charterName},
-    duration => $_->{duration} // (defined $_->{songLength} ? ($_->{songLength} / 1000) : undef),
+    genre    => $_->{genre} // $_->{Genre} // $_->{genreName},
+    source   => $_->{source} // $_->{Charter} // $_->{charterName},
+    duration => $_->{duration} // (defined $_->{songlength} ? ($_->{songlength} / 1000) : defined $_->{songLength} ? ($_->{songLength} / 1000) : undef),
     url      => $_->{url},
   } for @$songs;
   $c->import_songs($songs);
