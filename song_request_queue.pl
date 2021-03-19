@@ -7,6 +7,7 @@ use Digest::MD5 qw(md5_hex);
 use Mojo::Asset::Memory;
 use Mojo::JSON qw(decode_json encode_json true false);
 use Mojo::Pg;
+use Mojo::Util 'trim';
 use Spreadsheet::ParseXLSX;
 use Syntax::Keyword::Try;
 use Text::CSV 'csv';
@@ -480,7 +481,7 @@ post '/api/set_password' => sub ($c) {
 };
 
 get '/api/songs/search' => sub ($c) {
-  my $search = $c->param('query') // '';
+  my $search = trim($c->param('query') // '');
   return $c->render(json => []) unless length $search;
   my $results = $c->search_songs($search);
   $c->render(json => $results);
@@ -514,7 +515,7 @@ group {
   
   any '/api/queue/add' => sub ($c) {
     my $song_id = $c->param('song_id');
-    my $search = $c->param('query') // '';
+    my $search = trim($c->param('query') // '');
     my $random = $c->param('random');
     
     my $song_details;
@@ -557,7 +558,7 @@ group {
   };
   
   any '/api/queue/update' => sub ($c) {
-    my $search = $c->param('query') // '';
+    my $search = trim($c->param('query') // '');
     my $random = $c->param('random');
     
     my $song_details;
