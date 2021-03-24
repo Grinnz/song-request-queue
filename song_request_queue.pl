@@ -362,7 +362,7 @@ helper requester_is_in_queue => sub ($c, $requested_by) {
 
 helper set_queued_song_for_requester => sub ($c, $requested_by, $song_id, $raw_request) {
   return $c->pg->db->update('queue', {song_id => $song_id, raw_request => $raw_request},
-    {requested_by => $requested_by})->rows;
+    {requested_by => $requested_by, position => {'!=' => \'(SELECT MIN("position") FROM "queue")'}})->rows;
 };
 
 helper unqueue_song_for_requester => sub ($c, $requested_by) {
@@ -583,7 +583,7 @@ group {
       $c->app->log->error($@);
       return $c->render(text => 'Internal error updating song queue');
     }
-    return $c->render(text => "$requested_by does not have a request in the queue") unless $updated;
+    return $c->render(text => "$requested_by does not have an inactive request in the queue") unless $updated;
     return $c->render(text => "Updated request to '$song_details->{artist} - $song_details->{title}' (requested by $requested_by)");
   };
   
