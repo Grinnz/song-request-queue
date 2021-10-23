@@ -4,6 +4,7 @@ use 5.020;
 use Mojolicious::Lite -signatures;
 use Crypt::Passphrase;
 use Digest::MD5 qw(md5_hex);
+use Math::Random::Secure 'rand';
 use Mojo::Asset::Memory;
 use Mojo::JSON qw(decode_json encode_json true false);
 use Mojo::Pg;
@@ -244,18 +245,13 @@ helper clear_songs => sub ($c) {
 
 my @song_details_cols = qw(id title artist album track genre source duration url);
 
-helper search_songs => sub ($c, $search, $random = 0) {
+helper search_songs => sub ($c, $search) {
   my $select = join ', ', map { qq{"$_"} } @song_details_cols;
   
   my $and_select = my $or_select = $select;
-  my $order_by;
-  if ($random) {
-    $order_by = 'RANDOM()';
-  } else {
-    $and_select .= q{, ts_rank_cd(songtext, to_tsquery('english_nostop', $1), 1) AS "rank"};
-    $or_select .= q{, ts_rank_cd(songtext_withstop, to_tsquery('english', $1), 1) AS "rank"};
-    $order_by = '"rank" DESC, "artist", "album", "track", "title", "source"';
-  }
+  $and_select .= q{, ts_rank_cd(songtext, to_tsquery('english_nostop', $1), 1) AS "rank"};
+  $or_select .= q{, ts_rank_cd(songtext_withstop, to_tsquery('english', $1), 1) AS "rank"};
+  my $order_by = '"rank" DESC, "artist", "album", "track", "title", "source"';
   
   my @terms = map { "'$_':*" } map { quotemeta } split ' ', $search =~ tr[/][ ]r;
   my $and_search = join ' & ', @terms;
@@ -331,12 +327,14 @@ helper reorder_queue => sub ($c, $position, $direction) {
 
 helper promote_random_queued_song => sub ($c) {
   my $db = $c->pg->db;
-  my $top_position = $db->select('queue', ['position'],
-    undef, {order_by => 'position', limit => 1})->arrays->first // return undef;
+  my $positions = $db->select('queue', ['position'], undef, {order_by => 'position'})->arrays;
+  my $top_position = shift @$positions // return undef;
   $top_position = $top_position->[0];
-  my $position = $db->select('queue', ['position'],
-    {position => {'!=' => $top_position}},
-    {order_by => \'RANDOM()', limit => 1})->arrays->first // return undef;
+  unless (@$positions) {
+    $db->delete('queue', {position => $top_position});
+    return undef;
+  }
+  my $position = $positions->[int rand $positions->size];
   $position = $position->[0];
   my $tx = $db->begin;
   $db->delete('queue', {position => $top_position});
@@ -525,13 +523,17 @@ group {
       return $c->render(text => "Invalid song ID $song_id") unless defined $song_details;
     } elsif (length $search) {
       my $search_results;
-      try { $search_results = $c->search_songs($search, $random) } catch {
+      try { $search_results = $c->search_songs($search) } catch {
         $c->app->log->error($@);
         return $c->render(text => 'Internal error searching song database');
       }
-      $song_details = $search_results->first;
       return $c->render(text => "No match found for '$search'")
-        if !defined $song_details and $c->app->config->{reject_unknown_requests};
+        if !$search_results->size and $c->app->config->{reject_unknown_requests};
+      if ($random) {
+        $song_details = $search_results->[int rand $search_results->size];
+      } else {
+        $song_details = $search_results->first;
+      }
       $song_id = $song_details->{id} if defined $song_details;
       $raw_request = $search;
     } elsif ($random) {
@@ -564,12 +566,16 @@ group {
     my $song_details;
     if (length $search) {
       my $search_results;
-      try { $search_results = $c->search_songs($search, $random) } catch {
+      try { $search_results = $c->search_songs($search) } catch {
         $c->app->log->error($@);
         return $c->render(text => 'Internal error searching song database');
       }
-      $song_details = $search_results->first;
-      return $c->render(text => "No match found for '$search'") unless defined $song_details;
+      return $c->render(text => "No match found for '$search'") unless $search_results->size;
+      if ($random) {
+        $song_details = $search_results->[int rand $search_results->size];
+      } else {
+        $song_details = $search_results->first;
+      }
     } elsif ($random) {
       $song_details = $c->random_song_details;
       return $c->render(text => 'No songs to add to queue') unless defined $song_details;

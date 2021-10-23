@@ -4,6 +4,7 @@ requires 'Cpanel::JSON::XS' => '4.09';
 requires 'Crypt::Passphrase' => '0.003';
 requires 'Crypt::Passphrase::Bcrypt';
 requires 'Digest::MD5';
+requires 'Math::Random::Secure';
 requires 'Mojolicious' => '7.87';
 requires 'Mojo::Log::Role::Clearable';
 requires 'Mojo::Pg' => '4.08';
