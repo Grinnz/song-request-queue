@@ -1,4 +1,4 @@
-% layout 'main', title => 'Admin', load_js => ['import_songlist.js','search_songlist.js','clear_songlist.js','add_song.js','add_mod.js'];
+% layout 'main', title => 'Admin', load_js => ['import_songlist.js','search_songlist.js','clear_songlist.js','add_song.js','add_mod.js','now_playing_settings.js'];
 <div id="import_songlist" class="container mb-3">
   <h2>Admin</h2>
   <h4>Import Songlist</h4>
@@ -77,6 +77,54 @@
     <button v-else id="clear_songlist_button" type="button" class="btn btn-danger" v-on:click.prevent="confirm_clear_songlist">Delete All Songs</button>
     &nbsp;<span><i>{{ result_text }}</i></span>
   </div>
+</div>
+
+<div id="now_playing_settings" class="container">
+  <h4>Now Playing Settings</h4>
+  <div class="mb-2">
+    The <a href="/now_playing">Now Playing</a> browser source displays the artist and song title of the active song.
+  </div>
+  <form v-on:submit.prevent="update_now_playing_settings">
+    <div class="form-row">
+      <div class="form-group col-sm-3">
+        <label for="now_playing_text_color" class="sr-only">Text Color</label>
+        <input id="now_playing_text_color" class="form-control form-control-sm" name="text_color" type="text" placeholder="Text Color (default: white)" v-model="now_playing_text_color">
+      </div>
+      <div class="form-group col-sm-3">
+        <label for="now_playing_text_size" class="sr-only">Text Size</label>
+        <input id="now_playing_text_size" class="form-control form-control-sm" name="text_size" type="number" step="0.1" placeholder="Text Size (default: 3)" v-model="now_playing_text_size">
+      </div>
+      <div class="w-100"></div>
+      <div class="form-group col-sm-3">
+        <label for="now_playing_shadow_color" class="sr-only">Shadow Color</label>
+        <input id="now_playing_shadow_color" class="form-control form-control-sm" name="shadow_color" type="text" placeholder="Shadow Color (default: black)" v-model="now_playing_shadow_color">
+      </div>
+      <div class="form-group col-sm-3">
+        <label for="now_playing_shadow_size" class="sr-only">Shadow Size</label>
+        <input id="now_playing_shadow_size" class="form-control form-control-sm" name="shadow_size" type="number" step="0.01" placeholder="Shadow Size (default: 0.25)" v-model="now_playing_shadow_size">
+      </div>
+      <div class="w-100"></div>
+      <div class="form-group col-sm-3">
+        <label for="now_playing_scroll_amount" class="sr-only">Scroll Amount</label>
+        <input id="now_playing_scroll_amount" class="form-control form-control-sm" name="scroll_amount" type="number" placeholder="Scroll Amount (default: 6)" v-model="now_playing_scroll_amount">
+      </div>
+      <div class="form-group col-sm-3">
+        <label for="now_playing_scroll_delay" class="sr-only">Scroll Delay</label>
+        <input id="now_playing_scroll_delay" class="form-control form-control-sm" name="scroll_delay" type="number" placeholder="Scroll Delay (default: 85)" v-model="now_playing_scroll_delay">
+      </div>
+      <div class="w-100"></div>
+      <div class="form-group col-sm-3">
+        <label for="now_playing_marquee_behavior" class="sr-only">Marquee Behavior</label>
+        <input id="now_playing_marquee_behavior" class="form-control form-control-sm" name="marquee_behavior" type="text" placeholder="Marquee Behavior (scroll/alternate)" v-model="now_playing_marquee_behavior">
+      </div>
+      <div class="w-100"></div>
+      <div class="form-group col-sm-6">
+        <button type="submit" class="btn btn-primary btn-sm mr-2">Submit</button>
+        <span><i>{{ result_text }}</i></span>
+      </div>
+    </div>
+  </form>
+  <iframe id="now_playing_preview" src="/now_playing" width="100%"></iframe>
 </div>
 
 <div id="add_mod" class="container">

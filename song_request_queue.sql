@@ -196,3 +196,12 @@ alter table "songs" drop "url";
 
 --10 up
 create index "queue_requested_by" on "queue" ("requested_by");
+
+--11 up
+create table if not exists "settings" (
+  name text primary key,
+  value text
+);
+
+--11 down
+drop table if exists "settings";

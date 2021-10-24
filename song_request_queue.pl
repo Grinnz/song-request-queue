@@ -374,6 +374,24 @@ helper clear_queue => sub ($c) {
   return $c->pg->db->query('TRUNCATE TABLE "queue"')->rows;
 };
 
+helper get_settings => sub ($c) {
+  my $settings = $c->pg->db->select('settings', ['name','value'])->arrays;
+  my %settings_hash = map { @$_ } @$settings;
+  return \%settings_hash;
+};
+
+helper update_settings => sub ($c, $settings) {
+  my $db = $c->pg->db;
+  my $tx = $db->begin;
+  my $count = 0;
+  foreach my $name (keys %$settings) {
+    $count += $db->insert('settings', {name => $name, value => $settings->{$name}},
+      {on_conflict => \['("name") DO UPDATE SET "value" = EXCLUDED."value"']})->rows;
+  }
+  $tx->commit;
+  return $count;
+};
+
 # Pages
 
 under '/' => sub ($c) {
@@ -720,6 +738,39 @@ group {
     my $deleted_title = $c->delete_song($song_id);
     return $c->render(text => "Invalid song ID $song_id") unless defined $deleted_title;
     $c->render(text => "Deleted song $song_id '$deleted_title'");
+  };
+  
+  get '/api/settings' => sub ($c) {
+    $c->render(json => $c->get_settings);
+  };
+  
+  post '/api/settings' => sub ($c) {
+    my %settings;
+    
+    foreach my $setting_name (qw(now_playing_text_color now_playing_shadow_color now_playing_marquee_behavior)) {
+      my $setting_value = $c->param($setting_name) // next;
+      if (length $setting_value) {
+        return $c->render(text => "Invalid setting for $setting_name")
+          unless $setting_value =~ m/\A(?:#[0-9a-fA-F]+|[a-zA-Z]+)\z/;
+      } else {
+        $setting_value = undef;
+      }
+      $settings{$setting_name} = $setting_value;
+    }
+    
+    foreach my $setting_name (qw(now_playing_text_size now_playing_shadow_size now_playing_scroll_amount now_playing_scroll_delay)) {
+      my $setting_value = $c->param($setting_name) // next;
+      if (length $setting_value) {
+        return $c->render(text => "Invalid setting for $setting_name")
+          unless $setting_value =~ m/\A[0-9.]+\z/;
+      } else {
+        $setting_value = undef;
+      }
+      $settings{$setting_name} = $setting_value;
+    }
+    
+    $c->update_settings(\%settings);
+    $c->render(text => 'Settings updated');
   };
 };
 
