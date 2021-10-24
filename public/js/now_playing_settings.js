@@ -7,6 +7,7 @@ var now_playing_settings_data = {
   now_playing_scroll_amount: '',
   now_playing_scroll_delay: '',
   now_playing_marquee_behavior: '',
+  now_playing_font_family: '',
 };
 var now_playing_settings_vm = new Vue({
   el: '#now_playing_settings',
@@ -29,6 +30,7 @@ var now_playing_settings_vm = new Vue({
         now_playing_settings_data.now_playing_scroll_amount = data.now_playing_scroll_amount;
         now_playing_settings_data.now_playing_scroll_delay = data.now_playing_scroll_delay;
         now_playing_settings_data.now_playing_marquee_behavior = data.now_playing_marquee_behavior;
+        now_playing_settings_data.now_playing_font_family = data.now_playing_font_family;
       }).catch(function(error) {
         console.log('Error retrieving settings', error);
       });
@@ -56,6 +58,9 @@ var now_playing_settings_vm = new Vue({
       var marquee_behavior = now_playing_settings_data.now_playing_marquee_behavior;
       if (marquee_behavior == null) { marquee_behavior = ''; }
       update_settings_body.set('now_playing_marquee_behavior', marquee_behavior);
+      var font_family = now_playing_settings_data.now_playing_font_family;
+      if (font_family == null) { font_family = ''; }
+      update_settings_body.set('now_playing_font_family', font_family);
       fetch('/api/settings', {
         method: 'POST',
         body: update_settings_body,

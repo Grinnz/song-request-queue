@@ -118,6 +118,11 @@
         <input id="now_playing_marquee_behavior" class="form-control form-control-sm" name="marquee_behavior" type="text" placeholder="Marquee Behavior (scroll/alternate)" v-model="now_playing_marquee_behavior">
       </div>
       <div class="form-group col-sm-3">
+        <label for="now_playing_font_family" class="sr-only">Font Family</label>
+        <input id="now_playing_font_family" class="form-control form-control-sm" name="font_family" type="text" placeholder="Font Family (default: sans-serif)" v-model="now_playing_font_family">
+      </div>
+      <div class="w-100"></div>
+      <div class="form-group col-sm-6">
         <button type="submit" class="btn btn-primary btn-sm mr-2">Update</button>
         <span><i>{{ result_text }}</i></span>
       </div>

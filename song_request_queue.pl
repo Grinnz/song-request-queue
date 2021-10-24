@@ -769,6 +769,17 @@ group {
       $settings{$setting_name} = $setting_value;
     }
     
+    foreach my $setting_name (qw(now_playing_font_family)) {
+      my $setting_value = $c->param($setting_name) // next;
+      if (length $setting_value) {
+        return $c->render(text => "Invalid setting for $setting_name")
+          unless $setting_value =~ m/\A[-a-zA-Z", ]+\z/;
+      } else {
+        $setting_value = undef;
+      }
+      $settings{$setting_name} = $setting_value;
+    }
+    
     $c->update_settings(\%settings);
     $c->render(text => 'Settings updated');
   };
