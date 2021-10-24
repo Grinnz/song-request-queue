@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 </head>
 <body>
+% unless (defined stash 'hide_nav') {
   <div class="container">
     <nav class="navbar navbar-expand navbar-light bg-light justify-content-between mb-2">
       <a class="navbar-brand" href="/">Song Request Queue</a>
@@ -36,6 +37,7 @@
       </div>
     </nav>
   </div>
+% }
 <%= content %>
 % if (defined stash 'load_js') {
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js" integrity="sha256-KSlsysqp7TXtFo/FHjb1T9b425x3hrvzjMWaJyKbpcI=" crossorigin="anonymous"></script>

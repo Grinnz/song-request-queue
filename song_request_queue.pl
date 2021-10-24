@@ -392,6 +392,8 @@ under '/' => sub ($c) {
 
 get '/' => 'index';
 
+get '/now_playing' => 'now_playing';
+
 my %allowed_sort = map { ($_ => 1) } qw(title artist album track genre source duration);
 get '/browse' => sub ($c) {
   my $sort_by = $c->param('sort_by') // 'artist';

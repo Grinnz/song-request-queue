@@ -1,0 +1,4 @@
+% layout 'main', title => 'Now Playing', hide_nav => 1, load_js => ['now_playing.js'];
+<div id="now_playing" class="container-fluid text-center">
+  <h3 v-if="now_playing">{{ now_playing.title || now_playing.raw_request }} - {{ now_playing.artist }}</h3>
+</div>
