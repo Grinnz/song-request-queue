@@ -355,7 +355,7 @@ helper set_requested_by => sub ($c, $position, $requested_by) {
 
 helper requester_is_in_queue => sub ($c, $requested_by) {
   return defined $c->pg->db->select('queue', ['id'],
-    {requested_by => $requested_by})->arrays->first;
+    {requested_by => $requested_by, position => {'!=' => \'(SELECT MIN("position") FROM "queue")'}})->arrays->first;
 };
 
 helper set_queued_song_for_requester => sub ($c, $requested_by, $song_id, $raw_request) {
@@ -364,7 +364,8 @@ helper set_queued_song_for_requester => sub ($c, $requested_by, $song_id, $raw_r
 };
 
 helper unqueue_song_for_requester => sub ($c, $requested_by) {
-  my $deleted = $c->pg->db->delete('queue', {requested_by => $requested_by},
+  my $deleted = $c->pg->db->delete('queue',
+    {requested_by => $requested_by, position => {'!=' => \'(SELECT MIN("position") FROM "queue")'}},
     {returning => 'song_id'})->arrays->first;
   return defined $deleted ? $deleted->[0] : undef;
 };
@@ -600,7 +601,7 @@ group {
       $c->app->log->error($@);
       return $c->render(text => 'Internal error removing song from queue');
     }
-    return $c->render(text => "$requested_by does not have a request in the queue") unless defined $removed;
+    return $c->render(text => "$requested_by does not have an inactive request in the queue") unless defined $removed;
     my $removed_song = $c->song_details($removed);
     return $c->render(text => "Removed request '$removed_song->{artist} - $removed_song->{title}' (requested by $requested_by)");
   };
