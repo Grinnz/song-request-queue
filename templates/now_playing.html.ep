@@ -8,7 +8,7 @@
 % my $scroll_delay = $settings->{now_playing_scroll_delay} // '85';
 % my $marquee_behavior = $settings->{now_playing_marquee_behavior} // 'scroll';
 % my $style = "color: ${text_color}; font-size: ${text_size}rem; text-shadow: ${shadow_color} 0 0 ${shadow_size}rem;";
-<div id="now_playing" class="container-fluid text-center">
+<div id="now_playing" class="text-center">
   <marquee style="<%= $style %>" scrollamount="<%= $scroll_amount %>" scrolldelay="<%= $scroll_delay %>" truespeed behavior="<%= $marquee_behavior %>">
     <span v-if="now_playing">{{ now_playing.artist || 'Unknown Artist' }} - {{ now_playing.title || now_playing.raw_request || 'Unknown Song' }}</span>
     <span v-else>No Active Song</span>
