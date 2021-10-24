@@ -123,7 +123,7 @@
       </div>
     </div>
   </form>
-  <iframe id="now_playing_preview" src="/now_playing" width="100%"></iframe>
+  <iframe id="now_playing_preview" src="/now_playing" width="100%" style="resize: both;"></iframe>
 </div>
 
 <div id="add_mod" class="container">
