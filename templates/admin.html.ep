@@ -105,6 +105,15 @@
       </div>
       <div class="w-100"></div>
       <div class="form-group col-sm-3">
+        <label for="now_playing_font_family" class="sr-only">Font Family</label>
+        <input id="now_playing_font_family" class="form-control form-control-sm" name="font_family" type="text" placeholder="Font Family (default: sans-serif)" v-model="now_playing_font_family">
+      </div>
+      <div class="form-group col-sm-3">
+        <label for="now_playing_text_transform" class="sr-only">Text Transform</label>
+        <input id="now_playing_text_transform" class="form-control form-control-sm" name="text_transform" type="text" placeholder="Text Transform (uppercase/lowercase/capitalize)" v-model="now_playing_text_transform">
+      </div>
+      <div class="w-100"></div>
+      <div class="form-group col-sm-3">
         <label for="now_playing_scroll_amount" class="sr-only">Scroll Amount</label>
         <input id="now_playing_scroll_amount" class="form-control form-control-sm" name="scroll_amount" type="number" placeholder="Scroll Amount (default: 6)" v-model="now_playing_scroll_amount">
       </div>
@@ -118,11 +127,6 @@
         <input id="now_playing_marquee_behavior" class="form-control form-control-sm" name="marquee_behavior" type="text" placeholder="Marquee Behavior (scroll/alternate)" v-model="now_playing_marquee_behavior">
       </div>
       <div class="form-group col-sm-3">
-        <label for="now_playing_font_family" class="sr-only">Font Family</label>
-        <input id="now_playing_font_family" class="form-control form-control-sm" name="font_family" type="text" placeholder="Font Family (default: sans-serif)" v-model="now_playing_font_family">
-      </div>
-      <div class="w-100"></div>
-      <div class="form-group col-sm-6">
         <button type="submit" class="btn btn-primary btn-sm mr-2">Update</button>
         <span><i>{{ result_text }}</i></span>
       </div>

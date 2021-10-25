@@ -4,12 +4,14 @@
 % my $text_size = $settings->{now_playing_text_size} // '3';
 % my $shadow_color = $settings->{now_playing_shadow_color} // 'black';
 % my $shadow_size = $settings->{now_playing_shadow_size} // '0.25';
+% my $font_family = $settings->{now_playing_font_family};
+% my $text_transform = $settings->{now_playing_text_transform};
 % my $scroll_amount = $settings->{now_playing_scroll_amount} // '6';
 % my $scroll_delay = $settings->{now_playing_scroll_delay} // '85';
 % my $marquee_behavior = $settings->{now_playing_marquee_behavior} // 'scroll';
-% my $font_family = $settings->{now_playing_font_family};
 % my $style = "color: ${text_color}; font-size: ${text_size}rem; text-shadow: ${shadow_color} 0 0 ${shadow_size}rem;";
 % $style .= " font-family: ${font_family};" if defined $font_family;
+% $style .= " text-transform: ${text_transform};" if defined $text_transform;
 <div id="now_playing" class="text-center">
   <marquee style="<%= $style %>" scrollamount="<%= $scroll_amount %>" scrolldelay="<%= $scroll_delay %>" truespeed behavior="<%= $marquee_behavior %>">
     <span v-if="now_playing">{{ now_playing.artist || 'Unknown Artist' }} - {{ now_playing.title || now_playing.raw_request || 'Unknown Song' }}</span>

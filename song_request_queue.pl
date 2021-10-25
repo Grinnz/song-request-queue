@@ -747,7 +747,7 @@ group {
   post '/api/settings' => sub ($c) {
     my %settings;
     
-    foreach my $setting_name (qw(now_playing_text_color now_playing_shadow_color now_playing_marquee_behavior)) {
+    foreach my $setting_name (qw(now_playing_text_color now_playing_shadow_color now_playing_text_transform now_playing_marquee_behavior)) {
       my $setting_value = $c->param($setting_name) // next;
       if (length $setting_value) {
         return $c->render(text => "Invalid setting for $setting_name")
