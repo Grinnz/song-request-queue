@@ -4,6 +4,7 @@ var queue_data = {
   search_for_queue: null,
   editing_requestor: null,
   edit_requestor_requested_by: '',
+  confirming_clear_queue: false,
 };
 var queue_vm = new Vue({
   el: '#request_queue',
@@ -128,6 +129,27 @@ var queue_vm = new Vue({
           console.log('Error editing song requestor', error);
         });
       }
+    },
+    confirm_clear_queue: function () {
+      queue_data.confirming_clear_queue = true;
+    },
+    unconfirm_clear_queue: function () {
+      queue_data.confirming_clear_queue = false;
+    },
+    clear_queue: function () {
+      queue_data.confirming_clear_queue = false;
+      fetch('/api/queue', {
+        method: 'DELETE',
+        credentials: 'include'
+      }).then(function(response) {
+        if (response.ok) {
+          queue_vm.refresh_queue();
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
+      }).catch(function(error) {
+        console.log('Error clearing song queue', error);
+      });
     }
   }
 });

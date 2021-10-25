@@ -6,7 +6,16 @@
     'background-color': is_search_for_queue(queue_first.position) ? '#d9edf7' : null
   }">
     <div class="row mb-2">
-      <div class="col-sm-10 offset-sm-1 text-center">
+      <% if (stash 'is_mod') { %><div class="col-sm-1">
+        <template v-if="confirming_clear_queue">Clear queue?
+          <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="clear_queue()">Y</button>
+          <button type="button" class="btn btn-success btn-sm" v-on:click.prevent="unconfirm_clear_queue()">N</button>
+        </template>
+        <template v-else>
+          <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="confirm_clear_queue()">Clear</button>
+        </template>
+      </div><% } %>
+      <div class="col-sm-10<% if (!stash 'is_mod') { %> offset-sm-1<% } %> text-center">
         <h3>{{ queue_first.title || queue_first.raw_request }}</h3>
       </div>
       <% if (stash 'is_mod') { %><div class="col-sm-1">
