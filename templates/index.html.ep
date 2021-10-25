@@ -41,27 +41,27 @@
       <% } %>
     </div>
   </div>
-  <table v-if="queue_remaining.length" class="table table-hover table-bordered<%== stash('dark_mode') ? ' table-dark' : '' %>">
+  <table v-if="queue_remaining.length" style="table-layout: fixed" class="table table-hover table-bordered<%== stash('dark_mode') ? ' table-dark' : '' %>">
     <thead class="<%== stash('dark_mode') ? 'thead-dark' : 'thead-light' %>">
       <tr>
-        <th>#</th>
+        <th style="width: 5%">#</th>
         <th>Artist</th>
         <th>Title</th>
-        <th><%= ucfirst $meta_col %></th>
+        <th style="width: 15%"><%= ucfirst $meta_col %></th>
         <th>Request</th>
         <% if (stash 'is_mod') { %><th>Move</th><% } %>
       </tr>
     </thead>
     <tbody>
       <template v-for="request in queue_remaining"><tr v-bind:class="{ 'table-info': is_search_for_queue(request.position) }">
-        <td style="white-space: nowrap">{{ request.position }}<% if (stash 'is_mod') { %>&nbsp;&nbsp;
-          <button v-if="is_search_for_queue(request.position)" type="button" class="btn btn-warning btn-sm" v-on:click.prevent="set_search_for_queue(null)">Unset</button>
-          <button v-else type="button" class="btn btn-warning btn-sm" v-on:click.prevent="set_search_for_queue(request.position)">Set</button>
-        <% } %></td>
-        <td>{{ request.artist }}</td>
-        <td>{{ request.title }}</td>
-        <td class="text-right"><%= $meta_col eq 'source' ? '{{ request.source }}' : '{{ srq_common.pretty_duration(request.duration) }}' %></td>
-        <td><span v-if="request.raw_request">"{{ request.raw_request }}" </span>
+        <td class="text-right" style="white-space: nowrap"><% if (stash 'is_mod') { %>
+          <button v-if="is_search_for_queue(request.position)" type="button" class="btn btn-warning btn-sm" v-on:click.prevent="set_search_for_queue(null)">{{ request.position }}</button>
+          <button v-else type="button" class="btn btn-warning btn-sm" v-on:click.prevent="set_search_for_queue(request.position)">{{ request.position }}</button>
+        <% } else { %>{{ request.position }}<% } %></td>
+        <td style="overflow: auto">{{ request.artist }}</td>
+        <td style="overflow: auto">{{ request.title }}</td>
+        <td class="text-right" style="overflow: auto"><%= $meta_col eq 'source' ? '{{ request.source }}' : '{{ srq_common.pretty_duration(request.duration) }}' %></td>
+        <td style="overflow: auto"><span v-if="request.raw_request">"{{ request.raw_request }}" </span>
           <% if (stash 'is_mod') { %>
             <template v-if="editing_requestor == request.position">
             <form class="form-inline" v-on:submit.prevent="edit_requestor(request.position)">(
