@@ -325,6 +325,21 @@ helper reorder_queue => sub ($c, $position, $direction) {
   return 1;
 };
 
+helper promote_queued_song => sub ($c, $position) {
+  my $db = $c->pg->db;
+  $db->select('queue', ['id'],
+    {position => $position})->arrays->first // return 0;
+  my $top_position = $db->select('queue',
+    [\'MIN("position")'])->arrays->first // return 0;
+  $top_position = $top_position->[0] // return 0;
+  return 0 if $position == $top_position;
+  my $tx = $db->begin;
+  $db->delete('queue', {position => $top_position});
+  $db->update('queue', {position => $top_position}, {position => $position});
+  $tx->commit;
+  return $position;
+};
+
 helper promote_random_queued_song => sub ($c) {
   my $db = $c->pg->db;
   my $positions = $db->select('queue', ['position'], undef, {order_by => 'position'})->arrays;
@@ -631,7 +646,7 @@ group {
     return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_mod');
     my $promoted = $c->promote_random_queued_song;
     return $c->render(text => "Failed to promote a random queued song") unless $promoted;
-    return $c->render(text => "Promoted queued song from position $promoted to 1");
+    return $c->render(text => "Promoted queued song from position $promoted to top");
   };
   
   post '/api/queue/:position' => sub ($c) {
@@ -645,6 +660,13 @@ group {
       my $reordered = $c->reorder_queue($position, $reorder);
       return $c->render(text => "Cannot reorder position $position $reorder") unless $reordered;
       return $c->render(text => "Reordered position $position $reorder");
+    }
+    
+    my $promote = $c->param('promote');
+    if ($promote) {
+      my $promoted = $c->promote_queued_song($position);
+      return $c->render(text => "Failed to promote position $position") unless $promoted;
+      return $c->render(text => "Promoted queued song from position $promoted to top");
     }
     
     my $song_id = $c->param('song_id');

@@ -76,6 +76,8 @@
           <% } else { %>({{ request.requested_by }})<% } %>
         </td>
         <% if (stash 'is_mod') { %><td style="white-space: nowrap">
+          <button type="button" class="btn btn-info btn-sm" v-on:click.prevent="queue_promote_song(request.position)">⇈</button>
+          &nbsp;
           <button type="button" class="btn btn-warning btn-sm" v-on:click.prevent="reorder_queue(request.position,'up')">▲</button>
           <button type="button" class="btn btn-warning btn-sm" v-on:click.prevent="reorder_queue(request.position,'down')">▼</button>
           &nbsp;

@@ -63,6 +63,25 @@ var queue_vm = new Vue({
         });
       }
     },
+    queue_promote_song: function(position) {
+      queue_vm.set_editing_requestor(null);
+      queue_vm.set_search_for_queue(null);
+      var queue_promote_body = new URLSearchParams();
+      queue_promote_body.set('promote', 1);
+      fetch('/api/queue/' + position, {
+        method: 'POST',
+        body: queue_promote_body,
+        credentials: 'include'
+      }).then(function(response) {
+        if (response.ok) {
+          queue_vm.refresh_queue();
+        } else {
+          throw new Error(response.status + ' ' + response.statusText);
+        }
+      }).catch(function(error) {
+        console.log('Error promoting song', error);
+      });
+    },
     queue_promote_random: function () {
       queue_vm.set_editing_requestor(null);
       queue_vm.set_search_for_queue(null);
