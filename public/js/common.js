@@ -1,4 +1,5 @@
 var srq_common = {
+  dark_mode: 0,
   set_result_text: function (data, text, timeout) {
     timeout = (timeout == null) ? 5000 : timeout;
     data.result_text = text;
@@ -13,6 +14,7 @@ var srq_common = {
     return duration === null ? null : duration.replace(/^0(0:0?)?/, '');
   },
   toggle_dark_mode: function() {
+    srq_common.dark_mode = !srq_common.dark_mode;
     Array.from(document.getElementsByTagName('body')).forEach(function (elem) {
       elem.classList.toggle('bg-dark');
       elem.classList.toggle('text-light');
@@ -30,5 +32,17 @@ var srq_common = {
       elem.classList.toggle('thead-light');
       elem.classList.toggle('thead-dark');
     });
+    document.cookie = 'srq_dark_mode=' + (srq_common.dark_mode ? 1 : 0) + '; Path=/; Max-Age=315360000; SameSite=Strict; Secure';
+  },
+  get_current_dark_mode: function() {
+    srq_common.dark_mode = Array.from(document.getElementsByTagName('body')).some(function (elem) { return elem.classList.contains('bg-dark') });
   }
 };
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function () {
+    srq_common.get_current_dark_mode();
+  });
+} else {
+  srq_common.get_current_dark_mode();
+}

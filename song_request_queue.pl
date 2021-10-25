@@ -405,6 +405,7 @@ under '/' => sub ($c) {
   if (defined $bot_key and $c->valid_bot_key($bot_key)) {
     $c->stash(is_bot => 1);
   }
+  $c->stash(dark_mode => $c->cookie('srq_dark_mode'));
   return 1;
 };
 

@@ -1,8 +1,8 @@
 % layout 'main', title => 'Browse Song List';
 <div id="browse_songlist" class="container-fluid">
   <h2>Full Song List</h2>
-  <table class="table table-striped table-bordered table-sm">
-    <thead class="thead-light">
+  <table class="table table-striped table-bordered table-sm<%== stash('dark_mode') ? ' table-dark' : '' %>">
+    <thead class="<%== stash('dark_mode') ? 'thead-dark' : 'thead-light' %>">
       <tr>
 % for my $column (qw(artist title album track genre source duration)) {
         <th style="white-space: nowrap">

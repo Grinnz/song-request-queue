@@ -159,8 +159,8 @@
     <button type="button" class="btn btn-danger" v-on:click.prevent="clear_search_songlist">Clear</button>
   </form>
   <form v-on:submit.prevent="edit_song">
-  <table class="table table-hover table-bordered">
-    <thead class="thead-light">
+  <table class="table table-hover table-bordered<%== stash('dark_mode') ? ' table-dark' : '' %>">
+    <thead class="<%== stash('dark_mode') ? 'thead-dark' : 'thead-light' %>">
       <tr>
         <th>Artist</th>
         <th>Title</th>

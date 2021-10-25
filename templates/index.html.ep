@@ -41,8 +41,8 @@
       <% } %>
     </div>
   </div>
-  <table v-if="queue_remaining.length" class="table table-hover table-bordered">
-    <thead class="thead-light">
+  <table v-if="queue_remaining.length" class="table table-hover table-bordered<%== stash('dark_mode') ? ' table-dark' : '' %>">
+    <thead class="<%== stash('dark_mode') ? 'thead-dark' : 'thead-light' %>">
       <tr>
         <th>#</th>
         <th>Artist</th>
@@ -101,8 +101,8 @@
     <button type="button" class="btn btn-danger mr-2" v-on:click.prevent="clear_search_songlist">Clear</button>
     <% if (stash 'is_mod') { %><button type="button" class="btn btn-warning" v-on:click.prevent="queue_random_song(search_songlist_query)">Queue Random Song</button><% } %>
   </form>
-  <table class="table table-hover table-bordered">
-    <thead class="thead-light">
+  <table class="table table-hover table-bordered<%== stash('dark_mode') ? ' table-dark' : '' %>">
+    <thead class="<%== stash('dark_mode') ? 'thead-dark' : 'thead-light' %>">
       <tr>
         <th>Artist</th>
         <th>Title</th>
