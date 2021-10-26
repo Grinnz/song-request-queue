@@ -253,7 +253,7 @@ helper search_songs => sub ($c, $search) {
   $or_select .= q{, ts_rank_cd(songtext_withstop, to_tsquery('english', $1), 1) AS "rank"};
   my $order_by = '"rank" DESC, "artist", "album", "track", "title", "source"';
   
-  my @terms = map { "'$_':*" } map { quotemeta } split ' ', $search =~ tr[/][ ]r;
+  my @terms = map { "'$_':*" } map { quotemeta } split ' ', $search =~ tr[/.][  ]r;
   my $and_search = join ' & ', @terms;
   my $query = qq{SELECT $and_select FROM "songs"
     WHERE songtext \@\@ to_tsquery('english_nostop', \$1) ORDER BY $order_by};
