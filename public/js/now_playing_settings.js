@@ -4,6 +4,8 @@ var now_playing_settings_data = {
   now_playing_text_size: '',
   now_playing_shadow_color: '',
   now_playing_shadow_size: '',
+  now_playing_font_weight: '',
+  now_playing_font_style: '',
   now_playing_font_family: '',
   now_playing_text_transform: '',
   now_playing_scroll_amount: '',
@@ -28,6 +30,8 @@ var now_playing_settings_vm = new Vue({
         now_playing_settings_data.now_playing_text_size = data.now_playing_text_size;
         now_playing_settings_data.now_playing_shadow_color = data.now_playing_shadow_color;
         now_playing_settings_data.now_playing_shadow_size = data.now_playing_shadow_size;
+        now_playing_settings_data.now_playing_font_weight = data.now_playing_font_weight;
+        now_playing_settings_data.now_playing_font_style = data.now_playing_font_style;
         now_playing_settings_data.now_playing_font_family = data.now_playing_font_family;
         now_playing_settings_data.now_playing_text_transform = data.now_playing_text_transform;
         now_playing_settings_data.now_playing_scroll_amount = data.now_playing_scroll_amount;
@@ -51,6 +55,12 @@ var now_playing_settings_vm = new Vue({
       var shadow_size = now_playing_settings_data.now_playing_shadow_size;
       if (shadow_size == null) { shadow_size = ''; }
       update_settings_body.set('now_playing_shadow_size', shadow_size);
+      var font_weight = now_playing_settings_data.now_playing_font_weight;
+      if (font_weight == null) { font_weight = ''; }
+      update_settings_body.set('now_playing_font_weight', font_weight);
+      var font_style = now_playing_settings_data.now_playing_font_style;
+      if (font_style == null) { font_style = ''; }
+      update_settings_body.set('now_playing_font_style', font_style);
       var font_family = now_playing_settings_data.now_playing_font_family;
       if (font_family == null) { font_family = ''; }
       update_settings_body.set('now_playing_font_family', font_family);

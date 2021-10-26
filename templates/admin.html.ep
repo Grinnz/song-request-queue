@@ -105,6 +105,15 @@
       </div>
       <div class="w-100"></div>
       <div class="form-group col-sm-3">
+        <label for="now_playing_font_weight" class="sr-only">Font Weight</label>
+        <input id="now_playing_font_weight" class="form-control form-control-sm" name="font_weight" type="text" placeholder="Font Weight (normal/bold)" v-model="now_playing_font_weight">
+      </div>
+      <div class="form-group col-sm-3">
+        <label for="now_playing_font_style" class="sr-only">Font Style</label>
+        <input id="now_playing_font_style" class="form-control form-control-sm" name="font_style" type="text" placeholder="Font Style (normal/italic/oblique)" v-model="now_playing_font_style">
+      </div>
+      <div class="w-100"></div>
+      <div class="form-group col-sm-3">
         <label for="now_playing_font_family" class="sr-only">Font Family</label>
         <input id="now_playing_font_family" class="form-control form-control-sm" name="font_family" type="text" placeholder="Font Family (default: sans-serif)" v-model="now_playing_font_family">
       </div>
