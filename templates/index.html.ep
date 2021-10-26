@@ -3,7 +3,7 @@
   % my $meta_col = config('queue_meta_column') // 'duration';
   <div v-if="queue_first" class="py-4" v-bind:style="{
     'border-width': '1px', 'border-style': 'solid', 'border-color': '#ddd',
-    'background-color': is_search_for_queue(queue_first.position) ? '#d9edf7' : null
+    'background-color': is_search_for_queue(queue_first.position) ? '#b8daff' : null
   }">
     <div class="row mb-2">
       <% if (stash 'is_mod') { %><div class="col-sm-1">
@@ -62,7 +62,7 @@
       </tr>
     </thead>
     <tbody>
-      <template v-for="request in queue_remaining"><tr v-bind:class="{ 'table-info': is_search_for_queue(request.position) }">
+      <template v-for="request in queue_remaining"><tr v-bind:class="{ 'table-primary': is_search_for_queue(request.position) }">
         <td class="text-right" style="white-space: nowrap"><% if (stash 'is_mod') { %>
           <button v-if="is_search_for_queue(request.position)" type="button" class="btn btn-warning btn-sm" v-on:click.prevent="set_search_for_queue(null)">{{ request.position }}</button>
           <button v-else type="button" class="btn btn-warning btn-sm" v-on:click.prevent="set_search_for_queue(request.position)">{{ request.position }}</button>
