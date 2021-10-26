@@ -205,3 +205,40 @@ create table if not exists "settings" (
 
 --11 down
 drop table if exists "settings";
+
+--12 up
+create or replace function "songs_update_songtext"() returns trigger as $$
+begin
+  "new"."songtext" :=
+    setweight(to_tsvector('english_nostop', translate(concat_ws(' ',
+      regexp_replace("new"."title", '\s([\[\(].+[\]\)])\s*$', ''),
+      regexp_replace("new"."title_ascii", '\s([\[\(].+[\]\)])\s*$', '')
+    ), '/.', '  ')), 'A') ||
+    setweight(to_tsvector('english_nostop', translate(concat_ws(' ',
+      "new"."artist", "new"."artist_ascii"
+    ), '/.', '  ')), 'B') ||
+    setweight(to_tsvector('english_nostop', translate(concat_ws(' ',
+      array_to_string(array(select regexp_matches("new"."title", '\s([\[\(].+[\]\)])\s*$')), ' '),
+      array_to_string(array(select regexp_matches("new"."title_ascii", '\s([\[\(].+[\]\)])\s*$')), ' ')
+    ), '/.', '  ')), 'C') ||
+    setweight(to_tsvector('english_nostop', translate(concat_ws(' ',
+      "new"."album", "new"."album_ascii", "new"."source"
+    ), '/.', '  ')), 'D');
+  "new"."songtext_withstop" :=
+    setweight(to_tsvector('english', translate(concat_ws(' ',
+      regexp_replace("new"."title", '\s([\[\(].+[\]\)])\s*$', ''),
+      regexp_replace("new"."title_ascii", '\s([\[\(].+[\]\)])\s*$', '')
+    ), '/.', '  ')), 'A') ||
+    setweight(to_tsvector('english', translate(concat_ws(' ',
+      "new"."artist", "new"."artist_ascii"
+    ), '/.', '  ')), 'B') ||
+    setweight(to_tsvector('english', translate(concat_ws(' ',
+      array_to_string(array(select regexp_matches("new"."title", '\s([\[\(].+[\]\)])\s*$')), ' '),
+      array_to_string(array(select regexp_matches("new"."title_ascii", '\s([\[\(].+[\]\)])\s*$')), ' ')
+    ), '/.', '  ')), 'C') ||
+    setweight(to_tsvector('english', translate(concat_ws(' ',
+      "new"."album", "new"."album_ascii", "new"."source"
+    ), '/.', '  ')), 'D');
+  return new;
+end
+$$ language plpgsql;
