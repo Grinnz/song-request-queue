@@ -248,30 +248,30 @@ create or replace function "songs_update_songtext"() returns trigger as $$
 begin
   "new"."songtext" :=
     setweight(to_tsvector('english_nostop', translate(concat_ws(' ',
-      regexp_replace("new"."title", '\s([\[\(].+[\]\)])\s*$', ''),
-      regexp_replace("new"."title_ascii", '\s([\[\(].+[\]\)])\s*$', '')
+      regexp_replace("new"."title", '\s[\[\(].+[\]\)]\s*$', ''),
+      regexp_replace("new"."title_ascii", '\s[\[\(].+[\]\)]\s*$', '')
     ), '/.', '  ')), 'A') ||
     setweight(to_tsvector('english_nostop', translate(concat_ws(' ',
       "new"."artist", "new"."artist_ascii"
     ), '/.', '  ')), 'B') ||
     setweight(to_tsvector('english_nostop', translate(concat_ws(' ',
-      substring("new"."title" from '\s([\[\(].+[\]\)])\s*$'),
-      substring("new"."title_ascii" from '\s([\[\(].+[\]\)])\s*$')
+      substring("new"."title" from '\s[\[\(].+[\]\)]\s*$'),
+      substring("new"."title_ascii" from '\s[\[\(].+[\]\)]\s*$')
     ), '/.', '  ')), 'C') ||
     setweight(to_tsvector('english_nostop', translate(concat_ws(' ',
       "new"."album", "new"."album_ascii", "new"."source"
     ), '/.', '  ')), 'D');
   "new"."songtext_withstop" :=
     setweight(to_tsvector('english', translate(concat_ws(' ',
-      regexp_replace("new"."title", '\s([\[\(].+[\]\)])\s*$', ''),
-      regexp_replace("new"."title_ascii", '\s([\[\(].+[\]\)])\s*$', '')
+      regexp_replace("new"."title", '\s[\[\(].+[\]\)]\s*$', ''),
+      regexp_replace("new"."title_ascii", '\s[\[\(].+[\]\)]\s*$', '')
     ), '/.', '  ')), 'A') ||
     setweight(to_tsvector('english', translate(concat_ws(' ',
       "new"."artist", "new"."artist_ascii"
     ), '/.', '  ')), 'B') ||
     setweight(to_tsvector('english', translate(concat_ws(' ',
-      substring("new"."title" from '\s([\[\(].+[\]\)])\s*$'),
-      substring("new"."title_ascii" from '\s([\[\(].+[\]\)])\s*$')
+      substring("new"."title" from '\s[\[\(].+[\]\)]\s*$'),
+      substring("new"."title_ascii" from '\s[\[\(].+[\]\)]\s*$')
     ), '/.', '  ')), 'C') ||
     setweight(to_tsvector('english', translate(concat_ws(' ',
       "new"."album", "new"."album_ascii", "new"."source"
