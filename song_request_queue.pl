@@ -559,6 +559,10 @@ group {
     my $search = trim($c->param('query') // '');
     my $random = $c->param('random');
     
+    if (!$c->stash('is_mod') and $c->get_setting('disable_requests')) {
+      return $c->render(text => "Requests are currently disabled");
+    }
+    
     my $song_details;
     my $raw_request;
     if (defined $song_id) {
@@ -809,7 +813,7 @@ group {
       $settings{$setting_name} = $setting_value;
     }
     
-    foreach my $setting_name (qw(reject_multiple_requests reject_unknown_requests)) {
+    foreach my $setting_name (qw(disable_requests reject_multiple_requests reject_unknown_requests)) {
       my $setting_value = $c->param($setting_name) // next;
       if (length $setting_value) {
         $setting_value = 0+!!$setting_value;

@@ -1,6 +1,7 @@
 var request_queue_settings_data = {
   result_text: null,
   queue_meta_column: '',
+  disable_requests: false,
   reject_multiple_requests: false,
   reject_unknown_requests: false,
   update_command_text: '',
@@ -20,6 +21,7 @@ var request_queue_settings_vm = new Vue({
         }
       }).then(function(data) {
         request_queue_settings_data.queue_meta_column = data.queue_meta_column;
+        request_queue_settings_data.disable_requests = !!+data.disable_requests;
         request_queue_settings_data.reject_multiple_requests = !!+data.reject_multiple_requests;
         request_queue_settings_data.reject_unknown_requests = !!+data.reject_unknown_requests;
         request_queue_settings_data.update_command_text = data.update_command_text;
@@ -32,6 +34,8 @@ var request_queue_settings_vm = new Vue({
       var queue_meta_column = request_queue_settings_data.queue_meta_column;
       if (queue_meta_column == null) { queue_meta_column = ''; }
       update_settings_body.set('queue_meta_column', queue_meta_column);
+      var disable_requests = request_queue_settings_data.disable_requests ? 1 : 0;
+      update_settings_body.set('disable_requests', disable_requests);
       var reject_multiple_requests = request_queue_settings_data.reject_multiple_requests ? 1 : 0;
       update_settings_body.set('reject_multiple_requests', reject_multiple_requests);
       var reject_unknown_requests = request_queue_settings_data.reject_unknown_requests ? 1 : 0;

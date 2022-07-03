@@ -110,6 +110,13 @@
       <div class="w-100"></div>
       <div class="form-group col-sm-6">
         <div class="form-check form-check-inline">
+          <input id="settings_disable_requests" class="form-check-input" name="disable_requests" type="checkbox" v-model="disable_requests">
+          <label for="settings_disable_requests" class="form-check-label">Disable Requests <span title="Disable submission of song requests">⍰</span></label>
+        </div>
+      </div>
+      <div class="w-100"></div>
+      <div class="form-group col-sm-6">
+        <div class="form-check form-check-inline">
           <input id="settings_reject_multiple_requests" class="form-check-input" name="reject_multiple_requests" type="checkbox" v-model="reject_multiple_requests">
           <label for="settings_reject_multiple_requests" class="form-check-label">Reject Multiple Requests <span title="Reject requests if a user already has a request in the queue">⍰</span></label>
         </div>
