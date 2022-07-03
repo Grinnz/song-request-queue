@@ -127,7 +127,11 @@
       </div>
       <div class="w-100"></div>
       <div class="form-group col-sm-3">
-        <label for="settings_update_command_text">Update Command Text <span title="Text to explain how to use your update/edit request command when a request is rejected because the user has the maximum number of requests in the queue">⍰</span></label>
+        <label for="settings_requests_disabled_message">Requests Disabled Message <span title="Message to display when a request is made while requests are disabled">⍰</span></label>
+        <input id="settings_requests_disabled_message" class="form-control form-control-sm" name="requests_disabled_message" type="text" placeholder="Requests are currently disabled" v-model="requests_disabled_message">
+      </div>
+      <div class="form-group col-sm-3">
+        <label for="settings_update_command_text">Edit Request Explanation <span title="Text to explain how to use your update/edit request command when a request is rejected because the user has the maximum number of requests in the queue">⍰</span></label>
         <input id="settings_update_command_text" class="form-control form-control-sm" name="update_command_text" type="text" v-model="update_command_text">
       </div>
       <div class="w-100"></div>

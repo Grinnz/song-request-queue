@@ -4,6 +4,7 @@ var request_queue_settings_data = {
   disable_requests: false,
   reject_multiple_requests: false,
   reject_unknown_requests: false,
+  requests_disabled_message: '',
   update_command_text: '',
 };
 var request_queue_settings_vm = new Vue({
@@ -24,6 +25,7 @@ var request_queue_settings_vm = new Vue({
         request_queue_settings_data.disable_requests = !!+data.disable_requests;
         request_queue_settings_data.reject_multiple_requests = !!+data.reject_multiple_requests;
         request_queue_settings_data.reject_unknown_requests = !!+data.reject_unknown_requests;
+        request_queue_settings_data.requests_disabled_message = data.requests_disabled_message;
         request_queue_settings_data.update_command_text = data.update_command_text;
       }).catch(function(error) {
         console.log('Error retrieving settings', error);
@@ -40,6 +42,9 @@ var request_queue_settings_vm = new Vue({
       update_settings_body.set('reject_multiple_requests', reject_multiple_requests);
       var reject_unknown_requests = request_queue_settings_data.reject_unknown_requests ? 1 : 0;
       update_settings_body.set('reject_unknown_requests', reject_unknown_requests);
+      var requests_disabled_message = request_queue_settings_data.requests_disabled_message;
+      if (requests_disabled_message == null) { requests_disabled_message = ''; }
+      update_settings_body.set('requests_disabled_message', requests_disabled_message);
       var update_command_text = request_queue_settings_data.update_command_text;
       if (update_command_text == null) { update_command_text = ''; }
       update_settings_body.set('update_command_text', update_command_text);

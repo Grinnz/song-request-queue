@@ -573,7 +573,8 @@ group {
     my $random = $c->param('random');
     
     if (!$c->stash('is_mod') and $c->get_setting('disable_requests')) {
-      return $c->render(text => "Requests are currently disabled");
+      my $message = $c->get_setting('requests_disabled_message') || 'Requests are currently disabled';
+      return $c->render(text => $message);
     }
     
     my $song_details;
@@ -836,7 +837,7 @@ group {
       $settings{$setting_name} = $setting_value;
     }
     
-    foreach my $setting_name (qw(queue_meta_column update_command_text)) {
+    foreach my $setting_name (qw(queue_meta_column requests_disabled_message update_command_text)) {
       my $setting_value = $c->param($setting_name) // next;
       $settings{$setting_name} = length $setting_value ? $setting_value : undef;
     }
