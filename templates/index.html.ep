@@ -1,6 +1,6 @@
 % layout 'main', load_js => ['song_queue.js','search_songlist.js'];
 <div id="request_queue" class="container mb-2">
-  % my $meta_col = config('queue_meta_column') // 'duration';
+  % my $meta_col = get_setting('queue_meta_column') // 'duration';
   <div v-if="queue_first" class="py-4" v-bind:style="{
     'border-width': '1px', 'border-style': 'solid', 'border-color': '#ddd',
     'background-color': is_search_for_queue(queue_first.position) ? '#b8daff' : null

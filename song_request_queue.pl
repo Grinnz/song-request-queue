@@ -389,8 +389,14 @@ helper clear_queue => sub ($c) {
   return $c->pg->db->query('TRUNCATE TABLE "queue"')->rows;
 };
 
-helper get_settings => sub ($c) {
-  my $settings = $c->pg->db->select('settings', ['name','value'])->arrays;
+helper get_setting => sub ($c, $name) {
+  my $value = $c->pg->db->select('settings', ['value'], {name => $name})->arrays // return undef;
+  return $value->[0][0];
+};
+
+helper get_settings => sub ($c, @names) {
+  my @where = @names ? {name => \@names} : ();
+  my $settings = $c->pg->db->select('settings', ['name','value'], @where)->arrays;
   my %settings_hash = map { @$_ } @$settings;
   return \%settings_hash;
 };
@@ -565,7 +571,7 @@ group {
         return $c->render(text => 'Internal error searching song database');
       }
       return $c->render(text => "No match found for '$search'")
-        if !$search_results->size and $c->app->config->{reject_unknown_requests};
+        if !$search_results->size and $c->get_setting('reject_unknown_requests');
       if ($random) {
         $song_details = $search_results->[int rand $search_results->size];
       } else {
@@ -582,8 +588,8 @@ group {
     }
     
     my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
-    if (!$c->stash('is_mod') and $c->app->config->{reject_multiple_requests} and $c->requester_is_in_queue($requested_by)) {
-      my $cmd_text = $c->app->config->{update_command_text};
+    if (!$c->stash('is_mod') and $c->get_setting('reject_multiple_requests') and $c->requester_is_in_queue($requested_by)) {
+      my $cmd_text = $c->get_setting('update_command_text');
       my $error = "$requested_by already has a song in the queue";
       $error .= "; $cmd_text" if $cmd_text;
       return $c->render(text => $error);
@@ -801,6 +807,21 @@ group {
         $setting_value = undef;
       }
       $settings{$setting_name} = $setting_value;
+    }
+    
+    foreach my $setting_name (qw(reject_multiple_requests reject_unknown_requests)) {
+      my $setting_value = $c->param($setting_name) // next;
+      if (length $setting_value) {
+        $setting_value = 0+!!$setting_value;
+      } else {
+        $setting_value = undef;
+      }
+      $settings{$setting_name} = $setting_value;
+    }
+    
+    foreach my $setting_name (qw(queue_meta_column update_command_text)) {
+      my $setting_value = $c->param($setting_name) // next;
+      $settings{$setting_name} = length $setting_value ? $setting_value : undef;
     }
     
     $c->update_settings(\%settings);
