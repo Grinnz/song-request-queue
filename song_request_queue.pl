@@ -552,15 +552,9 @@ get '/api/queue' => sub ($c) {
 
 get '/api/queue/stats' => sub ($c) {
   my $queue_count = $c->queue_count;
-  my $queue_url = $c->req->url->to_abs;
-  while (@{$queue_url->path}) {
-    my $last = pop @{$queue_url->path};
-    last if $last eq 'api';
-  }
-  $queue_url->query('');
   my $verb = $queue_count == 1 ? 'is' : 'are';
   my $plural = $queue_count == 1 ? '' : 's';
-  $c->render(text => "There $verb currently $queue_count request$plural in the song queue: $queue_url");
+  $c->render(text => "There $verb currently $queue_count request$plural in the song queue");
 };
 
 # Mod functions
