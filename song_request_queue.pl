@@ -287,6 +287,10 @@ helper all_song_details => sub ($c, $sort_by = 'artist', $sort_dir = 'asc') {
     {-$sort_dir => \@sort})->hashes;
 };
 
+helper queue_count => sub ($c) {
+  return $c->pg->db->select('queue', [\'COUNT(*) AS "count"'])->arrays->[0][0];
+};
+
 helper queue_details => sub ($c) {
   my @from = ('queue', [-left => 'songs', 'songs.id' => 'queue.song_id']);
   my @select = (['songs.id' => 'song_id'],
@@ -544,6 +548,19 @@ get '/api/songs/:song_id' => sub ($c) {
 get '/api/queue' => sub ($c) {
   my $queue_details = $c->queue_details;
   $c->render(json => $queue_details);
+};
+
+get '/api/queue/stats' => sub ($c) {
+  my $queue_count = $c->queue_count;
+  my $queue_url = $c->req->url->to_abs;
+  while (@{$queue_url->path}) {
+    my $last = pop @{$queue_url->path};
+    last if $last eq 'api';
+  }
+  $queue_url->query('');
+  my $verb = $queue_count == 1 ? 'is' : 'are';
+  my $plural = $queue_count == 1 ? '' : 's';
+  $c->render(text => "There $verb currently $queue_count request$plural in the song queue: $queue_url");
 };
 
 # Mod functions

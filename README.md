@@ -99,11 +99,11 @@ The XLSX format is expected to have the following columns (order not important):
 
 ## Bot Requests
 
-Requests can be sent from a bot to the API endpoints `/api/queue/add`, `/api/queue/update`, and `/api/queue/remove`.
-The parameters `bot_key`, `requested_by`, and `query` (except for when removing) should be included in the query string.
+Requests can be sent from a bot to the API endpoints `/api/queue/add`, `/api/queue/update`, `/api/queue/remove`, and `/api/queue/stats`.
+The parameters `bot_key`, `requested_by`, and `query` (except for when removing) should be included in the query string. No parameters are required for the queue stats endpoint.
 `bot_key` must match a value in the `bot_keys` array in the config file.
-The endpoint accepts GET requests to accomodate bots with limited HTTP request functionality, but POST should be used when possible to avoid resubmitting requests.
-The endpoint returns a text string indicating success or error that can be displayed by the bot.
+The endpoints accept GET requests to accomodate bots with limited HTTP request functionality, but POST should be used when possible to avoid resubmitting requests.
+The endpoints return a text string indicating success or error that can be displayed by the bot.
 
 ```
 song_request_queue.conf:
@@ -116,6 +116,7 @@ song_request_queue.conf:
 GET https://example.com/api/queue/add?bot_key=foobar&requested_by=Grinnz&query=something
 GET https://example.com/api/queue/update?bot_key=foobar&requested_by=Grinnz&query=something%20else
 GET https://example.com/api/queue/remove?bot_key=foobar&requested_by=Grinnz
+GET https://example.com/api/queue/stats
 ```
 
 ## Copyright and License
