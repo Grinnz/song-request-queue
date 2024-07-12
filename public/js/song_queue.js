@@ -25,11 +25,11 @@ var queue_vm = new Vue({
         console.log('Error retrieving song queue', error);
       });
     },
-    unqueue_song: function (position) {
-      if (position) {
+    unqueue_song: function (queue_id) {
+      if (queue_id) {
         queue_vm.set_editing_requestor(null);
         queue_vm.set_search_for_queue(null);
-        fetch('/api/queue/' + position, {
+        fetch('/api/queue/' + queue_id, {
           method: 'DELETE',
           credentials: 'include'
         }).then(function(response) {
@@ -43,13 +43,13 @@ var queue_vm = new Vue({
         });
       }
     },
-    reorder_queue: function (position, direction) {
-      if (position) {
+    reorder_queue: function (queue_id, direction) {
+      if (queue_id) {
         queue_vm.set_editing_requestor(null);
         queue_vm.set_search_for_queue(null);
         var queue_reorder_body = new URLSearchParams();
         queue_reorder_body.set('reorder', direction);
-        fetch('/api/queue/' + position, {
+        fetch('/api/queue/' + queue_id, {
           method: 'POST',
           body: queue_reorder_body,
           credentials: 'include'
@@ -64,12 +64,12 @@ var queue_vm = new Vue({
         });
       }
     },
-    queue_promote_song: function(position) {
+    queue_promote_song: function(queue_id) {
       queue_vm.set_editing_requestor(null);
       queue_vm.set_search_for_queue(null);
       var queue_promote_body = new URLSearchParams();
       queue_promote_body.set('promote', 1);
-      fetch('/api/queue/' + position, {
+      fetch('/api/queue/' + queue_id, {
         method: 'POST',
         body: queue_promote_body,
         credentials: 'include'
@@ -99,23 +99,24 @@ var queue_vm = new Vue({
         console.log('Error promoting random song', error);
       });
     },
-    set_search_for_queue: function (position) {
-      queue_data.search_for_queue = position;
-      search_data.search_for_queue = position;
+    set_search_for_queue: function (request) {
+      queue_data.search_for_queue = request;
+      search_data.search_for_queue = request;
     },
-    is_search_for_queue: function (position) {
-      return queue_data.search_for_queue == position;
+    is_search_for_queue: function (queue_id) {
+      if (queue_data.search_for_queue == null) { return false; }
+      return queue_data.search_for_queue.id == queue_id;
     },
-    set_editing_requestor: function (position, requested_by) {
-      queue_data.editing_requestor = position;
+    set_editing_requestor: function (queue_id, requested_by) {
+      queue_data.editing_requestor = queue_id;
       queue_data.edit_requestor_requested_by = requested_by;
     },
-    edit_requestor: function (position) {
-      if (position) {
+    edit_requestor: function (queue_id) {
+      if (queue_id) {
         var edit_requestor_body = new URLSearchParams();
         edit_requestor_body.set('requested_by', queue_data.edit_requestor_requested_by);
         queue_vm.set_editing_requestor(null);
-        fetch('/api/queue/' + position, {
+        fetch('/api/queue/' + queue_id, {
           method: 'POST',
           body: edit_requestor_body,
           credentials: 'include'

@@ -3,7 +3,7 @@
   % my $meta_col = get_setting('queue_meta_column') // 'duration';
   <div v-if="queue_first" class="py-4" v-bind:style="{
     'border-width': '1px', 'border-style': 'solid', 'border-color': '#ddd',
-    'background-color': is_search_for_queue(queue_first.position) ? '#b8daff' : null
+    'background-color': is_search_for_queue(queue_first.id) ? '#b8daff' : null
   }">
     <div class="row mb-2">
       <% if (stash 'is_mod') { %><div class="col-sm-1">
@@ -25,27 +25,27 @@
     <div class="row mb-2"><h4 class="col-sm-12 text-center">{{ queue_first.artist }}</h4></div>
     <div class="row">
       <% if (stash 'is_mod') { %><div class="col-sm-1">
-        <button v-if="is_search_for_queue(queue_first.position)" type="button" class="btn btn-warning btn-sm ml-2" v-on:click.prevent="set_search_for_queue(null)">Unset</button>
-        <button v-else type="button" class="btn btn-warning btn-sm ml-2" v-on:click.prevent="set_search_for_queue(queue_first.position)">Set</button>
+        <button v-if="is_search_for_queue(queue_first.id)" type="button" class="btn btn-warning btn-sm ml-2" v-on:click.prevent="set_search_for_queue(null)">Unset</button>
+        <button v-else type="button" class="btn btn-warning btn-sm ml-2" v-on:click.prevent="set_search_for_queue(queue_first)">Set</button>
       </div><% } %>
       <div class="col-sm-5<% if (!stash 'is_mod') { %> offset-sm-1<% } %> text-center">Request: <span v-if="queue_first.raw_request">"{{ queue_first.raw_request }}" </span>
         <% if (stash 'is_mod') { %>
-          <template v-if="editing_requestor == queue_first.position">
-          <form class="form-inline" v-on:submit.prevent="edit_requestor(queue_first.position)">(
+          <template v-if="editing_requestor == queue_first.id">
+          <form class="form-inline" v-on:submit.prevent="edit_requestor(queue_first.id)">(
             <input class="form-control" name="requested_by" type="text" v-model="edit_requestor_requested_by">
             <button type="submit" class="btn btn-secondary btn-sm">✓</button>
             <button type="button" class="btn btn-secondary btn-sm" v-on:click.prevent="set_editing_requestor(null, '')">✖</button>
           )</form></template>
           <template v-else>
             ({{ queue_first.requested_by }})
-            <button type="button" class="btn btn-secondary btn-sm" v-on:click.prevent="set_editing_requestor(queue_first.position, queue_first.requested_by)">✎</button>
+            <button type="button" class="btn btn-secondary btn-sm" v-on:click.prevent="set_editing_requestor(queue_first.id, queue_first.requested_by)">✎</button>
           </template>
         <% } else { %>({{ queue_first.requested_by }})<% } %>
       </div>
       <div class="col-sm-5 text-center"><%= $meta_col eq 'source' ? 'Source: {{ queue_first.source }}' : 'Duration: {{ srq_common.pretty_duration(queue_first.duration) }}' %></div>
       <% if (stash 'is_mod') { %>
         <div class="col-sm-1">
-          <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="unqueue_song(queue_first.position)">Next</button>
+          <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="unqueue_song(queue_first.id)">Next</button>
         </div>
       <% } %>
     </div>
@@ -62,35 +62,35 @@
       </tr>
     </thead>
     <tbody>
-      <template v-for="request in queue_remaining"><tr v-bind:class="{ 'table-primary': is_search_for_queue(request.position) }">
+      <template v-for="request in queue_remaining"><tr v-bind:class="{ 'table-primary': is_search_for_queue(request.id) }">
         <td class="text-right" style="white-space: nowrap"><% if (stash 'is_mod') { %>
-          <button v-if="is_search_for_queue(request.position)" type="button" class="btn btn-warning btn-sm" v-on:click.prevent="set_search_for_queue(null)">{{ request.position }}</button>
-          <button v-else type="button" class="btn btn-warning btn-sm" v-on:click.prevent="set_search_for_queue(request.position)">{{ request.position }}</button>
+          <button v-if="is_search_for_queue(request.id)" type="button" class="btn btn-warning btn-sm" v-on:click.prevent="set_search_for_queue(null)">{{ request.position }}</button>
+          <button v-else type="button" class="btn btn-warning btn-sm" v-on:click.prevent="set_search_for_queue(request)">{{ request.position }}</button>
         <% } else { %>{{ request.position }}<% } %></td>
         <td style="overflow: auto">{{ request.artist }}</td>
         <td style="overflow: auto">{{ request.title }}</td>
         <td class="text-right" style="overflow: auto"><%= $meta_col eq 'source' ? '{{ request.source }}' : '{{ srq_common.pretty_duration(request.duration) }}' %></td>
         <td style="overflow: auto"><span v-if="request.raw_request">"{{ request.raw_request }}" </span>
           <% if (stash 'is_mod') { %>
-            <template v-if="editing_requestor == request.position">
-            <form class="form-inline" v-on:submit.prevent="edit_requestor(request.position)">(
+            <template v-if="editing_requestor == request.id">
+            <form class="form-inline" v-on:submit.prevent="edit_requestor(request.id)">(
               <input class="form-control" name="requested_by" type="text" v-model="edit_requestor_requested_by">
               <button type="submit" class="btn btn-secondary btn-sm">✓</button>
               <button type="button" class="btn btn-secondary btn-sm" v-on:click.prevent="set_editing_requestor(null, '')">✖</button>
             )</form></template>
             <template v-else>
               ({{ request.requested_by }})
-              <button type="button" class="btn btn-secondary btn-sm" v-on:click.prevent="set_editing_requestor(request.position, request.requested_by)">✎</button>
+              <button type="button" class="btn btn-secondary btn-sm" v-on:click.prevent="set_editing_requestor(request.id, request.requested_by)">✎</button>
             </template>
           <% } else { %>({{ request.requested_by }})<% } %>
         </td>
         <% if (stash 'is_mod') { %><td style="white-space: nowrap">
-          <button type="button" class="btn btn-info btn-sm" v-on:click.prevent="queue_promote_song(request.position)">⇈</button>
+          <button type="button" class="btn btn-info btn-sm" v-on:click.prevent="queue_promote_song(request.id)">⇈</button>
           &nbsp;
-          <button type="button" class="btn btn-warning btn-sm" v-on:click.prevent="reorder_queue(request.position,'up')">▲</button>
-          <button type="button" class="btn btn-warning btn-sm" v-on:click.prevent="reorder_queue(request.position,'down')">▼</button>
+          <button type="button" class="btn btn-warning btn-sm" v-on:click.prevent="reorder_queue(request.id,'up')">▲</button>
+          <button type="button" class="btn btn-warning btn-sm" v-on:click.prevent="reorder_queue(request.id,'down')">▼</button>
           &nbsp;
-          <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="unqueue_song(request.position)">✖</button>
+          <button type="button" class="btn btn-danger btn-sm" v-on:click.prevent="unqueue_song(request.id)">✖</button>
         </td><% } %>
       </tr></template>
     </tbody>
@@ -101,7 +101,7 @@
     <div class="form-group">
       <template v-if="search_for_queue">
         <label for="search_songlist_query" class="mr-2">
-          Search Songs for Queue Position {{ search_for_queue }}
+          Search Songs for Queue Position {{ search_for_queue.position }}
           <button type="button" class="btn btn-warning btn-sm ml-2 mr-2" v-on:click.prevent="set_search_for_queue(null)">Unset</button>:
         </label>
       </template>
@@ -135,7 +135,7 @@
         <td>{{ song.source }}</td>
         <td class="text-right">{{ srq_common.pretty_duration(song.duration) }}</td>
         <% if (stash 'is_mod') { %><td>
-          <button type="button" v-if="search_for_queue" class="btn btn-warning btn-sm" v-on:click.prevent="set_queued_song(search_for_queue, song.id)">Set ({{ search_for_queue }})</button>
+          <button type="button" v-if="search_for_queue" class="btn btn-warning btn-sm" v-on:click.prevent="set_queued_song(search_for_queue.id, song.id)">Set ({{ search_for_queue.position }})</button>
           <button type="button" v-else class="btn btn-warning btn-sm" v-on:click.prevent="queue_song(song.id)">Queue</button>
         </td><% } %>
       </tr></template>

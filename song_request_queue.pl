@@ -295,7 +295,7 @@ helper queue_details => sub ($c) {
   my @from = ('queue', [-left => 'songs', 'songs.id' => 'queue.song_id']);
   my @select = (['songs.id' => 'song_id'],
     (map { "songs.$_" } @song_details_cols),
-    (map { "queue.$_" } qw(requested_by requested_at raw_request position has_notified)));
+    (map { "queue.$_" } qw(id requested_by requested_at raw_request position has_notified)));
   return $c->pg->db->select(\@from, \@select, undef, 'queue.position')->hashes;
 };
 
@@ -308,15 +308,16 @@ helper queue_song => sub ($c, $song_id, $requested_by, $raw_request) {
   })->rows;
 };
 
-helper unqueue_song => sub ($c, $position) {
-  my $deleted = $c->pg->db->delete('queue', {position => $position},
+helper unqueue_song => sub ($c, $id) {
+  my $deleted = $c->pg->db->delete('queue', {id => $id},
     {returning => 'song_id'})->arrays->first;
   return defined $deleted ? $deleted->[0] : undef;
 };
 
-helper reorder_queue => sub ($c, $position, $direction) {
-  $c->pg->db->select('queue', ['id'],
-    {position => $position})->arrays->first // return 0;
+helper reorder_queue => sub ($c, $id, $direction) {
+  my $position = $c->pg->db->select('queue', ['position'],
+    {id => $id})->arrays->first // return 0;
+  $position = $position->[0] // return 0;
   my ($swap_to, $compare) = (defined $direction and $direction eq 'up')
     ? ('MAX("position")','<') : ('MIN("position")','>');
   my $swap_position = $c->pg->db->select('queue', [\$swap_to],
@@ -329,17 +330,18 @@ helper reorder_queue => sub ($c, $position, $direction) {
   return 1;
 };
 
-helper promote_queued_song => sub ($c, $position) {
+helper promote_queued_song => sub ($c, $id) {
   my $db = $c->pg->db;
-  $db->select('queue', ['id'],
-    {position => $position})->arrays->first // return 0;
+  my $position = $db->select('queue', ['position'],
+    {id => $id})->arrays->first // return 0;
+  $position = $position->[0] // return 0;
   my $top_position = $db->select('queue',
     [\'MIN("position")'])->arrays->first // return 0;
   $top_position = $top_position->[0] // return 0;
   return 0 if $position == $top_position;
   my $tx = $db->begin;
   $db->delete('queue', {position => $top_position});
-  $db->update('queue', {position => $top_position}, {position => $position});
+  $db->update('queue', {position => $top_position}, {id => $id});
   $tx->commit;
   return $position;
 };
@@ -362,19 +364,19 @@ helper promote_random_queued_song => sub ($c) {
   return $position;
 };
 
-helper set_queued_song => sub ($c, $position, $song_id) {
+helper set_queued_song => sub ($c, $id, $song_id) {
   return $c->pg->db->update('queue', {song_id => $song_id},
-    {position => $position})->rows;
+    {id => $id})->rows;
 };
 
-helper set_requested_by => sub ($c, $position, $requested_by) {
+helper set_requested_by => sub ($c, $id, $requested_by) {
   return $c->pg->db->update('queue', {requested_by => $requested_by},
-    {position => $position})->rows;
+    {id => $id})->rows;
 };
 
-helper set_has_notified => sub ($c, $position) {
+helper set_has_notified => sub ($c, $id) {
   return $c->pg->db->update('queue', {has_notified => 1},
-    {position => $position})->rows;
+    {id => $id})->rows;
 };
 
 helper requester_is_in_queue => sub ($c, $requested_by) {
@@ -575,7 +577,7 @@ get '/api/queue/now_playing' => sub ($c) {
   return $c->render(text => '') unless defined $now_playing;
   if ($notify_once) {
     return $c->render(text => '') if $now_playing->{has_notified};
-    $c->set_has_notified($now_playing->{position});
+    $c->set_has_notified($now_playing->{id});
   }
   my $now_playing_text = $now_playing->{raw_request};
   if (defined $now_playing->{artist} or defined $now_playing->{title}) {
@@ -705,51 +707,51 @@ group {
     return $c->render(text => "Promoted queued song from position $promoted to top");
   };
   
-  post '/api/queue/:position' => sub ($c) {
+  post '/api/queue/:id' => sub ($c) {
     return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_mod');
-    my $position = $c->param('position');
+    my $id = $c->param('id');
     
     my $reorder = $c->param('reorder');
     if (defined $reorder) {
-      return $c->render(text => "Don't know how to reorder position to $reorder")
+      return $c->render(text => "Don't know how to reorder queued song to $reorder")
         unless $reorder eq 'up' or $reorder eq 'down';
-      my $reordered = $c->reorder_queue($position, $reorder);
-      return $c->render(text => "Cannot reorder position $position $reorder") unless $reordered;
-      return $c->render(text => "Reordered position $position $reorder");
+      my $reordered = $c->reorder_queue($id, $reorder);
+      return $c->render(text => "Cannot reorder queued song $id $reorder") unless $reordered;
+      return $c->render(text => "Reordered queued song $id $reorder");
     }
     
     my $promote = $c->param('promote');
     if ($promote) {
-      my $promoted = $c->promote_queued_song($position);
-      return $c->render(text => "Failed to promote position $position") unless $promoted;
-      return $c->render(text => "Promoted queued song from position $promoted to top");
+      my $promoted = $c->promote_queued_song($id);
+      return $c->render(text => "Failed to promote queued song") unless $promoted;
+      return $c->render(text => "Promoted queued song to top");
     }
     
     my $song_id = $c->param('song_id');
     if (defined $song_id) {
       my $song_details = $c->song_details($song_id);
       return $c->render(text => "Invalid song ID $song_id") unless defined $song_details;
-      $c->set_queued_song($position, $song_id);
-      return $c->render(text => "Set queued song $position to '$song_details->{title}'");
+      $c->set_queued_song($id, $song_id);
+      return $c->render(text => "Set queued song to '$song_details->{title}'");
     }
     
     my $requested_by = $c->param('requested_by');
     if (defined $requested_by) {
-      my $updated = $c->set_requested_by($position, $requested_by);
-      return $c->render(text => "Unknown queue position $position") unless $updated;
-      return $c->render(text => "Set queue position $position requested by $requested_by");
+      my $updated = $c->set_requested_by($id, $requested_by);
+      return $c->render(text => "Unknown queued song") unless $updated;
+      return $c->render(text => "Set queued song requested by $requested_by");
     }
     
     return $c->render(text => "No changes");
   };
   
-  del '/api/queue/:position' => sub ($c) {
+  del '/api/queue/:id' => sub ($c) {
     return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_mod');
-    my $position = $c->param('position');
-    my $deleted_id = $c->unqueue_song($position);
-    return $c->render(text => "No song in position $position") unless defined $deleted_id;
+    my $id = $c->param('id');
+    my $deleted_id = $c->unqueue_song($id);
+    return $c->render(text => "Unknown queued song") unless defined $deleted_id;
     my $deleted_song = $c->song_details($deleted_id);
-    $c->render(text => "Removed song '$deleted_song->{title}' from queue position $position");
+    $c->render(text => "Removed song '$deleted_song->{title}' from song queue");
   };
   
   del '/api/queue' => sub ($c) {
