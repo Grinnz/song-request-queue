@@ -295,7 +295,7 @@ helper queue_details => sub ($c) {
   my @from = ('queue', [-left => 'songs', 'songs.id' => 'queue.song_id']);
   my @select = (['songs.id' => 'song_id'],
     (map { "songs.$_" } @song_details_cols),
-    (map { "queue.$_" } qw(requested_by requested_at raw_request position)));
+    (map { "queue.$_" } qw(requested_by requested_at raw_request position has_notified)));
   return $c->pg->db->select(\@from, \@select, undef, 'queue.position')->hashes;
 };
 
@@ -369,6 +369,11 @@ helper set_queued_song => sub ($c, $position, $song_id) {
 
 helper set_requested_by => sub ($c, $position, $requested_by) {
   return $c->pg->db->update('queue', {requested_by => $requested_by},
+    {position => $position})->rows;
+};
+
+helper set_has_notified => sub ($c, $position) {
+  return $c->pg->db->update('queue', {has_notified => 1},
     {position => $position})->rows;
 };
 
@@ -562,6 +567,22 @@ get '/api/queue/stats' => sub ($c) {
   my $verb = $queue_count == 1 ? 'is' : 'are';
   my $plural = $queue_count == 1 ? '' : 's';
   $c->render(text => "There $verb currently $queue_count request$plural in the song queue");
+};
+
+get '/api/queue/now_playing' => sub ($c) {
+  my $notify_once = $c->param('notify_once');
+  my $now_playing = $c->queue_details->first;
+  return $c->render(text => '') unless defined $now_playing;
+  return $c->render(text => '') if $notify_once and $now_playing->{has_notified};
+  $c->set_has_notified($now_playing->{position});
+  my $now_playing_text = $now_playing->{raw_request};
+  if (defined $now_playing->{artist} or defined $now_playing->{title}) {
+    my $artist = $now_playing->{artist} // 'Unknown Artist';
+    my $title = $now_playing->{title} // 'Unknown Song';
+    $now_playing_text = "$artist - $title";
+  }
+  $now_playing_text .= " (requested by $now_playing->{requested_by})" if defined $now_playing->{requested_by};
+  return $c->render(text => "Now Playing: $now_playing_text");
 };
 
 # Mod functions

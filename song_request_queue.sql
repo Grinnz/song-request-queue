@@ -279,3 +279,7 @@ begin
   return new;
 end
 $$ language plpgsql;
+
+--14 up
+alter table "queue" add "has_notified" boolean not null default FALSE;
+create index "queue_song_id" on "queue" ("song_id");
