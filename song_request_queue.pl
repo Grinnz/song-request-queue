@@ -573,8 +573,10 @@ get '/api/queue/now_playing' => sub ($c) {
   my $notify_once = $c->param('notify_once');
   my $now_playing = $c->queue_details->first;
   return $c->render(text => '') unless defined $now_playing;
-  return $c->render(text => '') if $notify_once and $now_playing->{has_notified};
-  $c->set_has_notified($now_playing->{position});
+  if ($notify_once) {
+    return $c->render(text => '') if $now_playing->{has_notified};
+    $c->set_has_notified($now_playing->{position});
+  }
   my $now_playing_text = $now_playing->{raw_request};
   if (defined $now_playing->{artist} or defined $now_playing->{title}) {
     my $artist = $now_playing->{artist} // 'Unknown Artist';
@@ -582,7 +584,7 @@ get '/api/queue/now_playing' => sub ($c) {
     $now_playing_text = "$artist - $title";
   }
   $now_playing_text .= " (requested by $now_playing->{requested_by})" if defined $now_playing->{requested_by};
-  return $c->render(text => "Now Playing: $now_playing_text");
+  return $c->render(text => "Now Playing (#$now_playing->{position}): $now_playing_text");
 };
 
 # Mod functions
