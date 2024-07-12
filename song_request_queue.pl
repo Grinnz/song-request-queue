@@ -582,7 +582,7 @@ get '/api/queue/now_playing' => sub ($c) {
     $now_playing_text = "$artist - $title";
   }
   $now_playing_text .= " (requested by $now_playing->{requested_by})" if defined $now_playing->{requested_by};
-  return $c->render(text => $now_playing_text);
+  return $c->render(text => "Now Playing: $now_playing_text");
 };
 
 # Mod functions
