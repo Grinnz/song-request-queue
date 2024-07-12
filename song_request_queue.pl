@@ -377,6 +377,11 @@ helper requester_is_in_queue => sub ($c, $requested_by) {
     {requested_by => $requested_by, position => {'!=' => \'(SELECT MIN("position") FROM "queue")'}})->arrays->first;
 };
 
+helper song_is_in_queue => sub ($c, $song_id) {
+  return defined $c->pg->db->select('queue', ['id'],
+    {song_id => $song_id, position => {'!=' => \'(SELECT MIN("position") FROM "queue")'}})->arrays->first;
+};
+
 helper set_queued_song_for_requester => sub ($c, $requested_by, $song_id, $raw_request) {
   return $c->pg->db->update('queue', {song_id => $song_id, raw_request => $raw_request},
     {requested_by => $requested_by, position => {'!=' => \'(SELECT MIN("position") FROM "queue")'}})->rows;
@@ -605,6 +610,8 @@ group {
       return $c->render(text => 'No song ID or search query provided.');
     }
     
+    my $response_title = defined $song_details ? "$song_details->{artist} - $song_details->{title}" : $raw_request;
+    
     my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
     if (!$c->stash('is_mod') and $c->get_setting('reject_multiple_requests') and $c->requester_is_in_queue($requested_by)) {
       my $cmd_text = $c->get_setting('update_command_text');
@@ -612,11 +619,13 @@ group {
       $error .= "; $cmd_text" if $cmd_text;
       return $c->render(text => $error);
     }
+    if (!$c->stash('is_mod') and $c->get_setting('reject_duplicate_requests') and defined $song_id and $c->song_is_in_queue($song_id)) {
+      return $c->render(text => "Request '$response_title' is already in the song queue");
+    }
     try { $c->queue_song($song_id, $requested_by, $raw_request) } catch {
       $c->app->log->error($@);
       return $c->render(text => 'Internal error adding song to queue');
     }
-    my $response_title = defined $song_details ? "$song_details->{artist} - $song_details->{title}" : $raw_request;
     $c->render(text => "Added '$response_title' to queue (requested by $requested_by)");
   };
   
@@ -827,7 +836,7 @@ group {
       $settings{$setting_name} = $setting_value;
     }
     
-    foreach my $setting_name (qw(disable_requests reject_multiple_requests reject_unknown_requests)) {
+    foreach my $setting_name (qw(disable_requests reject_multiple_requests reject_unknown_requests reject_duplicate_requests)) {
       my $setting_value = $c->param($setting_name) // next;
       if (length $setting_value) {
         $setting_value = 0+!!$setting_value;
