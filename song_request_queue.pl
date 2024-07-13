@@ -678,6 +678,9 @@ group {
       return $c->render(text => 'No search query provided.');
     }
     
+    if (!$c->stash('is_mod') and $c->get_setting('reject_duplicate_requests') and $c->song_is_in_queue($song_details->{id})) {
+      return $c->render(text => "Request '$song_details->{artist} - $song_details->{title}' is already in the song queue");
+    }
     my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
     my $updated;
     try { $updated = $c->set_queued_song_for_requester($requested_by, $song_details->{id}, $search) } catch {
