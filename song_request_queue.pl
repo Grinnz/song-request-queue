@@ -225,7 +225,7 @@ helper import_songs => sub ($c, $songs) {
 
 helper add_song => sub ($c, $details) {
   return $c->pg->db->insert('songs', $c->song_for_insert($details),
-    {returning => 'id'})->arrays->first->[0];
+    {returning => ['id']})->arrays->first->[0];
 };
 
 helper update_song => sub ($c, $song_id, $details) {
@@ -235,7 +235,7 @@ helper update_song => sub ($c, $song_id, $details) {
 
 helper delete_song => sub ($c, $song_id) {
   my $deleted = $c->pg->db->delete('songs', {id => $song_id},
-    {returning => 'title'})->arrays->first;
+    {returning => ['title']})->arrays->first;
   return defined $deleted ? $deleted->[0] : undef;
 };
 
@@ -320,8 +320,8 @@ helper queue_song => sub ($c, $song_id, $requested_by, $raw_request) {
 
 helper unqueue_song => sub ($c, $id) {
   my $deleted = $c->pg->db->delete('queue', {id => $id},
-    {returning => 'song_id'})->arrays->first;
-  return defined $deleted ? $deleted->[0] : undef;
+    {returning => ['song_id','raw_request']})->hashes->first;
+  return $deleted;
 };
 
 helper reorder_queue => sub ($c, $id, $direction) {
@@ -406,11 +406,10 @@ helper set_queued_song_for_requester => sub ($c, $requested_by, $song_id, $raw_r
 };
 
 helper unqueue_song_for_requester => sub ($c, $requested_by) {
-  my $deleted = $c->pg->db->delete('queue',
+  return $c->pg->db->delete('queue',
     {id => {'=' => \['(SELECT "id" FROM "queue" WHERE "requested_by"=?
       AND "position" != (SELECT MIN("position") FROM "queue") ORDER BY "position" DESC LIMIT 1)', $requested_by]}},
-    {returning => 'song_id'})->arrays->first;
-  return defined $deleted ? $deleted->[0] : undef;
+    {returning => ['song_id','raw_request']})->hashes->first;
 };
 
 helper clear_queue => sub ($c) {
@@ -725,20 +724,27 @@ group {
       $c->app->log->error($@);
       return $c->render(text => 'Internal error updating song queue');
     }
-    return $c->render(text => "$requested_by does not have an inactive request in the queue") unless $updated;
+    return $c->render(text => "$requested_by does not have a pending request in the queue") unless $updated;
     return $c->render(text => "Updated request to '$song_details->{artist} - $song_details->{title}' (requested by $requested_by)");
   };
   
   any '/api/queue/remove' => sub ($c) {
     my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
+    
     my $removed;
     try { $removed = $c->unqueue_song_for_requester($requested_by) } catch {
       $c->app->log->error($@);
       return $c->render(text => 'Internal error removing song from queue');
     }
-    return $c->render(text => "$requested_by does not have an inactive request in the queue") unless defined $removed;
-    my $removed_song = $c->song_details($removed);
-    return $c->render(text => "Removed request '$removed_song->{artist} - $removed_song->{title}' (requested by $requested_by)");
+    return $c->render(text => "$requested_by does not have a pending request in the queue") unless defined $removed;
+    
+    my $response_title = $removed->{raw_request};
+    if (defined $removed->{song_id}) {
+      my $song_details = $c->song_details($removed->{song_id});
+      $response_title = "$song_details->{artist} - $song_details->{title}";
+    }
+    
+    return $c->render(text => "Removed request '$response_title' (requested by $requested_by)");
   };
   
   post '/api/queue/promote_random' => sub ($c) {
@@ -789,10 +795,16 @@ group {
   del '/api/queue/:id' => sub ($c) {
     return $c->render(text => 'Access denied', status => 403) unless $c->stash('is_mod');
     my $id = $c->param('id');
-    my $deleted_id = $c->unqueue_song($id);
-    return $c->render(text => "Unknown queued song") unless defined $deleted_id;
-    my $deleted_song = $c->song_details($deleted_id);
-    $c->render(text => "Removed song '$deleted_song->{title}' from song queue");
+    my $deleted = $c->unqueue_song($id);
+    return $c->render(text => "Unknown queued song") unless defined $deleted;
+    
+    my $response_title = $deleted->{raw_request};
+    if (defined $deleted->{song_id}) {
+      my $song_details = $c->song_details($deleted->{song_id});
+      $response_title = "$song_details->{artist} - $song_details->{title}";
+    }
+    
+    $c->render(text => "Removed request '$response_title' from song queue");
   };
   
   del '/api/queue' => sub ($c) {
