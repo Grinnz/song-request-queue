@@ -391,12 +391,14 @@ helper song_is_in_queue => sub ($c, $song_id) {
 
 helper set_queued_song_for_requester => sub ($c, $requested_by, $song_id, $raw_request) {
   return $c->pg->db->update('queue', {song_id => $song_id, raw_request => $raw_request},
-    {requested_by => $requested_by, position => {'!=' => \'(SELECT MIN("position") FROM "queue")'}})->rows;
+    {id => {'=' => \['(SELECT "id" FROM "queue" WHERE "requested_by"=?
+      AND "position" != (SELECT MIN("position") FROM "queue") ORDER BY "position" LIMIT 1)', $requested_by]}})->rows;
 };
 
 helper unqueue_song_for_requester => sub ($c, $requested_by) {
   my $deleted = $c->pg->db->delete('queue',
-    {requested_by => $requested_by, position => {'!=' => \'(SELECT MIN("position") FROM "queue")'}},
+    {id => {'=' => \['(SELECT "id" FROM "queue" WHERE "requested_by"=?
+      AND "position" != (SELECT MIN("position") FROM "queue") ORDER BY "position" DESC LIMIT 1)', $requested_by]}},
     {returning => 'song_id'})->arrays->first;
   return defined $deleted ? $deleted->[0] : undef;
 };
