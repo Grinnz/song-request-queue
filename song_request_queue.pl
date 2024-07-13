@@ -299,6 +299,16 @@ helper queue_details => sub ($c) {
   return $c->pg->db->select(\@from, \@select, undef, 'queue.position')->hashes;
 };
 
+helper queue_details_for_requester => sub ($c, $requested_by) {
+  my @from = ('queue', [-left => 'songs', 'songs.id' => 'queue.song_id']);
+  my @select = (['songs.id' => 'song_id'],
+    (map { "songs.$_" } @song_details_cols),
+    (map { "queue.$_" } qw(id requested_by requested_at raw_request position has_notified)));
+  return $c->pg->db->select(\@from, \@select,
+    {requested_by => $requested_by, position => {'!=' => \'(SELECT MIN("position") FROM "queue")'}},
+    'queue.position')->hashes;
+};
+
 helper queue_song => sub ($c, $song_id, $requested_by, $raw_request) {
   return $c->pg->db->insert('queue', {
     song_id => $song_id,
@@ -589,6 +599,28 @@ get '/api/queue/now_playing' => sub ($c) {
   }
   $now_playing_text .= " (requested by $now_playing->{requested_by})" if defined $now_playing->{requested_by};
   return $c->render(text => "Now Playing: $now_playing_text");
+};
+
+any '/api/queue/pending' => sub ($c) {
+  my $requested_by = $c->param('requested_by') // $c->stash('username') // '';
+  
+  my $queue_details = $c->queue_details_for_requester($requested_by);
+  return $c->render(text => "$requested_by does not have a pending request in the queue") unless @$queue_details;
+  
+  my $queued_song = $queue_details->first;
+  my $artist = $queued_song->{artist};
+  my $title = $queued_song->{title};
+  my $response_title = $queued_song->{raw_request};
+  if (defined $queued_song->{artist} or defined $queued_song->{title}) {
+    my $artist = $queued_song->{artist} // 'Unknown Artist';
+    my $title = $queued_song->{title} // 'Unknown Song';
+    $response_title = "$artist - $title";
+  }
+  
+  my $message = "$requested_by has pending request '$response_title'";
+  my $more_requests = @$queue_details - 1;
+  $message .= " (and $more_requests more requests)" if $more_requests > 0;
+  return $c->render(text => $message);
 };
 
 # Mod functions
