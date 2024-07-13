@@ -113,10 +113,11 @@
           <input id="settings_disable_requests" class="form-check-input" name="disable_requests" type="checkbox" v-model="disable_requests">
           <label for="settings_disable_requests" class="form-check-label">Disable Requests <span title="Disable submission of song requests">⍰</span></label>
         </div>
-        <div class="form-check form-check-inline">
-          <input id="settings_reject_duplicate_requests" class="form-check-input" name="reject_duplicate_requests" type="checkbox" v-model="reject_duplicate_requests">
-          <label for="settings_reject_duplicate_requests" class="form-check-label">Reject Duplicate Requests <span title="Reject requests matching a song currently in the queue">⍰</span></label>
-        </div>
+      </div>
+      <div class="w-100"></div>
+      <div class="form-group col-sm-6">
+        <label for="settings_requests_disabled_message">Requests Disabled Message <span title="Message to display when a request is made while requests are disabled">⍰</span></label>
+        <input id="settings_requests_disabled_message" class="form-control form-control-sm" name="requests_disabled_message" type="text" placeholder="Requests are currently disabled" v-model="requests_disabled_message">
       </div>
       <div class="w-100"></div>
       <div class="form-group col-sm-6">
@@ -124,19 +125,30 @@
           <input id="settings_reject_multiple_requests" class="form-check-input" name="reject_multiple_requests" type="checkbox" v-model="reject_multiple_requests">
           <label for="settings_reject_multiple_requests" class="form-check-label">Reject Multiple Requests <span title="Reject requests if a user already has a request in the queue">⍰</span></label>
         </div>
+      </div>
+      <div class="w-100"></div>
+      <div class="form-group col-sm-6">
+        <label for="settings_update_command_text">Edit Request Explanation <span title="Text to explain how to use your update/edit request command when a request is rejected because the user has the maximum number of requests in the queue">⍰</span></label>
+        <input id="settings_update_command_text" class="form-control form-control-sm" name="update_command_text" type="text" v-model="update_command_text">
+      </div>
+      <div class="w-100"></div>
+      <div class="form-group col-sm-6">
         <div class="form-check form-check-inline">
           <input id="settings_reject_unknown_requests" class="form-check-input" name="reject_unknown_requests" type="checkbox" v-model="reject_unknown_requests">
           <label for="settings_reject_unknown_requests" class="form-check-label">Reject Unknown Requests <span title="Reject requests that don&#39;t match a song in your songlist">⍰</span></label>
         </div>
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-3">
-        <label for="settings_requests_disabled_message">Requests Disabled Message <span title="Message to display when a request is made while requests are disabled">⍰</span></label>
-        <input id="settings_requests_disabled_message" class="form-control form-control-sm" name="requests_disabled_message" type="text" placeholder="Requests are currently disabled" v-model="requests_disabled_message">
+      <div class="form-group col-sm-6">
+        <label for="settings_unknown_request_text">Unknown Request Explanation <span title="Text to explain how to view available songs when a request is rejected because it did not match a song">⍰</span></label>
+        <input id="settings_unknown_request_text" class="form-control form-control-sm" name="unknown_request_text" type="text" v-model="unknown_request_text">
       </div>
-      <div class="form-group col-sm-3">
-        <label for="settings_update_command_text">Edit Request Explanation <span title="Text to explain how to use your update/edit request command when a request is rejected because the user has the maximum number of requests in the queue">⍰</span></label>
-        <input id="settings_update_command_text" class="form-control form-control-sm" name="update_command_text" type="text" v-model="update_command_text">
+      <div class="w-100"></div>
+      <div class="form-group col-sm-6">
+        <div class="form-check form-check-inline">
+          <input id="settings_reject_duplicate_requests" class="form-check-input" name="reject_duplicate_requests" type="checkbox" v-model="reject_duplicate_requests">
+          <label for="settings_reject_duplicate_requests" class="form-check-label">Reject Duplicate Requests <span title="Reject requests matching a song currently in the queue">⍰</span></label>
+        </div>
       </div>
       <div class="w-100"></div>
       <div class="form-group col-sm-6">

@@ -620,8 +620,12 @@ group {
         $c->app->log->error($@);
         return $c->render(text => 'Internal error searching song database');
       }
-      return $c->render(text => "No match found for '$search'")
-        if !$search_results->size and $c->get_setting('reject_unknown_requests');
+      if (!$search_results->size and $c->get_setting('reject_unknown_requests')) {
+        my $custom_text = $c->get_setting('unknown_request_text');
+        my $error = "No match found for '$search'";
+        $error .= "; $custom_text" if $custom_text;
+        return $c->render(text => $error);
+      }
       if ($random) {
         $song_details = $search_results->[int rand $search_results->size];
       } else {
@@ -876,7 +880,7 @@ group {
       $settings{$setting_name} = $setting_value;
     }
     
-    foreach my $setting_name (qw(queue_meta_column requests_disabled_message update_command_text)) {
+    foreach my $setting_name (qw(queue_meta_column requests_disabled_message update_command_text unknown_request_text)) {
       my $setting_value = $c->param($setting_name) // next;
       $settings{$setting_name} = length $setting_value ? $setting_value : undef;
     }

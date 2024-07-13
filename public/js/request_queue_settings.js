@@ -7,6 +7,7 @@ var request_queue_settings_data = {
   reject_unknown_requests: false,
   requests_disabled_message: '',
   update_command_text: '',
+  unknown_request_text: '',
 };
 var request_queue_settings_vm = new Vue({
   el: '#request_queue_settings',
@@ -29,6 +30,7 @@ var request_queue_settings_vm = new Vue({
         request_queue_settings_data.reject_unknown_requests = !!+data.reject_unknown_requests;
         request_queue_settings_data.requests_disabled_message = data.requests_disabled_message;
         request_queue_settings_data.update_command_text = data.update_command_text;
+        request_queue_settings_data.unknown_request_text = data.unknown_request_text;
       }).catch(function(error) {
         console.log('Error retrieving settings', error);
       });
@@ -52,6 +54,9 @@ var request_queue_settings_vm = new Vue({
       var update_command_text = request_queue_settings_data.update_command_text;
       if (update_command_text == null) { update_command_text = ''; }
       update_settings_body.set('update_command_text', update_command_text);
+      var unknown_request_text = request_queue_settings_data.unknown_request_text;
+      if (unknown_request_text == null) { unknown_request_text = ''; }
+      update_settings_body.set('unknown_request_text', unknown_request_text);
       fetch('/api/settings', {
         method: 'POST',
         body: update_settings_body,
