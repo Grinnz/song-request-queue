@@ -1,8 +1,8 @@
 % layout 'main', title => 'Browse Song List';
 <div id="browse_songlist" class="container-fluid">
   <h2>Full Song List</h2>
-  <table class="table table-striped table-bordered table-sm<%== stash('dark_mode') ? ' table-dark' : '' %>">
-    <thead class="<%== stash('dark_mode') ? 'thead-dark' : 'thead-light' %>">
+  <table class="table table-striped table-bordered table-sm<%== stash('dark_mode') ? ' table-dark' : ' table-light' %>">
+    <thead>
       <tr>
 % for my $column (qw(artist title album track genre source duration)) {
         <th style="white-space: nowrap">
@@ -22,7 +22,7 @@
         <td><%= $song->{track} %></td>
         <td><%= $song->{genre} %></td>
         <td><%= $song->{source} =~ s/ DLC$/\N{U+00A0}DLC/r %><% if (length $song->{url}) { %> <a class="btn btn-info btn-sm" href="<%= $song->{url} %>" target="_blank">▼</a><% } %></td>
-        <td class="text-right"><%= $song->{duration} =~ s/^0(0:0?)?//r %></td>
+        <td class="text-end"><%= $song->{duration} =~ s/^0(0:0?)?//r %></td>
       </tr><% } %>
     </tbody>
   </table>

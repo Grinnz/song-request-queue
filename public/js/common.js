@@ -26,11 +26,8 @@ var srq_common = {
       elem.classList.toggle('bg-dark');
     });
     Array.from(document.getElementsByTagName('table')).forEach(function (elem) {
+      elem.classList.toggle('table-light');
       elem.classList.toggle('table-dark');
-    });
-    Array.from(document.getElementsByTagName('thead')).forEach(function (elem) {
-      elem.classList.toggle('thead-light');
-      elem.classList.toggle('thead-dark');
     });
     document.cookie = 'srq_dark_mode=' + (srq_common.dark_mode ? 1 : 0) + '; Path=/; Max-Age=315360000; SameSite=Strict; Secure';
   },

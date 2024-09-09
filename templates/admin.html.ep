@@ -5,100 +5,99 @@
   <div class="mb-2">
     Songlists can be imported from the C3 Tools Setlist Manager CSV export, the Clone Hero JSON export, an XLSX spreadsheet, or an export from this site.
   </div>
-  <form class="form-inline" enctype="multipart/form-data" v-on:submit.prevent="import_songlist">
-    <input id="import_songlist_file" class="form-control mr-2" name="songlist" type="file">
-    <button type="submit" class="btn btn-primary mr-2">Submit</button>
-    &nbsp;<span><i>{{ result_text }}</i></span>
+  <form class="row g-2 align-items-center" enctype="multipart/form-data" v-on:submit.prevent="import_songlist">
+    <div class="col-auto"><input id="import_songlist_file" class="form-control me-2" name="songlist" type="file"></div>
+    <div class="col-auto"><button type="submit" class="btn btn-primary me-2">Submit</button></div>
+    <div class="col-auto"><span><i>{{ result_text }}</i></span></div>
   </form>
 </div>
 
-<div id="add_song" class="container">
+<div id="add_song" class="container mb-3">
   <h4>Add Song</h4>
   <form v-on:submit.prevent="add_song">
-    <div class="form-row">
-      <div class="form-group col-sm-3">
-        <label for="add_song_artist" class="sr-only">Artist</label>
+    <div class="row g-2">
+      <div class="col-sm-3">
+        <label for="add_song_artist" class="visually-hidden">Artist</label>
         <input id="add_song_artist" class="form-control form-control-sm" name="artist" type="text" placeholder="Artist" v-model="add_song_artist">
       </div>
-      <div class="form-group col-sm-3">
-        <label for="add_song_title" class="sr-only">Title</label>
+      <div class="col-sm-3">
+        <label for="add_song_title" class="visually-hidden">Title</label>
         <input id="add_song_title" class="form-control form-control-sm" name="title" type="text" placeholder="Title" v-model="add_song_title">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-3">
-        <label for="add_song_album" class="sr-only">Album</label>
+      <div class="col-sm-3">
+        <label for="add_song_album" class="visually-hidden">Album</label>
         <input id="add_song_album" class="form-control form-control-sm" name="album" type="text" placeholder="Album" v-model="add_song_album">
       </div>
-      <div class="form-group col-sm-3">
-        <label for="add_song_track" class="sr-only">Track</label>
+      <div class="col-sm-3">
+        <label for="add_song_track" class="visually-hidden">Track</label>
         <input id="add_song_track" class="form-control form-control-sm" name="track" type="text" placeholder="Track" v-model="add_song_track">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-3">
-        <label for="add_song_genre" class="sr-only">Genre</label>
+      <div class="col-sm-3">
+        <label for="add_song_genre" class="visually-hidden">Genre</label>
         <input id="add_song_genre" class="form-control form-control-sm" name="genre" type="text" placeholder="Genre" v-model="add_song_genre">
       </div>
-      <div class="form-group col-sm-3">
-        <label for="add_song_source" class="sr-only">Source</label>
+      <div class="col-sm-3">
+        <label for="add_song_source" class="visually-hidden">Source</label>
         <input id="add_song_source" class="form-control form-control-sm" name="source" type="text" placeholder="Source" v-model="add_song_source">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-3">
-        <label for="add_song_duration" class="sr-only">Duration</label>
+      <div class="col-sm-3">
+        <label for="add_song_duration" class="visually-hidden">Duration</label>
         <input id="add_song_duration" class="form-control form-control-sm" name="duration" type="text" placeholder="Duration" v-model="add_song_duration">
       </div>
-      <div class="form-group col-sm-3">
-        <label for="add_song_url" class="sr-only">URL</label>
+      <div class="col-sm-3">
+        <label for="add_song_url" class="visually-hidden">URL</label>
         <input id="add_song_url" class="form-control form-control-sm" name="url" type="text" placeholder="URL" v-model="add_song_url">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-6">
-        <button type="submit" class="btn btn-primary btn-sm mr-2">Submit</button>
-        <button type="button" class="btn btn-danger btn-sm mr-2" v-on:click.prevent="clear_add_song">Clear</button>
+      <div class="col-sm-6">
+        <button type="submit" class="btn btn-primary btn-sm me-2">Submit</button>
+        <button type="button" class="btn btn-danger btn-sm me-2" v-on:click.prevent="clear_add_song">Clear</button>
         <span><i>{{ result_text }}</i></span>
       </div>
     </div>
   </form>
 </div>
 
-<div id="export_songlist" class="container">
+<div id="export_songlist" class="container mb-3">
   <h4>Export Songlist</h4>
   <a class="btn btn-info mb-2" href="/api/songs/export" target="_blank">Export JSON</a>
 </div>
 
-<div id="clear_songlist" class="container">
+<div id="clear_songlist" class="container mb-3">
   <h4>Clear Songlist and Queue</h4>
-  <div class="form-group">
+  <div class="row g-2 align-items-center">
     <template v-if="confirming_clear_songlist">
-      <label for="clear_songlist_button">Are You Sure?</label>
-      <button id="clear_songlist_button" type="button" class="btn btn-danger" v-on:click.prevent="clear_songlist">Yes, Delete All Songs</button>
-      <button type="button" class="btn btn-success" v-on:click.prevent="unconfirm_clear_songlist">Cancel</button>
+      <div class="col-auto"><label for="clear_songlist_button" class="col-form-label">Are You Sure?</label></div>
+      <div class="col-auto"><button id="clear_songlist_button" type="button" class="btn btn-danger" v-on:click.prevent="clear_songlist">Yes, Delete All Songs</button></div>
+      <div class="col-auto"><button type="button" class="btn btn-success" v-on:click.prevent="unconfirm_clear_songlist">Cancel</button></div>
     </template>
-    <button v-else id="clear_songlist_button" type="button" class="btn btn-danger" v-on:click.prevent="confirm_clear_songlist">Delete All Songs</button>
-    &nbsp;<span><i>{{ result_text }}</i></span>
+    <div v-else class="col-auto"><button id="clear_songlist_button" type="button" class="btn btn-danger" v-on:click.prevent="confirm_clear_songlist">Delete All Songs</button></div>
+    <div class="col-auto"><span><i>{{ result_text }}</i></span></div>
   </div>
 </div>
 
-<div id="add_mod" class="container">
+<div id="add_mod" class="container mb-3">
   <h4>Add Queue Moderator</h4>
   <div class="mb-2">
     You will receive a code; direct the user to go to the <a href="/set_password">Set Password</a> page and enter it to set their password.
   </div>
-  <form class="form-inline" v-on:submit.prevent="add_mod">
-    <input id="add_mod_username" class="form-control mr-2" name="username" type="text" placeholder="Username" v-model="add_mod_username">
-    <button type="submit" class="btn btn-primary">Submit</button>
-    &nbsp;<span><i>{{ result_text }}</i></span>
+  <form class="row g-2 align-items-center" v-on:submit.prevent="add_mod">
+    <div class="col-auto"><input id="add_mod_username" class="form-control me-2" name="username" type="text" placeholder="Username" v-model="add_mod_username"></div>
+    <div class="col-auto"><button type="submit" class="btn btn-primary">Submit</button></div>
+    <div class="col-auto"><span><i>{{ result_text }}</i></span></div>
   </form>
 </div>
-<br>
 
-<div id="request_queue_settings" class="container">
+<div id="request_queue_settings" class="container mb-3">
   <h4>Request Queue Settings</h4>
   <form v-on:submit.prevent="update_request_queue_settings">
-    <div class="form-row">
-      <div class="form-group col-sm-6">
+    <div class="row g-2">
+      <div class="col-sm-6">
+        <label class="form-check-label me-2">Queue Meta Column <span title="Which metadata column to display in the active request queue">⍰</span></label>
         <div class="form-check form-check-inline">
-          <label class="form-check-label mr-2">Queue Meta Column <span title="Which metadata column to display in the active request queue">⍰</span></label>
           <input id="settings_queue_meta_column_duration" class="form-check-input" name="queue_meta_column" value="duration" type="radio" v-model="queue_meta_column">
           <label for="settings_queue_meta_column_duration" class="form-check-label">Duration</label>
         </div>
@@ -108,50 +107,50 @@
         </div>
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-6">
+      <div class="col-sm-6">
         <div class="form-check form-check-inline">
           <input id="settings_disable_requests" class="form-check-input" name="disable_requests" type="checkbox" v-model="disable_requests">
           <label for="settings_disable_requests" class="form-check-label">Disable Requests <span title="Disable submission of song requests">⍰</span></label>
         </div>
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-6">
+      <div class="col-sm-6">
         <label for="settings_requests_disabled_message">Requests Disabled Message <span title="Message to display when a request is made while requests are disabled">⍰</span></label>
         <input id="settings_requests_disabled_message" class="form-control form-control-sm" name="requests_disabled_message" type="text" placeholder="Requests are currently disabled" v-model="requests_disabled_message">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-6">
+      <div class="col-sm-6">
         <div class="form-check form-check-inline">
           <input id="settings_reject_multiple_requests" class="form-check-input" name="reject_multiple_requests" type="checkbox" v-model="reject_multiple_requests">
           <label for="settings_reject_multiple_requests" class="form-check-label">Reject Multiple Requests <span title="Reject requests if a user already has a request in the queue">⍰</span></label>
         </div>
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-6">
+      <div class="col-sm-6">
         <label for="settings_update_command_text">Edit Request Explanation <span title="Text to explain how to use your update/edit request command when a request is rejected because the user has the maximum number of requests in the queue">⍰</span></label>
         <input id="settings_update_command_text" class="form-control form-control-sm" name="update_command_text" type="text" v-model="update_command_text">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-6">
+      <div class="col-sm-6">
         <div class="form-check form-check-inline">
           <input id="settings_reject_unknown_requests" class="form-check-input" name="reject_unknown_requests" type="checkbox" v-model="reject_unknown_requests">
           <label for="settings_reject_unknown_requests" class="form-check-label">Reject Unknown Requests <span title="Reject requests that don&#39;t match a song in your songlist">⍰</span></label>
         </div>
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-6">
+      <div class="col-sm-6">
         <label for="settings_unknown_request_text">Unknown Request Explanation <span title="Text to explain how to view available songs when a request is rejected because it did not match a song">⍰</span></label>
         <input id="settings_unknown_request_text" class="form-control form-control-sm" name="unknown_request_text" type="text" v-model="unknown_request_text">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-6">
+      <div class="col-sm-6">
         <div class="form-check form-check-inline">
           <input id="settings_reject_duplicate_requests" class="form-check-input" name="reject_duplicate_requests" type="checkbox" v-model="reject_duplicate_requests">
           <label for="settings_reject_duplicate_requests" class="form-check-label">Reject Duplicate Requests <span title="Reject requests matching a song currently in the queue">⍰</span></label>
         </div>
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-6">
+      <div class="col-sm-6">
         <button type="submit" class="btn btn-primary btn-sm">Save Settings</button>
         <span><i>{{ result_text }}</i></span>
       </div>
@@ -165,58 +164,58 @@
     The <a href="/now_playing">Now Playing</a> browser source displays the artist and song title of the active song.
   </div>
   <form v-on:submit.prevent="update_now_playing_settings">
-    <div class="form-row">
-      <div class="form-group col-sm-3">
+    <div class="row g-2">
+      <div class="col-sm-3">
         <label for="now_playing_text_color">Text Color</label>
         <input id="now_playing_text_color" class="form-control form-control-sm" name="text_color" type="text" placeholder="white" v-model="now_playing_text_color">
       </div>
-      <div class="form-group col-sm-3">
+      <div class="col-sm-3">
         <label for="now_playing_text_size">Text Size</label>
         <input id="now_playing_text_size" class="form-control form-control-sm" name="text_size" type="number" step="0.1" placeholder="3" v-model="now_playing_text_size">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-3">
+      <div class="col-sm-3">
         <label for="now_playing_shadow_color">Shadow Color</label>
         <input id="now_playing_shadow_color" class="form-control form-control-sm" name="shadow_color" type="text" placeholder="black" v-model="now_playing_shadow_color">
       </div>
-      <div class="form-group col-sm-3">
+      <div class="col-sm-3">
         <label for="now_playing_shadow_size">Shadow Size</label>
         <input id="now_playing_shadow_size" class="form-control form-control-sm" name="shadow_size" type="number" step="0.01" placeholder="0.25" v-model="now_playing_shadow_size">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-3">
+      <div class="col-sm-3">
         <label for="now_playing_font_weight">Font Weight</label>
         <input id="now_playing_font_weight" class="form-control form-control-sm" name="font_weight" type="text" placeholder="normal/bold" v-model="now_playing_font_weight">
       </div>
-      <div class="form-group col-sm-3">
+      <div class="col-sm-3">
         <label for="now_playing_font_style">Font Style</label>
         <input id="now_playing_font_style" class="form-control form-control-sm" name="font_style" type="text" placeholder="normal/italic/oblique" v-model="now_playing_font_style">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-3">
+      <div class="col-sm-3">
         <label for="now_playing_font_family">Font Family</label>
         <input id="now_playing_font_family" class="form-control form-control-sm" name="font_family" type="text" placeholder="sans-serif" v-model="now_playing_font_family">
       </div>
-      <div class="form-group col-sm-3">
+      <div class="col-sm-3">
         <label for="now_playing_text_transform">Text Transform</label>
         <input id="now_playing_text_transform" class="form-control form-control-sm" name="text_transform" type="text" placeholder="uppercase/lowercase/capitalize" v-model="now_playing_text_transform">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-3">
+      <div class="col-sm-3">
         <label for="now_playing_scroll_amount">Scroll Amount</label>
         <input id="now_playing_scroll_amount" class="form-control form-control-sm" name="scroll_amount" type="number" placeholder="6" v-model="now_playing_scroll_amount">
       </div>
-      <div class="form-group col-sm-3">
+      <div class="col-sm-3">
         <label for="now_playing_scroll_delay">Scroll Delay</label>
         <input id="now_playing_scroll_delay" class="form-control form-control-sm" name="scroll_delay" type="number" placeholder="85" v-model="now_playing_scroll_delay">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-3">
+      <div class="col-sm-3">
         <label for="now_playing_marquee_behavior">Marquee Behavior</label>
         <input id="now_playing_marquee_behavior" class="form-control form-control-sm" name="marquee_behavior" type="text" placeholder="scroll/alternate" v-model="now_playing_marquee_behavior">
       </div>
       <div class="w-100"></div>
-      <div class="form-group col-sm-3">
+      <div class="col-sm-3">
         <button type="submit" class="btn btn-primary btn-sm">Save Settings</button>
         <span><i>{{ result_text }}</i></span>
       </div>
@@ -227,17 +226,23 @@
 
 <div id="search_songlist" class="container">
   <h4>Manage Songs</h4>
-  <form class="form-inline mb-2" v-on:submit.prevent="search_songlist">
-    <div class="form-group">
-      <label for="search_songlist_query" class="mr-2">Search Songs:</label>
-      <input id="search_songlist_query" class="form-control mr-2" name="query" type="text" placeholder="Title/Artist/Album/Source" v-model="search_songlist_query">
+  <form class="row row-cols-sm-auto g-2 align-items-center mb-2" v-on:submit.prevent="search_songlist">
+    <div class="col-12">
+      <label for="search_songlist_query" class="col-form-label">Search Songs:</label>
     </div>
-    <button type="submit" class="btn btn-primary mr-2">Search</button>
-    <button type="button" class="btn btn-danger" v-on:click.prevent="clear_search_songlist">Clear</button>
+    <div class="col-12">
+      <input id="search_songlist_query" class="form-control" name="query" type="text" placeholder="Title/Artist/Album/Source" v-model="search_songlist_query">
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+    <div class="col-12">
+      <button type="button" class="btn btn-danger" v-on:click.prevent="clear_search_songlist">Clear</button>
+    </div>
   </form>
   <form v-on:submit.prevent="edit_song">
-  <table class="table table-hover table-bordered<%== stash('dark_mode') ? ' table-dark' : '' %>">
-    <thead class="<%== stash('dark_mode') ? 'thead-dark' : 'thead-light' %>">
+  <table class="table table-hover table-bordered<%== stash('dark_mode') ? ' table-dark' : ' table-light' %>">
+    <thead>
       <tr>
         <th>Artist</th>
         <th>Title</th>
@@ -277,7 +282,7 @@
           <input v-if="editing_song == song.id" class="form-control" name="source" v-model="edit_song_source">
           <span v-else>{{ song.source }}</span>
         </td>
-        <td class="text-right">
+        <td class="text-end">
           <input v-if="editing_song == song.id" class="form-control" name="duration" v-model="edit_song_duration">
           <span v-else>{{ srq_common.pretty_duration(song.duration) }}</span>
         </td>
